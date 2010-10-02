@@ -1,0 +1,213 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kcfg xmlns="http://www.kde.org/standards/kcfg/1.0"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="http://www.kde.org/standards/kcfg/1.0 http://www.kde.org/standards/kcfg/1.0/kcfg.xsd" >
+  <kcfgfile name="konstruktorrc" />
+  <group name="LDraw">
+    <entry name="Path" type="String">
+      <label>LDraw part library path</label>
+      <default></default>
+    </entry>
+  </group>
+  <group name="Database">
+    <entry name="ThumbnailSize" type="Size">
+      <label>Image size for part thumbnails</label>
+      <default>QSize(256, 256)</default>
+    </entry>
+    <entry name="ThumbnailCrop" type="Bool">
+      <label>Remove redundant spaces in thumbnail image</label>
+      <default>true</default>
+    </entry>
+    <entry name="PartCount" type="Int">
+      <label>Part count</label>
+      <default>-1</default>
+    </entry>
+    <entry name="DatabaseRevision" type="Int">
+      <label>Revision number of current part library</label>
+      <default>-1</default>
+    </entry>
+    <entry name="Magic" type="Int">
+      <label>Database magic number</label>
+      <default>1</default>
+    </entry>
+  </group>
+  <group name="Editor">
+    <entry name="UndoStackDepth" type="Int">
+      <label>Maximum depth of undo stack</label>
+      <default>200</default>
+    </entry>
+    <entry name="ColorList" type="IntList">
+      <label>List of your favorite colors</label>
+      <default>0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15</default>
+    </entry>
+  </group>
+  <group name="UI">
+    <entry name="ListRefColorize" type="Bool">
+      <label>Colorize part list items</label>
+      <default>true</default>
+    </entry>
+    <entry name="ListPartColor" type="Color">
+      <label>Color of parts in list</label>
+      <default>#FFD3D7</default>
+    </entry>
+    <entry name="ListSubmodelColor" type="Color">
+      <label>Color of submodels in list</label>
+      <default>#DAE4FF</default>
+    </entry>
+    <entry name="ListUnresolvedColor" type="Color">
+      <label>Color of unresolved file in list</label>
+      <default>#FFFF00</default>
+    </entry>
+    <entry name="ListPrimitiveColorize" type="Bool">
+      <label>Colorize primitives in list</label>
+      <default>false</default>
+    </entry>
+    <entry name="ListPrimitiveColor" type="Color">
+      <label>Color of primitives in list</label>
+      <default>#C6FFC3</default>
+    </entry>
+    <entry name="ListMetaColorize" type="Bool">
+      <label>Colorize meta statements in list</label>
+      <default>true</default>
+    </entry>
+    <entry name="ListMetaColor" type="Color">
+      <label>Color of meta statements in list</label>
+      <default>#FFCC99</default>
+    </entry>
+    <entry name="ListCommentColorize" type="Bool">
+      <label>Colorize comments in list</label>
+      <default>false</default>
+    </entry>
+    <entry name="ListCommentColor" type="Color">
+      <label>Color of comments in list</label>
+      <default>#FFFFFF</default>
+    </entry>
+    <entry name="ViewportTopLeft" type="Enum">
+      <label>Viewport of top-left compartment</label>
+      <choices>
+	<choice name="Top" />
+	<choice name="Bottom" />
+	<choice name="Front" />
+	<choice name="Back" />
+	<choice name="Left" />
+	<choice name="Right" />
+	<choice name="ThreeD" />
+      </choices>
+      <default>Top</default>
+    </entry>
+    <entry name="ViewportTopRight" type="Enum">
+      <label>Viewport of top-right compartment</label>
+      <choices>
+	<choice name="Top" />
+	<choice name="Bottom" />
+	<choice name="Front" />
+	<choice name="Back" />
+	<choice name="Left" />
+	<choice name="Right" />
+	<choice name="ThreeD" />
+      </choices>
+      <default>Front</default>
+    </entry>
+    <entry name="ViewportBottomLeft" type="Enum">
+      <label>Viewport of bottom-left compartment</label>
+      <choices>
+	<choice name="Top" />
+	<choice name="Bottom" />
+	<choice name="Front" />
+	<choice name="Back" />
+	<choice name="Left" />
+	<choice name="Right" />
+	<choice name="ThreeD" />
+      </choices>
+      <default>Left</default>
+    </entry>
+    <entry name="ViewportBottomRight" type="Enum">
+      <label>Viewport of bottom-right compartment</label>
+      <choices>
+	<choice name="Top" />
+	<choice name="Bottom" />
+	<choice name="Front" />
+	<choice name="Back" />
+	<choice name="Left" />
+	<choice name="Right" />
+	<choice name="ThreeD" />
+      </choices>
+      <default>ThreeD</default>
+    </entry>
+  </group>
+  <group name="Renderer">
+    <entry name="Multisampling" type="Bool">
+      <label>Antialiased rendering</label>
+      <default>true</default>
+    </entry>
+    <entry name="RenderMode" type="Enum">
+      <label>Rendering mode</label>
+      <choices>
+	<choice name="Full" />
+	<choice name="Edges" />
+	<choice name="BoundingBoxes" />
+      </choices>
+      <default>Full</default>
+    </entry>
+    <entry name="DragMode" type="Enum">
+      <label>Rendering mode when moving objects</label>
+      <choices>
+	<choice name="Full" />
+	<choice name="Edges" />
+	<choice name="BoundingBoxes" />
+      </choices>
+      <default>BoundingBoxes</default>
+    </entry>
+    <entry name="StudMode" type="Enum">
+      <label>Stud rendering mode</label>
+      <choices>
+	<choice name="Normal" />
+	<choice name="Square" />
+	<choice name="Line" />
+      </choices>
+      <default>Square</default>
+    </entry>
+    <entry name="HighlightColor" type="Color">
+      <label>Bounding box color for selected object(s)</label>
+      <default>#FF00FF</default>
+    </entry>
+    <entry name="DrawGrids" type="Bool">
+      <label>Draw Grids</label>
+      <default>true</default>
+    </entry>
+    <entry name="GridResolution" type="Double">
+      <label>XY grid resolution</label>
+      <default>20.0</default>
+    </entry>
+    <entry name="GridXOffset" type="Double">
+      <label>X grid offset</label>
+      <default>0.0</default>
+    </entry>
+    <entry name="GridYOffset" type="Double">
+      <label>Y grid offset</label>
+      <default>0.0</default>
+    </entry>
+    <entry name="GridZOffset" type="Double">
+      <label>Z grid offset</label>
+      <default>0.0</default>
+    </entry>
+    <entry name="GridRows" type="Int">
+      <label>Row count of grid</label>
+      <default>50</default>
+    </entry>
+    <entry name="GridColumns" type="Int">
+      <label>Column count of grid</label>
+      <default>50</default>
+    </entry>
+    <entry name="BackgroundColor" type="Color">
+      <label>Background color of render widget</label>
+      <default>#CCCCCC</default>
+    </entry>
+  </group>
+  <group name="POVRay">
+    <entry name="PovRayExecutablePath" type="String">
+      <label>POV-Ray executable path</label>
+      <default>povray</default>
+    </entry>
+  </group>
+</kcfg>

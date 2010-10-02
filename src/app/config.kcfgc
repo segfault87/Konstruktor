@@ -1,0 +1,5 @@
+File=konstruktor.kcfg
+ClassName=KonstruktorConfig
+Singleton=false
+CustomAdditions=false
+Mutators=true

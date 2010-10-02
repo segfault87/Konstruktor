@@ -1,0 +1,110 @@
+<ui version="4.0" >
+ <class>PartsWidget</class>
+ <widget class="QWidget" name="PartsWidget" >
+  <property name="geometry" >
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>325</width>
+    <height>546</height>
+   </rect>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout" >
+   <item>
+    <widget class="QStackedWidget" name="stackedWidget" >
+     <property name="sizePolicy" >
+      <sizepolicy vsizetype="Maximum" hsizetype="Expanding" >
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="currentIndex" >
+      <number>0</number>
+     </property>
+     <widget class="QWidget" name="page" >
+      <layout class="QHBoxLayout" name="horizontalLayout" >
+       <item>
+        <widget class="KLineEdit" name="searchEdit" >
+         <property name="toolTip" >
+          <string>Enter space-separated terms to search in the part list</string>
+         </property>
+         <property name="clickMessage" >
+          <string>Enter search terms here</string>
+         </property>
+         <property name="showClearButton" stdset="0" >
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="buttonAdvanced" >
+         <property name="text" >
+          <string>&amp;Advanced</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="page_2" >
+      <layout class="QHBoxLayout" name="horizontalLayout_2" >
+       <item>
+        <widget class="QComboBox" name="searchPresets" >
+         <property name="sizePolicy" >
+          <sizepolicy vsizetype="Fixed" hsizetype="Expanding" >
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="buttonBasic" >
+         <property name="text" >
+          <string>&amp;Basic</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </widget>
+   </item>
+   <item>
+    <widget class="QCheckBox" name="hideUnofficial" >
+     <property name="text" >
+      <string>&amp;Hide unofficial parts</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QSplitter" name="splitter" >
+     <property name="orientation" >
+      <enum>Qt::Vertical</enum>
+     </property>
+     <widget class="QTreeView" name="partView" >
+      <property name="dragEnabled" >
+       <bool>true</bool>
+      </property>
+      <property name="dragDropMode" >
+       <enum>QAbstractItemView::DragOnly</enum>
+      </property>
+     </widget>
+     <widget class="KonstruktorPartsIconWidget" name="iconView" />
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>KLineEdit</class>
+   <extends>QLineEdit</extends>
+   <header>klineedit.h</header>
+  </customwidget>
+  <customwidget>
+   <class>KonstruktorPartsIconWidget</class>
+   <extends>QListWidget</extends>
+   <header>partsiconwidget.h</header>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>
