@@ -67,9 +67,9 @@ void renderer_opengl::setup()
 	glPolygonStipple(stipple_pattern);
 
 	if (m_shading) {
-		GLfloat ambient[] = {0.2f, 0.2f, 0.2f, 1.0f};
+		GLfloat ambient[] = {0.2f, 0.2f, 0.2f, 0.2f};
 		GLfloat diffuse[] = {0.65f, 0.65f, 0.65f, 1.0f};
-		GLfloat position[] = {100.0f, -100.0f, 0.0f, 1.0f};
+		GLfloat position[] = {0.0f, -10000.0f, 0.0f, 1.0f};
 		glLightfv(GL_LIGHT1, GL_AMBIENT, ambient);
 		glLightfv(GL_LIGHT1, GL_DIFFUSE, diffuse);
 		glLightfv(GL_LIGHT1, GL_POSITION, position);
@@ -104,7 +104,6 @@ void renderer_opengl::draw_model_full(const ldraw::model_multipart *base, ldraw:
 	ldraw::bfc_certification::winding localwinding = ldraw::bfc_certification::ccw;
 	ldraw::bfc_certification::cert_status cert;
 	const ldraw::bfc_certification *cext = m->custom_data<ldraw::bfc_certification>();
-	bool drawpolygon = false;
 	bool cullenabled = false;
 
 	if (!cext)
@@ -135,12 +134,9 @@ void renderer_opengl::draw_model_full(const ldraw::model_multipart *base, ldraw:
 	/* apply bfc policy */
 	if (cert == ldraw::bfc_certification::certified && culling && m_bfc_tracker.culling()) {
 		glEnable(GL_CULL_FACE);
-		if (m_shading)
-			glEnable(GL_LIGHTING);
 		cullenabled = true;
 	} else {
 		glDisable(GL_CULL_FACE);
-		glDisable(GL_LIGHTING);
 		cullenabled = false;
 	}
 
@@ -176,10 +172,8 @@ void renderer_opengl::draw_model_full(const ldraw::model_multipart *base, ldraw:
 				
 				/* shading */
 
-				if (m_shading && !drawpolygon) {
+				if (m_shading)
 					glEnable(GL_LIGHTING);
-					drawpolygon = true;
-				}
 				
 				if (ne->has_normal(i)) {
 					ldraw::vector nv = ne->normal(i);
@@ -194,10 +188,8 @@ void renderer_opengl::draw_model_full(const ldraw::model_multipart *base, ldraw:
 						glNormal3fv(nv.get_pointer());
 				}
 			} else if (elemtype == ldraw::type_line || elemtype == ldraw::type_condline) {
-				if (m_shading && drawpolygon) {
+				if (m_shading)
 					glDisable(GL_LIGHTING);
-					drawpolygon = false;
-				}
 			}
 		}
 
@@ -725,6 +717,9 @@ void renderer_opengl::render_stud(ldraw::model *l, bool edges)
 	// Stud is the most frequently rendered part on every models.
 	// And it is quite complex to render, causing major speed drop during entire model rendering process.
 	// Therefore, replacing stud geometry to simpler primitive (such as line, square) makes rendering faster.
+
+	if (m_shading)
+		glDisable(GL_LIGHTING);
 	
 	switch (m_stud_mode) {
 		case regular:
@@ -786,10 +781,13 @@ void renderer_opengl::render_normal_orientation(const ldraw::element_base *el, c
 		center.z() = (t->pos1().z() + t->pos2().z() + t->pos3().z() + t->pos4().z()) / 4.0f;
 	}
 
+	glPushAttrib(GL_ENABLE_BIT);
+	glDisable(GL_LIGHTING);
+
 	glPushMatrix();
 	glTranslatef(center.x(), center.y(), center.z());
 	glBegin(GL_LINES);
-	glColor3ub(32, 32, 32);
+	glColor3ub(255, 255, 255);
 	glVertex3f(0.0f, 0.0f, 0.0f);
 
 	if (isccw)
@@ -799,6 +797,8 @@ void renderer_opengl::render_normal_orientation(const ldraw::element_base *el, c
 	glVertex3fv(nv3.get_pointer());
 	glEnd();
 	glPopMatrix();
+
+	glPopAttrib();
 }
 
 // Determinant.
