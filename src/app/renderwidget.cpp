@@ -347,23 +347,17 @@ void KonstruktorRenderWidget::renderScene()
 		
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		
-		glPushAttrib(GL_ALL_ATTRIB_BITS);
-		
-		//glEnable(GL_LIGHT1);
-		//glEnable(GL_COLOR_MATERIAL);
-		
 		glEnable(GL_DEPTH_TEST);
+		glDepthFunc(GL_LEQUAL);
 		if (KonstruktorApplication::self()->config()->multisampling())
 			glEnable(GL_MULTISAMPLE);
 
 		glMatrixMode(GL_PROJECTION);
-		glPushMatrix();
 		set3DViewport();
 
 		resizeGL(width(), height());
 		
 		glMatrixMode(GL_MODELVIEW);
-		glPushMatrix();
 		glLoadIdentity();
 		
 		rotate();
@@ -419,15 +413,6 @@ void KonstruktorRenderWidget::renderScene()
 		
 		if (KonstruktorApplication::self()->config()->drawGrids())
 			renderGrid(gridResolution_, gridResolution_, gridRows_, gridColumns_, gridX_, gridY_, gridZ_);
-
-		glDisable(GL_BLEND);
-		
-		glPopAttrib();
-		glPopMatrix();
-
-		/* Revert to previous state */
-		glMatrixMode(GL_PROJECTION);
-		glPopMatrix();
 	}
 }
 
@@ -498,21 +483,6 @@ void KonstruktorRenderWidget::initializeGL()
 	// libldr_renderer initialize proc
 	setup();
 
-	/*
-	GLfloat ambient[] = { 0.45f, 0.45f, 0.45f, 1.0f };
-	GLfloat diffuse[] = { 1.0f, 1.0f, 1.0f, 1.0f };
-	GLfloat lightpos[] = { 300.0f, -500.0f, 150.0f, 1.0f };
-	*/
-		
-	// Set light
-	/*
-	glLightfv(GL_LIGHT1, GL_AMBIENT, ambient);
-	glLightfv(GL_LIGHT1, GL_DIFFUSE, diffuse);
-	glLightfv(GL_LIGHT1, GL_POSITION, lightpos);
-		
-	glColorMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE);
-	*/
-
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
 
@@ -529,7 +499,25 @@ void KonstruktorRenderWidget::paintEvent(QPaintEvent *)
 	QPainter p;
 	p.begin(this);
 
+	glPushAttrib(GL_ALL_ATTRIB_BITS);
+
+	glMatrixMode(GL_MODELVIEW);
+	glPushMatrix();
+
+	glMatrixMode(GL_PROJECTION);
+	glPushMatrix();
+	
 	renderScene();
+
+	glMatrixMode(GL_PROJECTION);
+	glPopMatrix();
+
+	glMatrixMode(GL_MODELVIEW);
+	glPopMatrix();
+
+	glPopAttrib();
+
+	glClear(GL_DEPTH_BUFFER_BIT);
 
 	if (behavior_ == Dragging) {
 		p.setBrush(QBrush(QColor(51, 115, 186, 160)));

@@ -73,9 +73,9 @@ void initDisplay()
 	glClearColor(0.2, 0.2, 0.2, 1.0);
 
 	renderer_ = new renderer_opengl();
-	renderer_->setup();
 	renderer_->set_shading(true);
-	renderer_->set_debug(false);
+	//renderer_->set_debug(true);
+	renderer_->setup();
 }
 
 void renderText(int x, int y, const unsigned char *text)
@@ -169,7 +169,7 @@ void resizeFunc(int width, int height)
 	
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	gluPerspective(75.0, (double)width_ / height_, 0.1, 100000.0);
+	gluPerspective(60.0, (double)width_ / height_, 0.1, 100000.0);
 	gluLookAt(0.0, -theight, distance, 0.0, 0.0, 0.0, 0.0, -1.0, 0.0);
 }
 

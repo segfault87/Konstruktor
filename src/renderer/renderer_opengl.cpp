@@ -67,8 +67,8 @@ void renderer_opengl::setup()
 	glPolygonStipple(stipple_pattern);
 
 	if (m_shading) {
-		GLfloat ambient[] = {0.2f, 0.2f, 0.2f, 0.2f};
-		GLfloat diffuse[] = {0.65f, 0.65f, 0.65f, 1.0f};
+		GLfloat ambient[] = {0.2f, 0.2f, 0.2f, 1.0f};
+		GLfloat diffuse[] = {1.0f, 1.0f, 1.0f, 1.0f};
 		GLfloat position[] = {0.0f, -10000.0f, 0.0f, 1.0f};
 		glLightfv(GL_LIGHT1, GL_AMBIENT, ambient);
 		glLightfv(GL_LIGHT1, GL_DIFFUSE, diffuse);
@@ -218,8 +218,8 @@ void renderer_opengl::draw_model_full(const ldraw::model_multipart *base, ldraw:
 				// flip plane check
 				bool reverse;
 
-				if (lm->modeltype() == ldraw::model::primitive && det3(proj * l->get_matrix()) < 0.0f) {
-					reverse = false;
+				if (/*lm->modeltype() == ldraw::model::primitive &&*/det3(proj * l->get_matrix()) < 0.0f) {
+					reverse = true;
 				} else
 					reverse = false;
 
@@ -718,6 +718,8 @@ void renderer_opengl::render_stud(ldraw::model *l, bool edges)
 	// And it is quite complex to render, causing major speed drop during entire model rendering process.
 	// Therefore, replacing stud geometry to simpler primitive (such as line, square) makes rendering faster.
 
+	glPushAttrib(GL_ENABLE_BIT);
+	
 	if (m_shading)
 		glDisable(GL_LIGHTING);
 	
@@ -757,6 +759,8 @@ void renderer_opengl::render_stud(ldraw::model *l, bool edges)
 			glEnd();
 			return;
 	}
+
+	glPopAttrib();
 }
 
 void renderer_opengl::render_normal_orientation(const ldraw::element_base *el, const ldraw::vector &nv, bool isccw)

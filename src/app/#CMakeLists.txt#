@@ -43,7 +43,7 @@ set(konstruktor_SRCS
   main.cpp
 )
 
-kde4_add_kcfg_files(konstruktor_SRCS config.kcfgc)
+kde4_add_kcf_files(konstruktor_SRCS config.kcfgc)
 kde4_add_ui_files(konstruktor_SRCS
   configdisplayform.ui
   configrenderform.ui
