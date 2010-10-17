@@ -106,18 +106,30 @@ bool name_duplicate_test(const std::string &name, const part_library &library)
 
 void validate_bowtie_quad(element_quadrilateral &quad)
 {
-	float angle;
-	
-	angle = vector::get_angle(quad.pos2() - quad.pos1(), quad.pos4() - quad.pos1());
-	angle += vector::get_angle(quad.pos1() - quad.pos4(), quad.pos3() - quad.pos4());
-	angle += vector::get_angle(quad.pos4() - quad.pos3(), quad.pos2() - quad.pos3());
-	angle += vector::get_angle(quad.pos1() - quad.pos2(), quad.pos3() - quad.pos2());
-	
-	if (fabs(angle-M_PI*2.0f) > LDR_EPSILON) {
-		// swap
-		ldraw::vector tmp = quad.pos3();
+	ldraw::vector v12, v14;
+	ldraw::vector v34, v32;
+	ldraw::vector v41, v43;
+	ldraw::vector c1, c3, c4;
+
+	v12 = quad.pos2() - quad.pos1();
+	v14 = quad.pos4() - quad.pos1();
+	v34 = quad.pos4() - quad.pos3();
+	v32 = quad.pos2() - quad.pos3();
+	v41 = quad.pos1() - quad.pos4();
+	v43 = quad.pos3() - quad.pos4();
+
+	c1 = ldraw::vector::cross_product(v12, v14);
+	c3 = ldraw::vector::cross_product(v34, v32);
+	c4 = ldraw::vector::cross_product(v41, v43);
+
+	if (ldraw::vector::dot_product(c1, c4) < 0.0f) {
+		ldraw::vector temp = quad.pos3();
 		quad.pos3() = quad.pos4();
-		quad.pos4() = tmp;
+		quad.pos4() = temp;
+	} else if (ldraw::vector::dot_product(c3, c4) < 0.0f) {
+		ldraw::vector temp = quad.pos2();
+		quad.pos2() = quad.pos3();
+		quad.pos3() = temp;
 	}
 }
 	

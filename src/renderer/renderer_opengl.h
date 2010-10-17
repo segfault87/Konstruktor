@@ -54,6 +54,7 @@ class LIBLDR_EXPORT renderer_opengl
 	void set_rendering_mode(render_method m) { m_mode = m; }
 	void set_shading(bool b) { m_shading = b; }
 	void set_debug(bool b) { m_debug = b; }
+	void set_culling(bool b) { m_culling = b; }
 	
 	virtual void setup();
 	
@@ -80,6 +81,7 @@ class LIBLDR_EXPORT renderer_opengl
 	render_method m_mode;
 	bool m_shading;
 	bool m_debug;
+	bool m_culling;
 	
   private:
   	/* helpers */

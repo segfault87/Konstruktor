@@ -38,6 +38,7 @@ renderer_opengl::renderer_opengl()
 	m_mode = full;
 	m_shading = true;
 	m_debug = false;
+	m_culling = false; /* disabled for a while */
 	
 	// Initialize color stack
 	m_colorstack.push(ldraw::color(7).get_entity());
@@ -68,13 +69,52 @@ void renderer_opengl::setup()
 
 	if (m_shading) {
 		GLfloat ambient[] = {0.2f, 0.2f, 0.2f, 1.0f};
-		GLfloat diffuse[] = {1.0f, 1.0f, 1.0f, 1.0f};
-		GLfloat position[] = {0.0f, -10000.0f, 0.0f, 1.0f};
-		glLightfv(GL_LIGHT1, GL_AMBIENT, ambient);
-		glLightfv(GL_LIGHT1, GL_DIFFUSE, diffuse);
-		glLightfv(GL_LIGHT1, GL_POSITION, position);
-		glEnable(GL_LIGHT1);
+		GLfloat specular[] = {0.0f, 0.0f, 0.0f, 1.0f};
+		GLfloat shininess = 64.0f;
+
+		/* Basic setup */
+		glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, specular);
+		glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, shininess);
+
+		glEnable(GL_NORMALIZE);
 		glEnable(GL_COLOR_MATERIAL);
+
+		/* Light model */
+		glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER, GL_FALSE);
+		glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_FALSE);
+		glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambient);
+
+		/* Light sources */
+		GLfloat lightpos0[] = {0.0f, -1000.0f,0.0f, 1.0f};
+		GLfloat lightpos1[] = {0.0f,  1000.0f, 0.0f, 1.0f};
+
+		GLfloat lightlocalambient[] = {0.0f, 0.0f, 0.0f, 1.0f};
+		GLfloat lightlocaldiffuse[] = {0.8f, 0.8f, 0.8f, 1.0f};
+		GLfloat lightlocalspecular[] = {0.0f, 0.0f, 0.0f, 1.0f};
+
+		/* light 0 (local) */
+		glLightfv(GL_LIGHT0, GL_POSITION, lightpos0);
+		glLightfv(GL_LIGHT0, GL_AMBIENT, lightlocalambient);
+		glLightfv(GL_LIGHT0, GL_DIFFUSE, lightlocaldiffuse);
+		glLightfv(GL_LIGHT0, GL_SPECULAR, lightlocalspecular);
+
+		glLightf(GL_LIGHT0, GL_CONSTANT_ATTENUATION, 1.0f);
+		glLightf(GL_LIGHT0, GL_LINEAR_ATTENUATION, 0.0f);
+		glLightf(GL_LIGHT0, GL_QUADRATIC_ATTENUATION, 0.0f);
+
+		/* light 1 (flipped) */
+		glLightfv(GL_LIGHT1, GL_POSITION, lightpos1);
+		glLightfv(GL_LIGHT1, GL_AMBIENT, lightlocalambient);
+		glLightfv(GL_LIGHT1, GL_DIFFUSE, lightlocaldiffuse);
+		glLightfv(GL_LIGHT1, GL_SPECULAR, lightlocalspecular);
+
+		glLightf(GL_LIGHT1, GL_CONSTANT_ATTENUATION, 1.0f);
+		glLightf(GL_LIGHT1, GL_LINEAR_ATTENUATION, 0.0f);
+		glLightf(GL_LIGHT1, GL_QUADRATIC_ATTENUATION, 0.0f);
+		
+		glEnable(GL_LIGHTING);
+		glEnable(GL_LIGHT0);
+		glEnable(GL_LIGHT1);
 	}
 }
 
@@ -132,7 +172,7 @@ void renderer_opengl::draw_model_full(const ldraw::model_multipart *base, ldraw:
 	ne = m->custom_data<normal_extension>();
 
 	/* apply bfc policy */
-	if (cert == ldraw::bfc_certification::certified && culling && m_bfc_tracker.culling()) {
+	if (cert == ldraw::bfc_certification::certified && culling && m_bfc_tracker.culling() && m_culling) {
 		glEnable(GL_CULL_FACE);
 		cullenabled = true;
 	} else {
@@ -152,45 +192,43 @@ void renderer_opengl::draw_model_full(const ldraw::model_multipart *base, ldraw:
 		
 		ldraw::type elemtype = (*it)->get_type();
 
-		if (cullenabled) {
-			if (elemtype == ldraw::type_triangle || elemtype == ldraw::type_quadrilateral) {
-				GLenum mode;
-
-				if (winding == ldraw::bfc_certification::ccw) {
-					if (flipped)
-						mode = GL_CW;
-					else
-						mode = GL_CCW;
-				} else {
-					if (flipped)
-						mode = GL_CCW;
-					else
-						mode = GL_CW;
-				}
-				
-				glFrontFace(mode);
-				
-				/* shading */
-
-				if (m_shading)
-					glEnable(GL_LIGHTING);
-				
-				if (ne->has_normal(i)) {
-					ldraw::vector nv = ne->normal(i);
-
-					if (winding == ldraw::bfc_certification::cw)
-						nv = -nv;
-
-					if (m_debug)
-						render_normal_orientation(*it, nv, localwinding == ldraw::bfc_certification::ccw);
-
-					if (m_shading)
-						glNormal3fv(nv.get_pointer());
-				}
-			} else if (elemtype == ldraw::type_line || elemtype == ldraw::type_condline) {
-				if (m_shading)
-					glDisable(GL_LIGHTING);
+		if (elemtype == ldraw::type_triangle || elemtype == ldraw::type_quadrilateral) {
+			GLenum mode;
+			
+			if (winding == ldraw::bfc_certification::ccw) {
+				if (flipped)
+					mode = GL_CW;
+				else
+					mode = GL_CCW;
+			} else {
+				if (flipped)
+					mode = GL_CCW;
+				else
+					mode = GL_CW;
 			}
+
+			if (m_culling)
+				glFrontFace(mode);
+			
+			/* shading */
+			if (m_shading)
+				glEnable(GL_LIGHTING);
+			
+			if (ne->has_normal(i)) {
+				ldraw::vector nv = ne->normal(i);
+				
+				if (winding == ldraw::bfc_certification::cw)
+					nv = -nv;
+				
+				if (m_debug)
+					render_normal_orientation(*it, nv, localwinding == ldraw::bfc_certification::ccw);
+				
+				if (m_shading)
+					glNormal3fv(nv.get_pointer());
+			}
+		} else if ((elemtype == ldraw::type_line || elemtype == ldraw::type_condline) && m_shading) {
+			if (m_shading)
+				glDisable(GL_LIGHTING);
 		}
 
 		if (elemtype == ldraw::type_line) {
