@@ -52,7 +52,7 @@ class LIBLDR_EXPORT renderer_opengl
 	
 	void set_stud_rendering_mode(stud_rendering_mode s) { m_stud_mode = s; }
 	void set_rendering_mode(render_method m) { m_mode = m; }
-	void set_shading(bool b) { m_shading = b; }
+	void set_shading(bool b);
 	void set_debug(bool b) { m_debug = b; }
 	void set_culling(bool b) { m_culling = b; }
 	

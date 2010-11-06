@@ -10,5 +10,9 @@ find_package(Sqlite REQUIRED)
 
 include_directories(${KDE4_INCLUDES})
 
+if(DEBUG_PROFILE)
+add_definitions(-pg)
+endif(DEBUG_PROFILE)
+
 subdirs(src)
 

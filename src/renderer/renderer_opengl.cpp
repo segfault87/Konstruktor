@@ -44,6 +44,13 @@ renderer_opengl::renderer_opengl()
 	m_colorstack.push(ldraw::color(7).get_entity());
 }
 
+void renderer_opengl::set_shading(bool b) 
+{
+	m_shading = b;
+
+	setup();
+}
+
 renderer_opengl::~renderer_opengl()
 {
 }
@@ -115,6 +122,10 @@ void renderer_opengl::setup()
 		glEnable(GL_LIGHTING);
 		glEnable(GL_LIGHT0);
 		glEnable(GL_LIGHT1);
+	} else {
+		glDisable(GL_LIGHTING);
+		glDisable(GL_LIGHT0);
+		glDisable(GL_LIGHT1);
 	}
 }
 

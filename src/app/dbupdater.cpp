@@ -259,7 +259,7 @@ int KonstruktorDBUpdater::start()
 		// Check whether this part is official or unofficial
 		int unofficial = 0;
 		std::list<std::string> ldraworgheader = m->main_model()->header("LDRAW_ORG");
-		if (ldraw::utils::translate_string(*ldraworgheader.begin()).find("unofficial") != std::string::npos)
+		if (ldraworgheader.size() > 0 && ldraw::utils::translate_string(*ldraworgheader.begin()).find("unofficial") != std::string::npos)
 			unofficial = 1;
 
 		// Regular expression

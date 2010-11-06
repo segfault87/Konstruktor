@@ -496,8 +496,13 @@ void KonstruktorRenderWidget::resizeGL(int width, int height)
 
 void KonstruktorRenderWidget::paintEvent(QPaintEvent *)
 {
+	/* disable shading if not free view */
+	if (viewportMode_ != Free)
+		set_shading(false);
+
 	QPainter p;
 	p.begin(this);
+	p.setRenderHint(QPainter::Antialiasing);
 
 	glPushAttrib(GL_ALL_ATTRIB_BITS);
 

@@ -112,7 +112,7 @@ bool KonstruktorApplication::initialize()
 void KonstruktorApplication::startDBUpdater()
 {
 	dbUpdater_ = new KProcess(this);
-	dbUpdater_->setOutputChannelMode(KProcess::SeparateChannels);
+	dbUpdater_->setOutputChannelMode(KProcess::OnlyStdoutChannel);
 	*dbUpdater_ << "konstruktor_db_updater" << library_->ldrawpath().c_str();
 
 	connect(dbUpdater_, SIGNAL(readyReadStandardOutput()), this, SLOT(dbUpdateStatus()));
