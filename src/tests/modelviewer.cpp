@@ -12,17 +12,33 @@
 #include <libldr/model.h>
 #include <libldr/part_library.h>
 #include <libldr/reader.h>
+#include <libldr/utils.h>
+
+#include <renderer/normal_extension.h>
+#include <renderer/opengl_extension_vbo.h>
+#include <renderer/parameters.h>
 #include <renderer/renderer_opengl.h>
+#include <renderer/vbuffer_extension.h>
 
 #define SCREEN_WIDTH 800
 #define SCREEN_HEIGHT 600
 
+static const char *msg_immediate = "OpenGL immediate mode (DEPRECATED)";
+static const char *msg_retained = "OpenGL retained mode (%s%s)";
+static const char *msg_varray = "vertex array";
+static const char *msg_vbo = "vertex buffer objects";
+static const char *msg_shader = " w/ vertex shader";
+static const char *msg_no_shader = " wo/ vertex shader";
+
 ldraw::part_library *library_ = 0L;
 ldraw::model_multipart *model_ = 0L;
-renderer_opengl *renderer_;
+ldraw_renderer::renderer_opengl *renderer_;
+ldraw_renderer::parameters params_;
+ldraw_renderer::renderer_opengl_factory::rendering_mode mode_ = ldraw_renderer::renderer_opengl_factory::mode_vbo;
 int width_, height_;
 float length_;
 int frames_ = 0, timebase_ = 0, fps_ = 0;
+int memsiz_ = 0;
 
 bool initializeLdraw()
 {
@@ -63,6 +79,8 @@ bool initializeModel(const char *filename)
 
 	library_->link(model_);
 
+	ldraw::utils::validate_bowtie_quads(model_->main_model());
+
 	model_->main_model()->update_custom_data<ldraw::metrics>();
 
 	return true;
@@ -71,10 +89,16 @@ bool initializeModel(const char *filename)
 void initDisplay()
 {
 	glClearColor(0.2, 0.2, 0.2, 1.0);
+	
+	params_.set_shading(true);
+	params_.set_shader(false);
+	params_.set_stud_rendering_mode(ldraw_renderer::parameters::stud_regular);
+	params_.set_vbuffer_criteria(ldraw_renderer::parameters::vbuffer_parts);
 
-	renderer_ = new renderer_opengl();
-	renderer_->set_shading(true);
-	//renderer_->set_debug(true);
+	ldraw_renderer::renderer_opengl_factory rof(&params_, mode_);
+	mode_ = rof.get_rendering_mode();
+	
+	renderer_ = rof.create_renderer();
 	renderer_->setup();
 }
 
@@ -93,7 +117,7 @@ void renderText(int x, int y, const unsigned char *text)
 void displayFunc()
 {
 	int start, end;
-	char text[50];
+	char text[100];
 	
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -113,7 +137,9 @@ void displayFunc()
 	
 	glRotatef(degrees, 0.0, 1.0, 0.0);
 
-	renderer_->draw_model(model_->main_model(), std::set<int>());
+	renderer_->render(model_->main_model());
+
+	memsiz_ = ldraw_renderer::vbuffer_extension::get_total_memory_usage();
 
 	glPopMatrix();
 
@@ -140,10 +166,19 @@ void displayFunc()
 	std::snprintf(text, 50, "%d msec(s)", end - start);
 	renderText(10, 20, (const unsigned char *)text);
 
-	const statistics *stats = renderer_->get_stats();
+	if (mode_ == ldraw_renderer::renderer_opengl_factory::mode_immediate)
+		std::snprintf(text, sizeof(text), "%s", msg_immediate);
+	else
+		std::snprintf(text, sizeof(text), msg_retained,
+					  mode_ == ldraw_renderer::renderer_opengl_factory::mode_varray ? msg_varray : msg_vbo,
+					  params_.get_shader() ? msg_shader : msg_no_shader);
 
-	std::snprintf(text, 50, "%d faces, %d lines", stats->faces, stats->lines);
 	renderText(10, 50, (const unsigned char *)text);
+
+	if (mode_ != ldraw_renderer::renderer_opengl_factory::mode_immediate) {
+		std::snprintf(text, sizeof(text), "%.3f Kbytes of vertex buffers", memsiz_ / 1024.0f);
+		renderText(10, 65, (const unsigned char *)text);
+	}
 
 	glMatrixMode(GL_PROJECTION);
 	glPopMatrix();
@@ -179,10 +214,21 @@ int main(int argc, char *argv[])
 		return -1;
 	if (!initializeVideo(argc, argv))
 		return -1;
-
+	
 	if (argc < 2) {
-		std::cerr << "Usage: " << argv[0] << " [filename]" << std::endl;
+		std::cerr << "Usage: " << argv[0] << " [filename] (-immediate | -varray | -vbo)" << std::endl;
 		return -2;
+	} else if (argc > 2) {
+		if (std::strcmp(argv[2], "-immediate") == 0)
+			mode_ = ldraw_renderer::renderer_opengl_factory::mode_immediate;
+		else if (std::strcmp(argv[2], "-varray") == 0)
+			mode_ = ldraw_renderer::renderer_opengl_factory::mode_varray;
+		else if (std::strcmp(argv[2], "-vbo") == 0)
+			mode_ = ldraw_renderer::renderer_opengl_factory::mode_vbo;
+		else {
+			std::cerr << "invalid option." << std::endl;
+			return -3;
+		}
 	}
 
 	initDisplay();
@@ -190,7 +236,7 @@ int main(int argc, char *argv[])
 	if (!initializeModel(argv[1]))
 		return -1;
 
-	resizeFunc(SCREEN_WIDTH, SCREEN_HEIGHT);
+	resizeFunc(SCREEN_WIDTH, SCREEN_HEIGHT);	
 	
 	glutDisplayFunc(displayFunc);
 	glutIdleFunc(displayFunc);

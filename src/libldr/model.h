@@ -54,7 +54,6 @@ class LIBLDR_EXPORT model
 	
 	model_multipart* parent() { return m_parent; }
 	const model_multipart* parent() const { return m_parent; }
-	
 	const std::vector<element_base*>& elements() const { return m_elements; }
 
 	// Edit

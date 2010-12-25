@@ -35,6 +35,8 @@ static const std::string predefined_path[] = {
 	"/usr/local/share/LDRAW",
 	"/opt/ldraw",
 	"/opt/LDRAW",
+	"~/.ldraw",
+	"~/.LDRAW",
 	""
 };
 #endif

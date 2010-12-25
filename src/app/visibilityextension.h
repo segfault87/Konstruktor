@@ -9,7 +9,9 @@
 
 #include <libldr/extension.h>
 
-class KonstruktorVisibilityExtension : public ldraw::extension
+#include <renderer/renderer.h>
+
+class KonstruktorVisibilityExtension : public ldraw::extension, public ldraw_renderer::render_filter
 {
   public:
 	KonstruktorVisibilityExtension(ldraw::model *m, void *arg = 0L);
@@ -24,6 +26,8 @@ class KonstruktorVisibilityExtension : public ldraw::extension
 	void insert(int idx);
 	bool remove(int idx);
 	void clear();
+
+	bool query(const ldraw::model *m, int index, int depth) const;
 
 	static const std::string identifier() { return "visibility"; }
 

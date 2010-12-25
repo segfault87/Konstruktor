@@ -65,7 +65,6 @@ bool cyclic_reference_test(const model *m, const model *insert)
 
 	return _cyclic_reference_test(names, m, insert);
 }
-
 std::list<std::string> affected_models(model_multipart *model, const std::string &name)
 {
 	std::list<std::string> list;
@@ -184,6 +183,15 @@ std::string trim_string(const std::string &str)
 	return str.substr(x, str.length()-x-y);
 }
 
+bool is_stud(const model *model)
+{
+	return translate_string(model->name()).find("stu") != std::string::npos;
+}
+
+bool is_stud(const element_ref *ref)
+{
+	return translate_string(ref->filename()).find("stu") != std::string::npos;
+							}
 }
 
 }

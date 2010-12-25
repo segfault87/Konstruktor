@@ -10,23 +10,27 @@
 #include <renderer/renderer_opengl.h>
 
 class QGLContext;
+class QGLWidget;
 
-class KonstruktorPixmapRenderer : public renderer_opengl
+class KonstruktorPixmapRenderer
 {
   public:
-	KonstruktorPixmapRenderer(int width, int height);
+	KonstruktorPixmapRenderer(int width, int height, QGLWidget *shareWidget = 0L);
 	~KonstruktorPixmapRenderer();
 	
 	void setNewSize(int width, int height);
 	
-	QPixmap render(ldraw::model *m, bool crop = false);
+	QPixmap renderToPixmap(ldraw::model *m, bool crop = false);
 	
   private:
+	ldraw_renderer::renderer_opengl *renderer_;
+	ldraw_renderer::parameters *params_;
+	
 	int width_;
 	int height_;
 	
-	QGLFormat format_;
 	QGLPixelBuffer *buffer_;
+	QGLWidget *shareWidget_;
 };
 
 #endif

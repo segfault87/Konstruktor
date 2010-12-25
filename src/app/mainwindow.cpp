@@ -141,7 +141,7 @@ void KonstruktorMainWindow::newFile()
 
 	if (dialog->result() == QDialog::Accepted) {
 		QString filename = QString("unnamed%1.ldr").arg(newcnt_);
-		KonstruktorDocument *document = new KonstruktorDocument(filename, dialog->textDesc(), dialog->textAuthor());
+		KonstruktorDocument *document = new KonstruktorDocument(filename, dialog->textDesc(), dialog->textAuthor(), renderWidget_[0]);
 
 		// Initialize connection
 		connect(document, SIGNAL(undoStackAdded(QUndoStack *)), editorGroup_, SLOT(stackAdded(QUndoStack *)));
@@ -213,7 +213,7 @@ void KonstruktorMainWindow::openFile(const KUrl &url)
 			return;
 		}
 		
-		document = new KonstruktorDocument(tmploc, aurl);
+		document = new KonstruktorDocument(tmploc, aurl, renderWidget_[0]);
 
 		// Initialize connection
 		connect(document, SIGNAL(undoStackAdded(QUndoStack *)), editorGroup_, SLOT(stackAdded(QUndoStack *)));
@@ -535,14 +535,12 @@ void KonstruktorMainWindow::initGui()
 	QSplitter *srh1 = new QSplitter(Qt::Vertical, srv);
 	QSplitter *srh2 = new QSplitter(Qt::Vertical, srv);
 	
-	QGLFormat format;
-	if (KonstruktorApplication::self()->config()->multisampling())
-		format.setSampleBuffers(true);
-	
-	renderWidget_[0] = new KonstruktorRenderWidget(this, &activeDocument_, KonstruktorRenderWidget::Top, format, srh1);
-	renderWidget_[1] = new KonstruktorRenderWidget(this, &activeDocument_, KonstruktorRenderWidget::Left, format, srh1);
-	renderWidget_[2] = new KonstruktorRenderWidget(this, &activeDocument_, KonstruktorRenderWidget::Front, format, srh2);
-	renderWidget_[3] = new KonstruktorRenderWidget(this, &activeDocument_, KonstruktorRenderWidget::Free, format, srh2);
+	const QGLFormat &format = *KonstruktorApplication::self()->getGlFormat();
+
+	renderWidget_[0] = new KonstruktorRenderWidget(this, &activeDocument_, KonstruktorRenderWidget::Top, new QGLContext(format), 0L, srh1);
+	renderWidget_[1] = new KonstruktorRenderWidget(this, &activeDocument_, KonstruktorRenderWidget::Left, new QGLContext(format), renderWidget_[0], srh1);
+	renderWidget_[2] = new KonstruktorRenderWidget(this, &activeDocument_, KonstruktorRenderWidget::Front, new QGLContext(format), renderWidget_[0], srh2);
+	renderWidget_[3] = new KonstruktorRenderWidget(this, &activeDocument_, KonstruktorRenderWidget::Free, new QGLContext(format), renderWidget_[0], srh2);
 
 	tabbar_ = new KTabBar(sc);
 	tabbar_->setShape(QTabBar::RoundedSouth);

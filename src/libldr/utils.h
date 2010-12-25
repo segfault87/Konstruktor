@@ -15,6 +15,7 @@
 namespace ldraw
 {
 
+class element_ref;
 class element_quadrilateral;
 class model;
 class model_multipart;
@@ -41,6 +42,10 @@ LIBLDR_EXPORT void validate_bowtie_quads(model *model);
 // String handling
 LIBLDR_EXPORT std::string translate_string(const std::string &str);
 LIBLDR_EXPORT std::string trim_string(const std::string &str);
+
+// Miscellaneous
+LIBLDR_EXPORT bool is_stud(const model *m);
+LIBLDR_EXPORT bool is_stud(const element_ref *ref);
 
 }
 

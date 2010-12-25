@@ -9,6 +9,9 @@
 
 #include <libldr/math.h>
 
+namespace ldraw_renderer
+{
+
 class LIBLDR_EXPORT mouse_rotation
 {
   public:
@@ -32,5 +35,7 @@ class LIBLDR_EXPORT mouse_rotation
 	ldraw::vector m_stvec;
 	ldraw::vector m_envec;
 };
+
+}
 
 #endif

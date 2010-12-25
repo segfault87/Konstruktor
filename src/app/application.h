@@ -4,6 +4,7 @@
 #ifndef _APPLICATION_H_
 #define _APPLICATION_H_
 
+#include <QGLFormat>
 #include <QMutex>
 #include <QObject>
 #include <QProcess>
@@ -15,6 +16,11 @@ namespace ldraw
 {
 	class model;
 	class part_library;
+}
+
+namespace ldraw_renderer
+{
+	class parameters;
 }
 
 class KProgressDialog;
@@ -43,10 +49,15 @@ class KonstruktorApplication : public QObject
 	
 	QString saveLocation(const QString &directory);
 	ldraw::part_library* library() { return library_; }
+	ldraw_renderer::parameters* renderer_params() { return params_; }
 	KonstruktorConfig* config() { return config_; }
 	KonstruktorDBManager* database() { return db_; }
 	KonstruktorColorManager* colorManager() { return colorManager_; }
 	bool hasPovRay() const { return hasPovRay_; }
+	const QGLFormat* getGlFormat() const { return &glFormat_; }
+
+  public slots:
+	void configUpdated();
 
   private slots:
 	void dbUpdateStatus();
@@ -54,12 +65,14 @@ class KonstruktorApplication : public QObject
 		
   private:
 	static KonstruktorApplication *instance_;
-	
+
+	QGLFormat glFormat_;
 	KonstruktorMainWindow *window_;
 	KProgressDialog *dbDialog_;
 	KProcess *dbUpdater_;
 	KonstruktorConfig *config_;
 	ldraw::part_library *library_;
+	ldraw_renderer::parameters *params_;
 	KonstruktorDBManager *db_;
 	KonstruktorColorManager *colorManager_;
 	QMutex globalDirsMutex_;

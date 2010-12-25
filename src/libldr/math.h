@@ -33,7 +33,7 @@ class LIBLDR_EXPORT vector
 	inline const float& y() const { return m_array[1]; }
 	inline float& z() { return m_array[2]; }
 	inline const float& z() const { return m_array[2]; }
-	// the w component in a quaternion
+	// quadruple
 	inline float& w() { return m_array[3]; }
 	inline const float& w() const { return m_array[3]; }
 	inline const float* get_pointer() const { return m_array; }
@@ -45,6 +45,8 @@ class LIBLDR_EXPORT vector
 	static float get_angle(const vector &a, const vector &b);
 	static float dot_product(const vector &a, const vector &b);
 	static vector cross_product(const vector &a, const vector &b);
+
+	bool compare(const vector &other, float epsilon = 0.05f) const;
 	
 	vector operator+ (const vector &rhs) const;
 	vector operator- (const vector &rhs) const;

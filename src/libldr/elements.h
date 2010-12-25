@@ -66,7 +66,7 @@ class LIBLDR_EXPORT element_base
 	virtual ~element_base() {}
 	
 	virtual type get_type() const = 0;
-	virtual int line_type() const = 0;
+	virtual  int line_type() const = 0;
 	virtual unsigned int capabilities() const { return 0; }
 };
 

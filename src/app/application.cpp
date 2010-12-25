@@ -19,6 +19,8 @@
 #include <libldr/model.h>
 #include <libldr/part_library.h>
 
+#include <renderer/parameters.h>
+
 #include "colormanager.h"
 #include "dbmanager.h"
 #include "mainwindow.h"
@@ -102,6 +104,16 @@ bool KonstruktorApplication::initialize()
 	
 	db_->initialize(saveLocation("")+"parts.db");
 
+	glFormat_ = QGLFormat::defaultFormat();
+	glFormat_.setAlpha(true);
+	if (config()->multisampling())
+		glFormat_.setSampleBuffers(true);
+
+	params_ = new ldraw_renderer::parameters();
+	params_->set_shading(true);
+	params_->set_shader(false);
+	params_->set_vbuffer_criteria(ldraw_renderer::parameters::vbuffer_parts);
+
 	testPovRay(true);
 
 	startDBUpdater();
@@ -164,6 +176,20 @@ void KonstruktorApplication::testPovRay(bool overrideconfig)
 			hasPovRay_ = false;
 		}
 	}			
+}
+
+void KonstruktorApplication::configUpdated()
+{
+	switch (config_->studMode()) {
+		case KonstruktorConfig::EnumStudMode::Normal:
+			params_->set_stud_rendering_mode(ldraw_renderer::parameters::stud_regular);
+			break;
+		case KonstruktorConfig::EnumStudMode::Line:
+			params_->set_stud_rendering_mode(ldraw_renderer::parameters::stud_line);
+			break;
+		case KonstruktorConfig::EnumStudMode::Square:
+			params_->set_stud_rendering_mode(ldraw_renderer::parameters::stud_square);
+	}
 }
 
 void KonstruktorApplication::dbUpdateStatus()

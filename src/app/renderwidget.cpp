@@ -39,21 +39,66 @@ static const QString viewportNames[VIEWPORT_TYPES] = {
 	i18n("3D")
 };
 
-KonstruktorRenderWidget::KonstruktorRenderWidget(KonstruktorMainWindow *mainwindow, KonstruktorDocument **document, ViewportMode viewport, const QGLFormat &format, QWidget *parent)
-	: QGLWidget(format, parent), renderer_opengl(), objectmetrics_(0L)
+KonstruktorSelection::KonstruktorSelection()
+{
+	tsset_ = 0L;
+}
+
+KonstruktorSelection::~KonstruktorSelection()
+{
+
+}
+
+
+void KonstruktorSelection::setSelection(const QSet<int> &set)
+{
+	tsset_ = &set;
+}
+
+void KonstruktorSelection::resetSelection()
+{
+	tsset_ = 0L;
+}
+
+const QSet<int>* KonstruktorSelection::getSelection() const
+{
+	return tsset_;
+}
+
+bool KonstruktorSelection::hasSelection() const
+{
+	return tsset_ != 0L;
+}
+
+bool KonstruktorSelection::query(const ldraw::model *, int index, int) const
+{
+	if (!tsset_)
+		return false;
+	
+	return tsset_->contains(index);
+}
+
+KonstruktorRenderWidget::KonstruktorRenderWidget(KonstruktorMainWindow *mainwindow, KonstruktorDocument **document, ViewportMode viewport, QGLContext *context, QGLWidget *shareWidget, QWidget *parent)
+	: QGLWidget(context, parent, shareWidget), objectmetrics_(0L)
 {
 	viewportMode_ = Uninitialized;
 	parent_ = mainwindow;
 
 	tmodel_ = 0L;
 	tvset_ = 0L;
-	tsset_ = 0L;
+	tsset_ = new KonstruktorSelection();
 	
 	activeDocument_ = document;
 	behavior_ = Idle;
 
 	readConfig();
-	set_rendering_mode(renderMode_);
+
+	makeCurrent();
+	
+	params_ = new ldraw_renderer::parameters(*KonstruktorApplication::self()->renderer_params());
+	renderer_ = ldraw_renderer::renderer_opengl_factory(params_, ldraw_renderer::renderer_opengl_factory::mode_vbo).create_renderer();
+
+	params_->set_rendering_mode(renderMode_);
 
 	/* init actions */
 	viewportActionGroup_ = new QActionGroup(this);
@@ -66,11 +111,15 @@ KonstruktorRenderWidget::KonstruktorRenderWidget(KonstruktorMainWindow *mainwind
 
 	setViewport(viewport);
 
+	doneCurrent();
+
 	setAcceptDrops(true);
 }
 
 KonstruktorRenderWidget::~KonstruktorRenderWidget()
 {
+	delete renderer_;
+	delete params_;
 }
 
 KonstruktorRenderWidget::ViewportMode KonstruktorRenderWidget::viewportMode() const
@@ -160,12 +209,12 @@ int KonstruktorRenderWidget::depthAxis() const
 
 void KonstruktorRenderWidget::modelChanged(ldraw::model *)
 {
-	tsset_ = 0L;
+	tsset_->resetSelection();
 }
 
 void KonstruktorRenderWidget::selectionChanged(const QSet<int> &set)
 {
-	tsset_ = &set;
+	tsset_->setSelection(set);
 
 	update();
 }
@@ -200,35 +249,24 @@ void KonstruktorRenderWidget::readConfig()
 	
 	switch (conf->dragMode()) {
 		case KonstruktorConfig::EnumDragMode::Full:
-			dragMode_ = full;
+			dragMode_ = ldraw_renderer::parameters::model_full;
 			break;
 		case KonstruktorConfig::EnumDragMode::Edges:
-			dragMode_ = edges;
+			dragMode_ = ldraw_renderer::parameters::model_edges;
 			break;
 		case KonstruktorConfig::EnumDragMode::BoundingBoxes:
-			dragMode_ = boundingboxes;
+			dragMode_ = ldraw_renderer::parameters::model_boundingboxes;
 	}
 	
 	switch (conf->renderMode()) {
 		case KonstruktorConfig::EnumRenderMode::Full:
-			renderMode_ = full;
+			renderMode_ = ldraw_renderer::parameters::model_full;
 			break;
 		case KonstruktorConfig::EnumRenderMode::Edges:
-			renderMode_ = edges;
+			renderMode_ = ldraw_renderer::parameters::model_edges;
 			break;
 		case KonstruktorConfig::EnumRenderMode::BoundingBoxes:
-			renderMode_ = boundingboxes;
-	}
-	
-	switch (conf->studMode()) {
-		case KonstruktorConfig::EnumStudMode::Normal:
-			set_stud_rendering_mode(regular);
-			break;
-		case KonstruktorConfig::EnumStudMode::Line:
-			set_stud_rendering_mode(line);
-			break;
-		case KonstruktorConfig::EnumStudMode::Square:
-			set_stud_rendering_mode(square);
+			renderMode_ = ldraw_renderer::parameters::model_boundingboxes;
 	}
 }
 
@@ -359,11 +397,11 @@ void KonstruktorRenderWidget::renderScene()
 		
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
-		
+
 		rotate();
-		if(get_rendering_mode() == boundingboxes)
-			glColor3ub(0, 0, 0);	
-		draw_model(curmodel, tvset_->set());
+		if (params_->get_rendering_mode() == ldraw_renderer::parameters::model_boundingboxes)
+			glColor3ub(0, 0, 0);
+		renderer_->render(curmodel, tvset_);
 
 		if (behavior_ == Placing) {
 			glDisable(GL_DEPTH_TEST);
@@ -374,13 +412,13 @@ void KonstruktorRenderWidget::renderScene()
 			glTranslatef(translation_.x(), translation_.y(), translation_.z());
 			glRotatef(90.0f, 0.0f, 1.0f, 0.0f);
 			
-			render_bounding_box(objectmetrics_);
+			renderer_->render_bounding_box(objectmetrics_);
 			
 			glPopMatrix();
 			glEnable(GL_DEPTH_TEST);
 		}
 		
-		if (tsset_) {
+		if (tsset_->hasSelection()) {
 			glDisable(GL_DEPTH_TEST);
 			qglColor(highlightColor_);
 			glLineWidth(2.0f);
@@ -389,7 +427,8 @@ void KonstruktorRenderWidget::renderScene()
 			if (behavior_ == Moving)
 				glTranslatef(translation_.x(), translation_.y(), translation_.z());
 
-			for (QSet<int>::ConstIterator it = tsset_->begin(); it != tsset_->end(); ++it) {
+			const QSet<int> *sel = tsset_->getSelection();
+			for (QSet<int>::ConstIterator it = sel->begin(); it != sel->end(); ++it) {
 				const ldraw::element_base *e = tmodel_->elements()[*it];
 				if (e->get_type() == ldraw::type_ref) {
 					const ldraw::element_ref *r = CAST_AS_CONST_REF(e);
@@ -398,7 +437,7 @@ void KonstruktorRenderWidget::renderScene()
 						glMultMatrixf(r->get_matrix().transpose().get_pointer());
 						if (!r->get_model()->custom_data<ldraw::metrics>())
 							r->get_model()->update_custom_data<ldraw::metrics>();
-						render_bounding_box(*r->get_model()->custom_data<ldraw::metrics>());
+						renderer_->render_bounding_box(*r->get_model()->custom_data<ldraw::metrics>());
 						glPopMatrix();
 					}
 				}
@@ -410,6 +449,8 @@ void KonstruktorRenderWidget::renderScene()
 		}
 
 		glEnable(GL_BLEND);
+
+		glDisable(GL_LIGHTING);
 		
 		if (KonstruktorApplication::self()->config()->drawGrids())
 			renderGrid(gridResolution_, gridResolution_, gridRows_, gridColumns_, gridX_, gridY_, gridZ_);
@@ -481,9 +522,9 @@ void KonstruktorRenderWidget::renderGrid(float xg, float yg, int xc, int yc, flo
 void KonstruktorRenderWidget::initializeGL()
 {
 	// libldr_renderer initialize proc
-	setup();
+	renderer_->setup();
 
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glEnable(GL_MULTISAMPLE);
 }
 
 void KonstruktorRenderWidget::resizeGL(int width, int height)
@@ -496,13 +537,14 @@ void KonstruktorRenderWidget::resizeGL(int width, int height)
 
 void KonstruktorRenderWidget::paintEvent(QPaintEvent *)
 {
-	/* disable shading if not free view */
-	if (viewportMode_ != Free)
-		set_shading(false);
+	makeCurrent();
 
 	QPainter p;
 	p.begin(this);
-	p.setRenderHint(QPainter::Antialiasing);
+	
+	/* disable shading if not free view */
+	if (viewportMode_ != Free)
+		params_->set_shading(false);
 
 	glPushAttrib(GL_ALL_ATTRIB_BITS);
 
@@ -523,15 +565,16 @@ void KonstruktorRenderWidget::paintEvent(QPaintEvent *)
 	glPopAttrib();
 
 	glClear(GL_DEPTH_BUFFER_BIT);
-
+	
+	p.setRenderHint(QPainter::Antialiasing);
+	
+	// Viewport name
 	if (behavior_ == Dragging) {
 		p.setBrush(QBrush(QColor(51, 115, 186, 160)));
 		p.setPen(QPen(QColor(25, 59, 93)));
 		p.drawRect(region_);
 	}
 	
-	// Viewport name
-	p.setRenderHint(QPainter::Antialiasing);
 	p.setBrush(QBrush(QColor(24, 24, 24, 160)));
 	p.setPen(Qt::NoPen);
 	p.drawRect(20, 20, textSize_.width()+10, textSize_.height()+10);
@@ -539,6 +582,8 @@ void KonstruktorRenderWidget::paintEvent(QPaintEvent *)
 	p.drawText(25, 25, textSize_.width(), textSize_.height(), Qt::AlignVCenter, viewportName_);
 	
 	p.end();
+
+	doneCurrent();
 }
 
 void KonstruktorRenderWidget::mousePressEvent(QMouseEvent *event)
@@ -546,7 +591,7 @@ void KonstruktorRenderWidget::mousePressEvent(QMouseEvent *event)
 	// Cancel select
 	if (behavior_ != Idle && event->button() & Qt::RightButton) {
 		behavior_ = Idle;
-		set_rendering_mode(renderMode_);
+		params_->set_rendering_mode(renderMode_);
 
 		update();
 	}
@@ -573,13 +618,13 @@ void KonstruktorRenderWidget::mousePressEvent(QMouseEvent *event)
 	}
 	
 	if (event->button() & Qt::MidButton) {
-		set_rendering_mode(dragMode_);
+		params_->set_rendering_mode(dragMode_);
 		behavior_ = Panning;
 		lastPos_ = event->pos();
 		
 		update();
 	} else if (viewportMode_ == Free && event->button() & Qt::RightButton) {
-		set_rendering_mode(dragMode_);
+		params_->set_rendering_mode(dragMode_);
 		behavior_ = Rotating;
 
 		(*activeDocument_)->getMouseRotation().press_event(event->pos().x(), event->pos().y(), width_, height_);
@@ -587,31 +632,27 @@ void KonstruktorRenderWidget::mousePressEvent(QMouseEvent *event)
 		update();
 	} else if (event->button() & Qt::LeftButton) {
 		// convert from QSet to std::set. wtf!!!
-		std::set<int> convertedset;
-		if (tsset_) {
-			for (QSet<int>::const_iterator it = tsset_->constBegin(); it != tsset_->constEnd(); ++it)
-				convertedset.insert(*it);
-		}
 
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
 		rotate();
 		float matrix[16];
 		glGetFloatv(GL_MODELVIEW_MATRIX, matrix);
-		if (viewportMode_ != Free && convertedset.size() && hit_test(projectionMatrix_, matrix, event->pos().x(), event->pos().y(), 1, 1, (*activeDocument_)->getActiveModel(), convertedset)) {
-			set_rendering_mode(dragMode_);
+		if (viewportMode_ != Free && tsset_->hasSelection() && tsset_->getSelection()->size() > 0 && renderer_->hit_test(projectionMatrix_, matrix, event->pos().x(), event->pos().y(), 1, 1, (*activeDocument_)->getActiveModel(), tsset_)) {
+			params_->set_rendering_mode(dragMode_);
 			
 			behavior_ = Moving;
 			lastPos_ = event->pos();
 
 			translation_ = ldraw::vector(0.0f, 0.0f, 0.0f);
 
-			if (get_rendering_mode() == boundingboxes) {
-				for (QSet<int>::ConstIterator it = tsset_->constBegin(); it != tsset_->constEnd(); ++it)
+			const QSet<int> *sel = tsset_->getSelection();
+			if (params_->get_rendering_mode() == ldraw_renderer::parameters::model_boundingboxes) {
+				for (QSet<int>::ConstIterator it = sel->constBegin(); it != sel->constEnd(); ++it)
 					tvset_->insert(*it);
 			}
 		} else {
-			set_rendering_mode(boundingboxes);
+			params_->set_rendering_mode(ldraw_renderer::parameters::model_boundingboxes);
 			
 			behavior_ = Dragging;
 			region_ = QRect(event->pos(), QSize(0, 0));
@@ -656,7 +697,7 @@ void KonstruktorRenderWidget::mouseReleaseEvent(QMouseEvent *event)
 {
 	if ((behavior_ == Rotating && event->button() & Qt::RightButton) || (behavior_ == Panning && event->button() & Qt::MidButton)) {
 		behavior_ = Idle;
-		set_rendering_mode(renderMode_);
+		params_->set_rendering_mode(renderMode_);
 		
 		update();
 	} else if (behavior_ == Dragging && event->button() & Qt::LeftButton) {
@@ -668,25 +709,26 @@ void KonstruktorRenderWidget::mouseReleaseEvent(QMouseEvent *event)
 		rotate();
 		float matrix[16];
 		glGetFloatv(GL_MODELVIEW_MATRIX, matrix);
-		std::list<int> result = get_selection(projectionMatrix_, matrix, region_.x(), region_.y(), region_.width(), region_.height(), (*activeDocument_)->getActiveModel(), tvset_->set());
+		std::list<int> result = renderer_->select(projectionMatrix_, matrix, region_.x(), region_.y(), region_.width(), region_.height(), (*activeDocument_)->getActiveModel(), tvset_);
 		
-		set_rendering_mode(renderMode_);
+		params_->set_rendering_mode(renderMode_);
 
 		emit madeSelection(result);
 
 		update();
 	} else if (behavior_ == Moving && event->button() & Qt::LeftButton) {
 		behavior_ = Idle;
-		
-		if (get_rendering_mode() == boundingboxes) {
-			for (QSet<int>::ConstIterator it = tsset_->constBegin(); it != tsset_->constEnd(); ++it)
+
+		const QSet<int> *sel = tsset_->getSelection();
+		if (params_->get_rendering_mode() == ldraw_renderer::parameters::model_boundingboxes) {
+			for (QSet<int>::ConstIterator it = sel->constBegin(); it != sel->constEnd(); ++it)
 				tvset_->remove(*it);
 		}
 
 		if (translation_.length() > LDR_EPSILON)
 			emit translateObject(translation_);
 
-		set_rendering_mode(renderMode_);
+		params_->set_rendering_mode(renderMode_);
 
 		update();
 	}
@@ -734,7 +776,7 @@ void KonstruktorRenderWidget::dragEnterEvent(QDragEnterEvent *event)
 	behavior_ = Placing;
 	objectmetrics_ = refobj.metrics();
 	
-	set_rendering_mode(dragMode_);
+	params_->set_rendering_mode(dragMode_);
 
 	float x = -stretched_.left / (stretched_.right - stretched_.left) * width_;
 	float y = stretched_.top  / (stretched_.top - stretched_.bottom) * height_;
@@ -747,7 +789,7 @@ void KonstruktorRenderWidget::dragEnterEvent(QDragEnterEvent *event)
 void KonstruktorRenderWidget::dragLeaveEvent(QDragLeaveEvent *event)
 {
 	behavior_ = Idle;
-	set_rendering_mode(renderMode_);
+	params_->set_rendering_mode(renderMode_);
 
 	update();
 }
@@ -764,7 +806,7 @@ void KonstruktorRenderWidget::dropEvent(QDropEvent *event)
 	behavior_ = Idle;
 	
 	event->ignore();
-	set_rendering_mode(renderMode_);
+	params_->set_rendering_mode(renderMode_);
 
 	updatePositionVector(event->pos() - lastPos_);
 

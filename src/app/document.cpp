@@ -26,13 +26,13 @@
 #define INCLUDED_IN_CURRENT_DOCUMENT(m) (m->is_submodel_of(modelBase_) || m == modelBase_->main_model())
 
 // Creates an empty document
-KonstruktorDocument::KonstruktorDocument(const QString &name, const QString &desc, const QString &author, QObject *parent)
+KonstruktorDocument::KonstruktorDocument(const QString &name, const QString &desc, const QString &author, QGLWidget *glBase, QObject *parent)
 	: QObject(parent)
 {
 	activeUndoStack_ = 0L;
 	canSave_ = false;
 	
-	renderer_ = new KonstruktorPixmapRenderer(256, 256);
+	renderer_ = new KonstruktorPixmapRenderer(256, 256, glBase);
 	
 	modelBase_ = new ldraw::model_multipart;
 	modelBase_->main_model()->set_name(std::string(name.toLocal8Bit().data()));
@@ -51,14 +51,14 @@ KonstruktorDocument::KonstruktorDocument(const QString &name, const QString &des
 }
 
 // Load an existing model from a file
-KonstruktorDocument::KonstruktorDocument(const QString &path, const KUrl &url, QObject *parent)
+KonstruktorDocument::KonstruktorDocument(const QString &path, const KUrl &url, QGLWidget *glBase, QObject *parent)
 	: QObject(parent)
 {
 	activeUndoStack_ = 0L;
 	location_ = url;
 	canSave_ = false;
 	
-	renderer_ = new KonstruktorPixmapRenderer(256, 256);
+	renderer_ = new KonstruktorPixmapRenderer(256, 256, glBase);
 	
 	ldraw::reader r;
 	modelBase_ = r.load_from_file(path.toLocal8Bit().data());
@@ -328,6 +328,6 @@ void KonstruktorDocument::recalibrateScreenDimension()
 
 void KonstruktorDocument::resetPerspective()
 {
-	rotation_ = mouse_rotation();
+	rotation_ = ldraw_renderer::mouse_rotation();
 }
 

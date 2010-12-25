@@ -5,30 +5,39 @@
 #include <iostream>
 
 #include <libldr/metrics.h>
+#include <libldr/model.h>
+
+#include <renderer/parameters.h>
 #include <renderer/mouse_rotation.h>
 
+#ifndef KONSTRUKTOR_DB_UPDATER
+#include "application.h"
+#endif
 #include "viewport.h"
 
 #include "pixmaprenderer.h"
 
-KonstruktorPixmapRenderer::KonstruktorPixmapRenderer(int width, int height)
-	: width_(width), height_(height), format_()
+KonstruktorPixmapRenderer::KonstruktorPixmapRenderer(int width, int height, QGLWidget *shareWidget)
+	: width_(width), height_(height), shareWidget_(shareWidget)
 {
-	set_stud_rendering_mode(line);
-	set_base_color(ldraw::color(7));
-	
-	// Initialize up OpenGL context
-	//format_.setDirectRendering(false);
-	//format_.setDoubleBuffer(false);
-	format_.setSampleBuffers(true);
-	format_.setAlpha(true);
-	
-	buffer_ = new QGLPixelBuffer(width_, height_, format_);
-	
+#ifndef KONSTRUKTOR_DB_UPDATER
+	buffer_ = new QGLPixelBuffer(width_, height_, *KonstruktorApplication::self()->getGlFormat(), shareWidget_);
+#else
+	buffer_ = new QGLPixelBuffer(width_, height_, QGLFormat::defaultFormat(), shareWidget_);
+#endif
 	buffer_->makeCurrent();
 	
 	// Initialize GL
-	setup();
+#ifndef KONSTRUKTOR_DB_UPDATER
+	params_ = new ldraw_renderer::parameters(*KonstruktorApplication::self()->renderer_params());
+#else
+	params_ = new ldraw_renderer::parameters();
+#endif
+	
+	ldraw_renderer::renderer_opengl_factory ro(params_, ldraw_renderer::renderer_opengl_factory::mode_vbo);
+	renderer_ = ro.create_renderer();
+	renderer_->set_base_color(ldraw::color(7));
+	renderer_->setup();
 	
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 	glClearDepth(1.0f);
@@ -41,6 +50,9 @@ KonstruktorPixmapRenderer::KonstruktorPixmapRenderer(int width, int height)
 
 KonstruktorPixmapRenderer::~KonstruktorPixmapRenderer()
 {
+	delete renderer_;
+	delete params_;
+	
 	delete buffer_;
 }
 
@@ -50,14 +62,18 @@ void KonstruktorPixmapRenderer::setNewSize(int width, int height)
 	height_ = height;
 	
 	delete buffer_;
-	buffer_ = new QGLPixelBuffer(width_, height_, format_);
+#ifndef KONSTRUKTOR_DB_UPDATER
+	buffer_ = new QGLPixelBuffer(width_, height_, *KonstruktorApplication::self()->getGlFormat(), shareWidget_);
+#else
+	buffer_ = new QGLPixelBuffer(width_, height_, QGLFormat::defaultFormat(), shareWidget_);
+#endif
 	
 	buffer_->makeCurrent();
 	glViewport(0, 0, width_, height_);
 	buffer_->doneCurrent();
 }
 
-QPixmap KonstruktorPixmapRenderer::render(ldraw::model *m, bool crop)
+QPixmap KonstruktorPixmapRenderer::renderToPixmap(ldraw::model *m, bool crop)
 {
 	buffer_->makeCurrent();
 	
@@ -87,14 +103,14 @@ QPixmap KonstruktorPixmapRenderer::render(ldraw::model *m, bool crop)
 		vp.bottom = -1e30;
 		
 		ldraw::vector transformedVec[8];
-		transformedVec[0] = mouse_rotation::isometric_projection_matrix * min;
-		transformedVec[1] = mouse_rotation::isometric_projection_matrix * ldraw::vector(min.x(), min.y(), max.z());
-		transformedVec[2] = mouse_rotation::isometric_projection_matrix * ldraw::vector(min.x(), max.y(), min.z());
-		transformedVec[3] = mouse_rotation::isometric_projection_matrix * ldraw::vector(min.x(), max.y(), max.z());
-		transformedVec[4] = mouse_rotation::isometric_projection_matrix * ldraw::vector(max.x(), min.y(), min.z());
-		transformedVec[5] = mouse_rotation::isometric_projection_matrix * ldraw::vector(max.x(), min.y(), max.z());
-		transformedVec[6] = mouse_rotation::isometric_projection_matrix * ldraw::vector(max.x(), max.y(), min.z());
-		transformedVec[7] = mouse_rotation::isometric_projection_matrix * max;
+		transformedVec[0] = ldraw_renderer::mouse_rotation::isometric_projection_matrix * min;
+		transformedVec[1] = ldraw_renderer::mouse_rotation::isometric_projection_matrix * ldraw::vector(min.x(), min.y(), max.z());
+		transformedVec[2] = ldraw_renderer::mouse_rotation::isometric_projection_matrix * ldraw::vector(min.x(), max.y(), min.z());
+		transformedVec[3] = ldraw_renderer::mouse_rotation::isometric_projection_matrix * ldraw::vector(min.x(), max.y(), max.z());
+		transformedVec[4] = ldraw_renderer::mouse_rotation::isometric_projection_matrix * ldraw::vector(max.x(), min.y(), min.z());
+		transformedVec[5] = ldraw_renderer::mouse_rotation::isometric_projection_matrix * ldraw::vector(max.x(), min.y(), max.z());
+		transformedVec[6] = ldraw_renderer::mouse_rotation::isometric_projection_matrix * ldraw::vector(max.x(), max.y(), min.z());
+		transformedVec[7] = ldraw_renderer::mouse_rotation::isometric_projection_matrix * max;
 		
 		for (int i = 0; i < 8; i++) {
 			if (transformedVec[i].x() < vp.left)
@@ -138,9 +154,9 @@ QPixmap KonstruktorPixmapRenderer::render(ldraw::model *m, bool crop)
 		// Draw to pixbuf
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
-		glLoadMatrixf(mouse_rotation::isometric_projection_matrix.transpose().get_pointer());
+		glLoadMatrixf(ldraw_renderer::mouse_rotation::isometric_projection_matrix.transpose().get_pointer());
 		
-		draw_model_full(m->parent(), m, 0, std::set<int>());
+		renderer_->render(m->parent()->main_model());
 	} else {
 		crop = false;
 	}

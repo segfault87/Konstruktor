@@ -18,6 +18,7 @@
 
 #include <libldr/metrics.h>
 #include <libldr/model.h>
+#include <renderer/parameters.h>
 #include <renderer/renderer_opengl.h>
 
 #include "document.h"
@@ -32,7 +33,25 @@ class QGLContext;
 class KonstruktorMainWindow;
 class KonstruktorVisibilityExtension;
 
-class KonstruktorRenderWidget : public QGLWidget, public renderer_opengl
+class KonstruktorSelection : public ldraw_renderer::render_filter
+{
+  public:
+	KonstruktorSelection();
+	~KonstruktorSelection();
+
+	void setSelection(const QSet<int> &set);
+	void resetSelection();
+
+	const QSet<int>* getSelection() const;
+	bool hasSelection() const;
+
+	bool query(const ldraw::model *m, int index, int depth) const;
+
+  private:
+	const QSet<int> *tsset_;
+};
+
+class KonstruktorRenderWidget : public QGLWidget
 {
 	Q_OBJECT;
 	
@@ -40,7 +59,7 @@ class KonstruktorRenderWidget : public QGLWidget, public renderer_opengl
 	enum ViewportMode { Top, Bottom, Front, Back, Left, Right, Free, Uninitialized };
 	enum Behavior { Idle, Placing, Moving, Dragging, Rotating, Panning };
 	
-	KonstruktorRenderWidget(KonstruktorMainWindow *mainwindow, KonstruktorDocument **document, ViewportMode viewport, const QGLFormat &format, QWidget *parent = 0L);
+	KonstruktorRenderWidget(KonstruktorMainWindow *mainwindow, KonstruktorDocument **document, ViewportMode viewport, QGLContext *context, QGLWidget *shareWidget, QWidget *parent = 0L);
 	~KonstruktorRenderWidget();
 
 	ViewportMode viewportMode() const;
@@ -85,8 +104,10 @@ class KonstruktorRenderWidget : public QGLWidget, public renderer_opengl
   private:
 	KonstruktorDocument **activeDocument_;
 	ldraw::model *tmodel_;
+	ldraw_renderer::renderer_opengl *renderer_;
+	ldraw_renderer::parameters *params_;
 	KonstruktorVisibilityExtension *tvset_;
-	const QSet<int> *tsset_;
+	KonstruktorSelection *tsset_;
 
 	float projectionMatrix_[16];
 	ViewportMode viewportMode_;
@@ -110,7 +131,7 @@ class KonstruktorRenderWidget : public QGLWidget, public renderer_opengl
 	float gridResolution_;
 	int gridRows_, gridColumns_;
 	float gridX_, gridY_, gridZ_;
-	render_method renderMode_, dragMode_;
+	ldraw_renderer::parameters::render_method renderMode_, dragMode_;
 	QColor highlightColor_;
 
 	KonstruktorMainWindow *parent_;

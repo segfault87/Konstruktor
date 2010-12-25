@@ -6,6 +6,7 @@
 #include <QDir>
 #include <QDirIterator>
 #include <QFSFileEngine>
+#include <QGLWidget>
 #include <QSet>
 #include <QStringList>
 
@@ -244,7 +245,7 @@ int KonstruktorDBUpdater::start()
 		
 		// Render and save
 		ldraw::utils::validate_bowtie_quads(m->main_model());
-		renderer_->render(m->main_model(), true).save(path+(*it).second.c_str()+".png", "PNG");
+		renderer_->renderToPixmap(m->main_model(), true).save(path+(*it).second.c_str()+".png", "PNG");
 		
 		// Metrics
 		if (!m->main_model()->custom_data<ldraw::metrics>())
@@ -361,6 +362,7 @@ QString KonstruktorDBUpdater::saveLocation(const QString &path)
 	globalMutex_.lock();
 	QString result = KGlobal::dirs()->saveLocation("data", QString("konstruktor/") + path, true);
 	globalMutex_.unlock();
+
 
 	return result;
 }

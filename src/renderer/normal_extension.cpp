@@ -11,6 +11,9 @@
 
 #include "normal_extension.h"
 
+namespace ldraw_renderer
+{
+
 normal_extension::normal_extension(ldraw::model *m, void *arg)
 	: extension(m, arg)
 {
@@ -83,4 +86,6 @@ ldraw::vector normal_extension::calculate_normal(const ldraw::vector &v1, const 
 	out = ldraw::vector::cross_product(d1, d2).normalize();
 	
 	return out;
+}
+
 }

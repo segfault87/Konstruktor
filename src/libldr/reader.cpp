@@ -69,7 +69,7 @@ model_multipart* reader::load_from_stream(std::istream &stream, std::string name
 	bool tmp = parse_stream(nm->main_model(), stream, true);
 	if (nm->main_model()->name().empty()) {
 		std::string nfp;
-		unsigned int o = name.find_last_of("/");
+		size_t o = name.find_last_of("/");
 		if (o == std::string::npos)
 			nfp = name;
 		else
@@ -178,7 +178,7 @@ element_base* reader::parse_line(const std::string &command, model *m)
 		
 		if (cont[0] == '!') {
 			// header data
-			unsigned int pos = cont.find_first_of(" ");
+			size_t pos = cont.find_first_of(" ");
 			if (pos != std::string::npos)
 				m->set_header(cont.substr(1, pos - 1), cont.substr(pos + 1));
 		} else if (contlc == "step") {

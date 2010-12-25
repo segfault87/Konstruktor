@@ -17,6 +17,9 @@ namespace ldraw
     class model;
 }
 
+namespace ldraw_renderer
+{
+
 class LIBLDR_EXPORT normal_extension : public ldraw::extension
 {
   public:
@@ -36,5 +39,7 @@ class LIBLDR_EXPORT normal_extension : public ldraw::extension
 	
 	std::map<int, ldraw::vector> m_normals;
 };
+
+}
 
 #endif

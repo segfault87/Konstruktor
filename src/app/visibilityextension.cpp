@@ -56,6 +56,14 @@ void KonstruktorVisibilityExtension::clear()
 	visibilityset_.clear();
 }
 
+bool KonstruktorVisibilityExtension::query(const ldraw::model *m, int index, int depth) const
+{
+	if (m != m_model || depth != 0)
+		return false;
+
+	return find(index);
+}
+
 // convenience helper
 KonstruktorVisibilityExtension* KonstruktorVisibilityExtension::query(ldraw::model *model)
 {

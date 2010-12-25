@@ -18,7 +18,7 @@ float vector::length() const
 
 vector vector::normalize() const
 {
-	float r = sqrt(x()*x() + y()*y() + z()*z());
+	float r = length();
 	
 	if (r != 0.0f)
 		return vector(x() / r, y() / r, z() / r);
@@ -44,6 +44,13 @@ float vector::dot_product(const vector &a, const vector &b)
 vector vector::cross_product(const vector &a, const vector &b)
 {
 	return vector(a.y()*b.z() - a.z()*b.y(), a.z()*b.x() - a.x()*b.z(), a.x()*b.y() - a.y()*b.x());
+}
+
+bool vector::compare(const vector &other, float epsilon) const
+{
+	float dot3 = std::fabs(dot_product(*this, other));
+
+	return dot3 > 1.0f - epsilon && dot3 < 1.0f + epsilon;
 }
 
 vector vector::operator+ (const vector &rhs) const

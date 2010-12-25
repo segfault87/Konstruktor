@@ -8,6 +8,9 @@
 
 #include "mouse_rotation.h"
 
+namespace ldraw_renderer
+{
+
 /* Default isometric transformation matrix */
 const ldraw::matrix mouse_rotation::isometric_projection_matrix(
 	 0.707106f, 0.0f     ,  0.707106f,
@@ -94,4 +97,6 @@ ldraw::vector mouse_rotation::map_to_sphere(int px, int py, int w, int h)
 		out = ldraw::vector(-tx, ty, std::sqrt(1.0f - length));
 	
 	return out;
+}
+
 }

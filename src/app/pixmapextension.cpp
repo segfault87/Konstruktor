@@ -8,7 +8,7 @@
 KonstruktorPixmapExtension::KonstruktorPixmapExtension(ldraw::model *m, void *arg)
 	: ldraw::extension(m, arg)
 {
-	pixmap_ = reinterpret_cast<KonstruktorPixmapRenderer *>(m_arg)->render(0L);
+	pixmap_ = reinterpret_cast<KonstruktorPixmapRenderer *>(m_arg)->renderToPixmap(0L);
 }
 
 KonstruktorPixmapExtension::~KonstruktorPixmapExtension()
@@ -23,6 +23,6 @@ const QPixmap& KonstruktorPixmapExtension::pixmap() const
 
 void KonstruktorPixmapExtension::update()
 {
-	pixmap_ = reinterpret_cast<KonstruktorPixmapRenderer *>(m_arg)->render(m_model, true);
+	pixmap_ = reinterpret_cast<KonstruktorPixmapRenderer *>(m_arg)->renderToPixmap(m_model, true);
 }
 

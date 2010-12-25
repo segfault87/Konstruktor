@@ -10,7 +10,7 @@
 #include <map>
 #include <string>
 
-#include "common.h"
+#include <libldr/common.h>
 
 namespace ldraw
 {
@@ -18,36 +18,62 @@ namespace ldraw
 enum material_type {
 	material_normal,
 	material_transparent,
+	material_luminant,
+	material_glitter,
+	material_pearlescent,
+	material_chrome,
 	material_metallic,
 	material_rubber,
-	material_phosphorus
+	material_speckle
+};
+
+struct material_traits_speckle
+{
+	unsigned char color[3];
+	float fraction;
+	int minsize;
+	int maxsize;
+};
+
+struct material_traits_glitter
+{
+	unsigned char color[3];
+	float fraction;
+	float vfraction;
+	int size;
 };
 
 struct color_entity
 {
 	material_type material;
 	unsigned char rgba[4]; // RGBA Array
-	int id1; // LDraw Color ID
-	int id2; // Alternate Color ID
+	unsigned char complement[4]; // RGBA Array
+	char luminance;
+	int id; // LDraw Color ID
 	std::string name; // Name String
+	const void *traits;
 };
 
 // Represents a color.
 class LIBLDR_EXPORT color
 {
   public:
+	static const material_traits_glitter material_chart_glitter[];
+	static const material_traits_speckle material_chart_speckle[];
 	static const color_entity color_chart[];
 	static const std::map<int, const color_entity *> color_map;
 
 	static void init();
 	
 	color() : m_valid(true), m_id(0) { link(); }
-	color(int id) : m_id(id) { link();}
+	color(int id) : m_id(id) { link(); }
 	color(const color &c) : m_id(c.get_id()) { link(); }
 	~color();
 	
-	void operator=(int rhs) { m_id = rhs; link(); }
+	void operator=(int cid) { m_id = cid; link(); }
 	void operator=(const color &rhs) { m_id = rhs.get_id(); link(); }
+	bool operator<(const color &rhs) const { return m_id < rhs.get_id(); }
+	
 	
 	int get_id() const { return m_id; }
 	void set_id(int i) { m_id = i; link(); }
@@ -55,8 +81,6 @@ class LIBLDR_EXPORT color
 	bool is_valid() { return m_valid; }
 	bool is_null() { return m_id == 16 || m_id == 24; }
 	const color_entity* get_entity() const { return m_entity; }
-	static const color_entity* get_complement(int id);
-	const color_entity* get_complement() const { return get_complement(m_id); }
 	
   private:
 	static bool m_initialized;

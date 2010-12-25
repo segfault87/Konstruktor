@@ -23,6 +23,7 @@
 
 extern const ldraw::matrix isometricProjectionMatrix;
 
+class QGLWidget;
 class QUndoStack;
 class KonstruktorPixmapRenderer;
 class KonstruktorSubmodelModel;
@@ -32,8 +33,8 @@ class KonstruktorDocument : public QObject
 	Q_OBJECT;
 	
   public:
-	KonstruktorDocument(const QString &name, const QString &desc, const QString &author, QObject *parent = 0L);
-	KonstruktorDocument(const QString &path, const KUrl &url, QObject *parent = 0L);
+	KonstruktorDocument(const QString &name, const QString &desc, const QString &author, QGLWidget *glBase, QObject *parent = 0L);
+	KonstruktorDocument(const QString &path, const KUrl &url, QGLWidget *glBase, QObject *parent = 0L);
 	~KonstruktorDocument();
 
 	void sendSignals();
@@ -66,7 +67,7 @@ class KonstruktorDocument : public QObject
 
 	// Viewport-related stuff
 	KonstruktorViewport& getViewport(int i) { return viewport_[i]; }
-	mouse_rotation& getMouseRotation() { return rotation_;}
+	ldraw_renderer::mouse_rotation& getMouseRotation() { return rotation_;}
 	const ldraw::vector& getCenter() const { return center_; }
 	const ldraw::vector& getLength() const { return length_; }
 	
@@ -84,7 +85,7 @@ class KonstruktorDocument : public QObject
 	QUndoStack *activeUndoStack_;
 	
 	KonstruktorViewport viewport_[7];
-	mouse_rotation rotation_;
+	ldraw_renderer::mouse_rotation rotation_;
 	ldraw::vector center_, length_;
 	
 	KUrl location_;

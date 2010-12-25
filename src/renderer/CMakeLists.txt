@@ -3,13 +3,29 @@ project(libldrawrenderer)
 set(libldrawrenderer_SOURCES
 	mouse_rotation.cpp
 	normal_extension.cpp
+	opengl_extension.cpp
+	opengl_extension_vbo.cpp
+	opengl_extension_shader.cpp
+	parameters.cpp
+	renderer.cpp
 	renderer_opengl.cpp
+	renderer_opengl_immediate.cpp
+	renderer_opengl_retained.cpp
+	vbuffer_extension.cpp
 )
 
 set(libldrawrenderer_HEADERS
 	mouse_rotation.h
 	normal_extension.h
+	opengl_extension.h
+	opengl_extension_vbo.h
+	opengl_extension_shader.h
+	parameters.h
+	renderer.h
 	renderer_opengl.h
+	renderer_opengl_immediate.h
+	renderer_opengl_retained.h
+	vbuffer_extension.h
 )
 
 add_library(libldrawrenderer SHARED ${libldrawrenderer_SOURCES})
