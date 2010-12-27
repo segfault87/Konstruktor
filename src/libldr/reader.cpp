@@ -58,8 +58,10 @@ model_multipart* reader::load_from_stream(std::istream &stream, std::string name
 	while (!stream.eof()) {
 		getline(stream, line);
 		line = utils::trim_string(line);
-		if (line.length() > 7 && line.substr(0, 6) == "0 FILE")
-			m_submodel_names.insert(utils::translate_string(line.substr(7, line.length() - 7)));
+		if (line.length() > 7 && line.substr(0, 6) == "0 FILE") {
+			std::string filename = utils::translate_string(line.substr(7, line.length() - 7));
+			m_submodel_names.insert(filename);
+		}
 	}
 	
 	// Rewind the stream to the beginning
@@ -81,15 +83,18 @@ model_multipart* reader::load_from_stream(std::istream &stream, std::string name
 		return nm;
 	
 	bool loop = true;
-	std::string fn;
 	while (loop) {
+		std::string fn;
 		model *m = new model;
-		
+
 		m->set_parent(nm);
 		m->set_modeltype(model::submodel);
 		loop = parse_stream(m, stream, true, &fn);
-		m->set_name(fn);
-		nm->insert_submodel(m);
+
+		if (fn.length() == 0)
+			fn = m->name();
+		
+		nm->insert_submodel(m, fn);
 	}
 	
 	nm->link_submodels();
@@ -114,16 +119,17 @@ bool reader::parse_stream(model *m, std::istream &stream, bool multipart, std::s
 	
 	while(!stream.eof()) {
 		getline(stream, line);
+		long llen = line.length();
 		line = utils::trim_string(line);
 		++lines;
 		
 		// Returns true when more subpart(s) available. returns false otherwise.
-		if (multipart && line.length() > 7 && line.substr(0, 6) == "0 FILE") {
+		if (multipart && llen > 7 && line.substr(0, 6) == "0 FILE") {
 			if (lines == 1) {
-				std::string tmp = utils::trim_string(line);
-				if (keyname) *keyname = tmp.substr(7, tmp.length() - 7);
+				if (keyname)
+					*keyname = line.substr(7, llen - 7);
 			} else {
-				stream.seekg((long)stream.tellg() - ((long)line.length() + 1));
+				stream.seekg((long)stream.tellg() - llen - 1);
 				return true;
 			}
 		}
@@ -162,7 +168,7 @@ bool reader::parse_stream(model *m, std::istream &stream, bool multipart, std::s
 				m->insert_element(el);
 		}
 	}
-	
+
 	return false;
 }
 

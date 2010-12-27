@@ -164,11 +164,7 @@ void model_multipart::link_submodel(model *m)
 
 bool model_multipart::link_submodel_element(element_ref *r)
 {
-	std::string fn = r->filename();
-	for (std::string::iterator it = fn.begin(); it != fn.end(); ++it)
-
-		if (*it == '\\')
-			*it = '/';
+	std::string fn = utils::translate_string(r->filename());
 	
 	model_multipart *p = 0L;
 	
@@ -209,13 +205,18 @@ model* model_multipart::find_submodel(const std::string &name)
 
 bool model_multipart::insert_submodel(model *m)
 {
-	std::string lowercase = utils::translate_string(m->name());
+	return insert_submodel(m, m->name());
+}
+
+bool model_multipart::insert_submodel(model *m, const std::string &key)
+{
+	std::string fn = utils::translate_string(key);
 	
 	// Search for duplicate
-	if(m_submodel_list.find(lowercase) != m_submodel_list.end())
+	if(m_submodel_list.find(fn) != m_submodel_list.end())
 		return false;
 	
-	m_submodel_list[lowercase] = m;
+	m_submodel_list[fn] = m;
 	
 	return true;
 }
