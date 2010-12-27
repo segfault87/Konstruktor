@@ -10,6 +10,7 @@
 #include <libldr/math.h>
 #include <libldr/metrics.h>
 #include <libldr/model.h>
+#include <libldr/utils.h>
 
 #include "povrayrenderparameters.h"
 
@@ -53,6 +54,10 @@ QString KonstruktorPOVRayExporter::convertNameFormat(const std::string &s)
 	cs = cs.replace('/', "_slash_");
 	cs = cs.replace('\\', "_slash_");
 	cs = cs.replace('#', "_sharp_");
+	cs = cs.replace(' ', "_");
+	cs = cs.replace('(', "");
+	cs = cs.replace(')', "");
+	cs = cs.replace('~', "_tilde_");
 	
 	return cs;
 }
@@ -289,6 +294,10 @@ void KonstruktorPOVRayExporter::fillPartsRecursive(const ldraw::model_multipart 
 			} else if ((*it)->get_type() == ldraw::type_ref) {
 				ldraw::element_ref *elem = CAST_AS_REF(*it);
 
+				ldraw::matrix om = elem->get_matrix();
+				if (ldraw::utils::is_singular_matrix(om))
+					continue;
+
 				if (!elem->get_model() || blacklist.find(elem->get_model()) != blacklist.end())
 					continue;
 				
@@ -298,16 +307,6 @@ void KonstruktorPOVRayExporter::fillPartsRecursive(const ldraw::model_multipart 
 					
 					stream_ << "\t}\n";
 					meshFlag = false;
-				}
-				
-				ldraw::matrix om = elem->get_matrix();
-				// POV-Ray refuses null matrix
-				for (int i = 0; i < 3; ++i) {
-					if (om.value(i, 0) == 0.0f && om.value(i, 1) == 0.0f && om.value(i, 2) == 0.0f) {
-						om.value(i, 0) = 1.0f;
-						om.value(i, 1) = 1.0f;
-						om.value(i, 2) = 1.0f;
-					}
 				}
 
 				if (elem->parent()->parent() == main && !m->is_submodel_of(main)) {

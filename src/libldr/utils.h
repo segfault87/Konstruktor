@@ -28,7 +28,7 @@ namespace utils
 LIBLDR_EXPORT bool cyclic_reference_test(const model *m);
 LIBLDR_EXPORT bool cyclic_reference_test(const model *m, const model *insert);
 
-// Returns a list of submodels (including model) that can be affected by a model
+// Returns a list of submodels (including model) which could be affected by a model
 LIBLDR_EXPORT std::list<std::string> affected_models(model_multipart *model, const std::string &name);
 
 // Name duplicate test
@@ -46,6 +46,7 @@ LIBLDR_EXPORT std::string trim_string(const std::string &str);
 // Miscellaneous
 LIBLDR_EXPORT bool is_stud(const model *m);
 LIBLDR_EXPORT bool is_stud(const element_ref *ref);
+LIBLDR_EXPORT bool is_singular_matrix(const matrix &m);
 
 }
 
