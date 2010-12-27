@@ -6,6 +6,7 @@
 
 #include "elements.h"
 #include "model.h"
+#include "utils.h"
 
 #include "metrics.h"
 
@@ -40,8 +41,8 @@ void metrics::update()
 	std::stack<matrix> modelview_matrix;
 
 	// set dimension as arbitrary initial value
-	m_min = vector(1e30, 1e30, 1e30);
-	m_max = vector(-1e30, -1e30, -1e30);
+	m_min = vector(0.0f, 0.0f, 0.0f);
+	m_max = vector(0.0f, 0.0f, 0.0f);
 	
 	// Initialize stack with identity matrix
 	modelview_matrix.push(matrix());
@@ -74,12 +75,24 @@ void metrics::do_recursive(const model *m, std::stack<matrix> *modelview_matrix)
 			element_ref *l = CAST_AS_REF(*it);
 			if (l->get_model()) {
 				modelview_matrix->push(modelview_matrix->top() * l->get_matrix());
-				if (l->filename().find("stu") != std::string::npos) {
+				
+				if (utils::is_stud(l)) {
 					// niche optimization: assume a stud as a line.
 					dimension_test(modelview_matrix->top() * vector(0.0f, 0.0f, 0.0f));
 					dimension_test(modelview_matrix->top() * vector(0.0f, -4.0f, 0.0f));
-				} else
-					do_recursive(l->get_model(), modelview_matrix);
+				} else {
+					model *m = l->get_model();
+
+					if (utils::is_orthogonal(modelview_matrix->top())) {
+						if (!m->custom_data<metrics>())
+							m->update_custom_data<metrics>();
+
+						dimension_test(modelview_matrix->top(), *m->custom_data<metrics>());
+					} else {
+						do_recursive(m, modelview_matrix);
+					}
+				}
+
 				modelview_matrix->pop();
 			}
 		}
@@ -90,18 +103,27 @@ void metrics::dimension_test(const vector &v)
 {
 	if (v.x() < m_min.x())
 		m_min.x() = v.x();
-	else if (v.x() > m_max.x())
+	if (v.x() > m_max.x())
 		m_max.x() = v.x();
 	
 	if (v.y() < m_min.y())
 		m_min.y() = v.y();
-	else if (v.y() > m_max.y())
+	if (v.y() > m_max.y())
 		m_max.y() = v.y();
 	
 	if (v.z() < m_min.z())
 		m_min.z() = v.z();
-	else if (v.z() > m_max.z())
+	if (v.z() > m_max.z())
 		m_max.z() = v.z();
+}
+
+void metrics::dimension_test(const matrix &transformation, const metrics &m)
+{
+	vector min = transformation * m.min();
+	vector max = transformation * m.max();
+
+	dimension_test(min);
+	dimension_test(max);
 }
 
 }

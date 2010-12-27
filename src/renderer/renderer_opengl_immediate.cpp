@@ -97,7 +97,7 @@ void renderer_opengl_immediate::draw_model_full(const ldraw::model_multipart *ba
 		cullenabled = false;
 	}
 
-	bool flipped = det3(proj) < 0.0f;
+	bool flipped = ldraw::utils::det3(proj) < 0.0f;
 
 	// Iterate!
 	int i = 0;
@@ -172,7 +172,7 @@ void renderer_opengl_immediate::draw_model_full(const ldraw::model_multipart *ba
 				// flip plane check
 				bool reverse;
 
-				if (/*lm->modeltype() == ldraw::model::primitive &&*/det3(proj * l->get_matrix()) < 0.0f) {
+				if (ldraw::utils::det3(proj * l->get_matrix()) < 0.0f) {
 					reverse = true;
 				} else
 					reverse = false;

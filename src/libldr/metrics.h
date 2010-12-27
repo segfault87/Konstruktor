@@ -37,6 +37,7 @@ class LIBLDR_EXPORT metrics : public extension
   private:
 	void do_recursive(const model *m, std::stack<matrix> *modelview_matrix);
 	void dimension_test(const vector &vec);
+	void dimension_test(const matrix &transformation, const metrics &m);
 	
   protected:
 	bool m_null;

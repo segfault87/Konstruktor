@@ -54,7 +54,6 @@ class LIBLDR_EXPORT renderer
 
 	/* helpers */
 	const unsigned char* get_color(const ldraw::color &c) const;
-	float det3(const ldraw::matrix &m) const;
 	
 	std::stack<ldraw::color> m_colorstack;
 };

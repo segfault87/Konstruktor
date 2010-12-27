@@ -46,7 +46,11 @@ LIBLDR_EXPORT std::string trim_string(const std::string &str);
 // Miscellaneous
 LIBLDR_EXPORT bool is_stud(const model *m);
 LIBLDR_EXPORT bool is_stud(const element_ref *ref);
+
+// Math
+LIBLDR_EXPORT float det3(const matrix &m);
 LIBLDR_EXPORT bool is_singular_matrix(const matrix &m);
+LIBLDR_EXPORT bool is_orthogonal(const matrix &m);
 
 }
 

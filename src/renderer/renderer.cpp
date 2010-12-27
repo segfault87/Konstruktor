@@ -47,13 +47,4 @@ const unsigned char* renderer::get_color(const ldraw::color &c) const
 		return c.get_entity()->rgba;
 }
 
-// Determinant.
-float renderer::det3(const ldraw::matrix &m) const
-{
-	float v = m.value(0, 0)*m.value(1, 1)*m.value(2, 2) + m.value(0, 2)*m.value(2, 1)*m.value(1, 0) + m.value(0, 1)*m.value(1, 2)*m.value(2, 0) -
-		m.value(2, 0)*m.value(1, 1)*m.value(0, 2) - m.value(0, 0)*m.value(1, 2)*m.value(2, 1) - m.value(0, 1)*m.value(1, 0)*m.value(2, 2);
-
-	return v;
-}
-
 }

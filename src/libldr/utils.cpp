@@ -193,6 +193,15 @@ bool is_stud(const element_ref *ref)
 	return translate_string(ref->filename()).find("stu") != std::string::npos;
 }
 
+// Determinant.
+float det3(const ldraw::matrix &m)
+{
+	float v = m.value(0, 0)*m.value(1, 1)*m.value(2, 2) + m.value(0, 2)*m.value(2, 1)*m.value(1, 0) + m.value(0, 1)*m.value(1, 2)*m.value(2, 0) -
+		m.value(2, 0)*m.value(1, 1)*m.value(0, 2) - m.value(0, 0)*m.value(1, 2)*m.value(2, 1) - m.value(0, 1)*m.value(1, 0)*m.value(2, 2);
+
+	return v;
+}
+
 bool is_singular_matrix(const matrix &m)
 {
 	float d00, d01, d02, d03;
@@ -203,6 +212,13 @@ bool is_singular_matrix(const matrix &m)
 	d03 = m.value(1, 0)*m.value(2, 1)*m.value(3, 2) + m.value(1, 1)*m.value(2, 2)*m.value(3, 0) + m.value(1, 2)*m.value(2, 0)*m.value(3, 1) - m.value(3, 0)*m.value(2, 1)*m.value(1, 2) - m.value(3, 1)*m.value(2, 2)*m.value(1, 0) - m.value(3, 2)*m.value(2, 0)*m.value(1, 1);
 
 	return std::fabs(m.value(0, 0) * d00 - m.value(0, 1) * d01 + m.value(0, 2) * d02 - m.value(0, 3) * d03) < LDR_EPSILON;
+}
+
+bool is_orthogonal(const matrix &m)
+{
+	float det = det3(m);
+	
+	return std::abs(std::floor(det) - det) < LDR_EPSILON;
 }
 
 }
