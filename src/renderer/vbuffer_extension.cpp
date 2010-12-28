@@ -475,19 +475,19 @@ void vbuffer_extension::count_elements_recursive(const ldraw::model *m)
 	for (ldraw::model::const_iterator it = m->elements().begin(); it != m->elements().end(); ++it) {
 		ldraw::type t = (*it)->get_type();
 		
-		if (t == ldraw::type_line)
+		if (t == ldraw::type_line) {
 			m_elemcnt[0] += 2;
-		else if (t == ldraw::type_triangle)
+		} else if (t == ldraw::type_triangle) {
 			m_elemcnt[1] += 3;
-		else if (t == ldraw::type_quadrilateral)
+		} else if (t == ldraw::type_quadrilateral) {
 			m_elemcnt[2] += 4;
-		else if (t == ldraw::type_condline)
+		} else if (t == ldraw::type_condline) {
 			m_elemcnt[3] += 2;
-		else if (t == ldraw::type_ref && m_params->collapse_subfiles) {
+		} else if (t == ldraw::type_ref && m_params->collapse_subfiles) {
 			const ldraw::model *mm = CAST_AS_CONST_REF(*it)->get_model();
 
 			if (!mm)
-				return;
+				continue;
 
 			if (ldraw::utils::is_stud(mm))
 				count_elements_stud(mm);
@@ -565,7 +565,7 @@ void vbuffer_extension::fill_color(const std::stack<ldraw::color> &colorstack, c
 				cf = null;
 			else
 				cf = null_complement;
-
+			
 			fill_element_atomic(ldraw::vector(cf[0], cf[1], cf[2], cf[3]), m_colors[type], &m_colorptr[type], true);
 		}
 	}
@@ -626,28 +626,26 @@ void vbuffer_extension::fill_elements_recursive(std::stack<ldraw::color> &colors
 			fill_element_atomic(transform * l->pos1(), m_vertices[3], &m_vertptr[3]);
 			fill_element_atomic(transform * l->pos2(), m_vertices[3], &m_vertptr[3]);
 
-			fill_color(colorstack, l->get_color(), 2, type_condlines);
-
-			
+			fill_color(colorstack, l->get_color(), 2, type_condlines);			
 		} else if (t == ldraw::type_ref && m_params->collapse_subfiles) {
 			ldraw::element_ref *l = CAST_AS_REF(*it);
 			ldraw::model *m = l->get_model();
 
-			const ldraw::color &c = l->get_color();
-
-			if (c.get_id() == 16 || c.get_id() == 24)
-				colorstack.push(colorstack.top());
-			else
-				colorstack.push(c);
-
 			if (m) {
+				const ldraw::color &c = l->get_color();
+				
+				if (c.get_id() == 16 || c.get_id() == 24)
+					colorstack.push(colorstack.top());
+				else
+					colorstack.push(c);
+				
 				if (ldraw::utils::is_stud(m))
 					fill_elements_stud(colorstack, m, transform * l->get_matrix());
 				else
 					fill_elements_recursive(colorstack, m, transform * l->get_matrix());
+				
+				colorstack.pop();
 			}
-
-			colorstack.pop();
 		}
 
 		++i;
