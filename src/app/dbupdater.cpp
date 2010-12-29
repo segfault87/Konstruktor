@@ -193,7 +193,7 @@ int KonstruktorDBUpdater::start()
 	} else if (config_->partCount() == totalSize) {
 		return 0;
 	} else {
-		// To rescan after interrupted
+		// To rescan when interrupted
 		config_->setPartCount(-1);
 		config_->writeConfig();
 	}
@@ -201,6 +201,7 @@ int KonstruktorDBUpdater::start()
 	std::cout << "0 " << (totalSize - 1) << " Starting" << std::endl;
 	
 	int i = 0;
+	bool intransaction = false;
 	for (std::map<std::string, std::string>::const_iterator it = partlist.begin(); it != partlist.end(); ++it, ++i) {
 		// Omit subparts
 		std::string fn = ldraw::utils::translate_string((*it).second);
@@ -212,8 +213,14 @@ int KonstruktorDBUpdater::start()
 		bool insert = true;
 		int idx = 0;
 
+		if (!intransaction) {
+			manager_->insert("BEGIN TRANSACTION");
+			intransaction = true;
+		}
+
 		// Skip if unchanged
-		QStringList fsizeresult = manager_->query(QString("SELECT id, size FROM parts WHERE filename='%1'").arg(escape(qFilename)));
+		QString query = QString("SELECT id, size FROM parts WHERE filename='%1'").arg(escape(qFilename));
+		QStringList fsizeresult = manager_->query(query);
 		if (fsizeresult.size()) {
 			idx = fsizeresult[0].toInt();
 			if (fsizeresult[1].toInt() == fsize) {
@@ -269,7 +276,7 @@ int KonstruktorDBUpdater::start()
 
 		// Insert this into db
 		if (insert) {
-			QString query =
+			query =
 				QString("INSERT INTO parts(partid, desc, filename, xsize, ysize, ") +
 				QString("zsize, minx, maxx, miny, maxy, minz, maxz, size, magic, unofficial) ") +
 				QString("VALUES('%1', '%2', '%3', %4, %5, %6, ").arg(qPartno, qDesc, escape(qFilename)).arg(xs).arg(ys).arg(zs) +
@@ -280,7 +287,7 @@ int KonstruktorDBUpdater::start()
 			manager_->query(QString("DELETE FROM part_categories WHERE partid=%1").arg(idx));
 			manager_->query(QString("DELETE FROM part_keywords WHERE partid=%1").arg(idx));
 
-			QString query =
+			query =
 				QString("UPDATE parts SET partid='%1', desc='%2', filename='%3', ").arg(qPartno, qDesc, escape(qFilename)) +
 				QString("xsize=%1, ysize=%2, zsize=%3, minx=%4, maxx=%5, ").arg(xs).arg(ys).arg(zs).arg(min.x()).arg(max.x()) +
 				QString("miny=%1, maxy=%2, minz=%3, maxz=%4, size=%5, ").arg(min.y()).arg(max.y()).arg(min.z()).arg(max.z()).arg(fsize) +
@@ -315,15 +322,23 @@ int KonstruktorDBUpdater::start()
 		std::list<std::string> keywordheader = m->main_model()->header("KEYWORDS");
 		for (std::list<std::string>::iterator it = keywordheader.begin(); it != keywordheader.end(); ++it) {
 			QStringList ls = QString((*it).c_str()).split(',');
-			for (int i = 0; i < ls.size(); ++i)
-				setKeywords.insert(ls[i].trimmed());
+			for (int j = 0; j < ls.size(); ++j)
+				setKeywords.insert(ls[j].trimmed());
 		}
 
 		for (QSet<QString>::Iterator it = setKeywords.begin(); it != setKeywords.end(); ++it)
 			manager_->insert(QString("INSERT INTO part_keywords(partid, keyword) VALUES(%1, '%2')").arg(idx).arg(escape(*it)));
+
+		if (intransaction && i % 50 == 0) {
+			manager_->insert("COMMIT TRANSACTION");
+			intransaction = false;
+		}
 		
 		delete m;
 	}
+
+	if (intransaction)
+		manager_->insert("COMMIT TRANSACTION");
 
 	// Delete remainings
 	QStringList remainings = manager_->query(QString("SELECT id, partid, filename FROM parts WHERE magic != %1").arg(config_->magic()));
