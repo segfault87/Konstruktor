@@ -55,8 +55,12 @@ KonstruktorDBUpdater::KonstruktorDBUpdater(QObject *parent)
 		return;
 	}
 
+	QString dbfile = saveLocation("") + "parts.db";
+	if (!QFile(dbfile).exists())
+		forceRescan_ = true;
+
 	manager_ = new KonstruktorDBManager(this);
-	manager_->initialize(saveLocation("") + "parts.db");
+	manager_->initialize(dbfile);
 	if (!manager_->isInitialized()) {
 		std::cerr << "could not open database file" << std::endl;
 		delete manager_;

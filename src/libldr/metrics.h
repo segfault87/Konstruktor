@@ -35,7 +35,7 @@ class LIBLDR_EXPORT metrics : public extension
 	const vector& max() const { return m_max; }
 
   private:
-	void do_recursive(const model *m, std::stack<matrix> *modelview_matrix);
+	void do_recursive(const model *m, std::stack<matrix> *modelview_matrix, bool orthogonal = true);
 	void dimension_test(const vector &vec);
 	void dimension_test(const matrix &transformation, const metrics &m);
 	

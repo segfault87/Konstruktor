@@ -3,7 +3,6 @@
 
 #include <cstdlib>
 
-#include <QGLFormat>
 #include <QPixmapCache>
 
 #include <kapplication.h>
@@ -103,11 +102,6 @@ bool KonstruktorApplication::initialize()
 	}
 	
 	db_->initialize(saveLocation("")+"parts.db");
-
-	glFormat_ = QGLFormat::defaultFormat();
-	glFormat_.setAlpha(true);
-	if (config()->multisampling())
-		glFormat_.setSampleBuffers(true);
 
 	params_ = new ldraw_renderer::parameters();
 	params_->set_shading(true);

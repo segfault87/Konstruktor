@@ -24,8 +24,6 @@
 #include <libldr/reader.h>
 #include <libldr/utils.h>
 
-#include "pixmaprenderer.h"
-
 #include "dbmanager.h"
 
 // usleep() is not portable

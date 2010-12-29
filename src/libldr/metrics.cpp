@@ -51,7 +51,7 @@ void metrics::update()
 	do_recursive(m_model, &modelview_matrix);
 }
 
-void metrics::do_recursive(const model *m, std::stack<matrix> *modelview_matrix)
+void metrics::do_recursive(const model *m, std::stack<matrix> *modelview_matrix, bool orthogonal)
 {
 	for (model::const_iterator it = m->elements().begin(); it != m->elements().end(); ++it) {
 		type elemtype = (*it)->get_type();
@@ -82,14 +82,14 @@ void metrics::do_recursive(const model *m, std::stack<matrix> *modelview_matrix)
 					dimension_test(modelview_matrix->top() * vector(0.0f, -4.0f, 0.0f));
 				} else {
 					model *m = l->get_model();
-
-					if (utils::is_orthogonal(modelview_matrix->top())) {
+					
+					if (orthogonal && utils::is_orthogonal(modelview_matrix->top())) {
 						if (!m->custom_data<metrics>())
 							m->update_custom_data<metrics>();
 
 						dimension_test(modelview_matrix->top(), *m->custom_data<metrics>());
 					} else {
-						do_recursive(m, modelview_matrix);
+						do_recursive(m, modelview_matrix, false);
 					}
 				}
 

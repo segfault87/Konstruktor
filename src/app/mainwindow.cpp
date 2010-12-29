@@ -535,7 +535,10 @@ void KonstruktorMainWindow::initGui()
 	QSplitter *srh1 = new QSplitter(Qt::Vertical, srv);
 	QSplitter *srh2 = new QSplitter(Qt::Vertical, srv);
 	
-	const QGLFormat &format = *KonstruktorApplication::self()->getGlFormat();
+	QGLFormat format = QGLFormat::defaultFormat();
+	format.setAlpha(true);
+	if (KonstruktorApplication::self()->config()->multisampling())
+		format.setSampleBuffers(true);
 
 	renderWidget_[0] = new KonstruktorRenderWidget(this, &activeDocument_, KonstruktorRenderWidget::Top, new QGLContext(format), 0L, srh1);
 	renderWidget_[1] = new KonstruktorRenderWidget(this, &activeDocument_, KonstruktorRenderWidget::Left, new QGLContext(format), renderWidget_[0], srh1);

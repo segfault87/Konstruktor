@@ -553,7 +553,8 @@ void KonstruktorRenderWidget::paintEvent(QPaintEvent *)
 
 	glMatrixMode(GL_PROJECTION);
 	glPushMatrix();
-	
+
+	renderer_->setup();
 	renderScene();
 
 	glMatrixMode(GL_PROJECTION);

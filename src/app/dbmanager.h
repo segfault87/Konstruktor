@@ -12,7 +12,6 @@ struct sqlite3;
 class QString;
 class QStringList;
 class KProgressDialog;
-class KonstruktorPixmapRenderer;
 
 class KonstruktorDBManager : public QObject
 {
@@ -33,7 +32,6 @@ class KonstruktorDBManager : public QObject
 	
 	sqlite3 *db_;
 	bool isLoaded_;
-	KonstruktorPixmapRenderer *renderer_;
 	KProgressDialog *dialog_;
 };
 

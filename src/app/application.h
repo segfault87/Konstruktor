@@ -54,7 +54,6 @@ class KonstruktorApplication : public QObject
 	KonstruktorDBManager* database() { return db_; }
 	KonstruktorColorManager* colorManager() { return colorManager_; }
 	bool hasPovRay() const { return hasPovRay_; }
-	const QGLFormat* getGlFormat() const { return &glFormat_; }
 
   public slots:
 	void configUpdated();
@@ -66,7 +65,6 @@ class KonstruktorApplication : public QObject
   private:
 	static KonstruktorApplication *instance_;
 
-	QGLFormat glFormat_;
 	KonstruktorMainWindow *window_;
 	KProgressDialog *dbDialog_;
 	KProcess *dbUpdater_;

@@ -20,11 +20,11 @@
 KonstruktorPixmapRenderer::KonstruktorPixmapRenderer(int width, int height, QGLWidget *shareWidget)
 	: width_(width), height_(height), shareWidget_(shareWidget)
 {
-#ifndef KONSTRUKTOR_DB_UPDATER
-	buffer_ = new QGLPixelBuffer(width_, height_, *KonstruktorApplication::self()->getGlFormat(), shareWidget_);
-#else
-	buffer_ = new QGLPixelBuffer(width_, height_, QGLFormat::defaultFormat(), shareWidget_);
-#endif
+	QGLFormat fmt = QGLFormat::defaultFormat();
+	fmt.setAlpha(true);
+	fmt.setSampleBuffers(true);
+	
+	buffer_ = new QGLPixelBuffer(width_, height_, fmt, shareWidget_);
 	buffer_->makeCurrent();
 	
 	// Initialize GL
@@ -32,6 +32,7 @@ KonstruktorPixmapRenderer::KonstruktorPixmapRenderer(int width, int height, QGLW
 	params_ = new ldraw_renderer::parameters(*KonstruktorApplication::self()->renderer_params());
 #else
 	params_ = new ldraw_renderer::parameters();
+	params_->set_stud_rendering_mode(ldraw_renderer::parameters::stud_regular);
 #endif
 	
 	ldraw_renderer::renderer_opengl_factory ro(params_, ldraw_renderer::renderer_opengl_factory::mode_vbo);
@@ -85,6 +86,8 @@ QPixmap KonstruktorPixmapRenderer::renderToPixmap(ldraw::model *m, bool crop)
 	if (m) {
 		// Setup viewport
 		// TODO reuse code
+
+		renderer_->setup();
 
 		const ldraw::metrics *metric;
 		ldraw::metrics metricp(const_cast<ldraw::model *>(m));
@@ -150,13 +153,14 @@ QPixmap KonstruktorPixmapRenderer::renderToPixmap(ldraw::model *m, bool crop)
 			vp.top = median - d;
 			glOrtho(vp.left, vp.right, vp.bottom, vp.top, 10000.0f, -10000.0f);
 		}
+
+		glMultMatrixf(ldraw_renderer::mouse_rotation::isometric_projection_matrix.transpose().get_pointer());
 		
 		// Draw to pixbuf
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
-		glLoadMatrixf(ldraw_renderer::mouse_rotation::isometric_projection_matrix.transpose().get_pointer());
 		
-		renderer_->render(m->parent()->main_model());
+		renderer_->render(m);
 	} else {
 		crop = false;
 	}
