@@ -102,7 +102,7 @@ renderer_opengl_retained::renderer_opengl_retained(const parameters *rp, bool fo
 {
 	if (force_vbuffer)
 		m_vbo = false;
-	else
+ 	else
 		init_vbuffer();
 
 	if (force_fixed)
@@ -133,6 +133,7 @@ renderer_opengl_retained::~renderer_opengl_retained()
 void renderer_opengl_retained::render(ldraw::model *m, const render_filter *filter)
 {
 	opengl_extension_shader *shader = opengl_extension_shader::self();
+	opengl_extension_vbo *vbo = opengl_extension_vbo::self();
 	
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glEnableClientState(GL_COLOR_ARRAY);
@@ -144,6 +145,9 @@ void renderer_opengl_retained::render(ldraw::model *m, const render_filter *filt
 
 	if (m_shader)
 		shader->glDisableVertexAttribArray(m_vs_color_location_verttype);
+
+	if (m_vbo)
+		vbo->glBindBuffer(GL_ARRAY_BUFFER_ARB, 0);
 
 	glDisableClientState(GL_COLOR_ARRAY);
 	glDisableClientState(GL_VERTEX_ARRAY);
@@ -405,6 +409,8 @@ void renderer_opengl_retained::init_vbuffer()
 
 		vbo->glBindBuffer(GL_ARRAY_BUFFER_ARB, m_vbo_bbox_filled);
 		vbo->glBufferData(GL_ARRAY_BUFFER_ARB, sizeof(m_bbox_filled), m_bbox_filled, GL_STATIC_DRAW_ARB);
+
+		vbo->glBindBuffer(GL_ARRAY_BUFFER_ARB, 0);
 	} else {
 		m_vbo = false;
 	}
