@@ -1,6 +1,8 @@
 // Konstruktor - An interactive LDraw modeler for KDE
 // Copyright (c)2006-2008 Park "segfault" J. K. <mastermind@planetmono.org>
 
+#include <cstdlib>
+
 #include <QPushButton>
 
 #include "ui_newmodeldialog.h"
@@ -14,6 +16,10 @@ KonstruktorNewModelDialog::KonstruktorNewModelDialog(QWidget *parent)
 
 	ui_->setupUi(this);
 	ui_->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(false);
+
+	const char *username = std::getenv("USER");
+	if (username)
+		ui_->editAuthor->setText(username);
 
 	connect(ui_->editDesc, SIGNAL(textChanged(const QString &)), this, SLOT(textChanged(const QString &)));
 	connect(ui_->editAuthor, SIGNAL(textChanged(const QString &)), this, SLOT(textChanged(const QString &)));

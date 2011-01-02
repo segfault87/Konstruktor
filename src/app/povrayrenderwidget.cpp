@@ -70,16 +70,21 @@ KonstruktorPOVRayRenderWidget::KonstruktorPOVRayRenderWidget(const KonstruktorPO
 	
 	QWidget *mainWidget = new QWidget;
 	QVBoxLayout *vboxLayout = new QVBoxLayout(mainWidget);
-	scanlineWidget_ = new KonstruktorScanlineWidget(image_, this);
+
+	scrollArea_ = new KonstruktorScanlineWidgetContainer(image_, this);
+
+	KonstruktorScanlineWidget *scanlineWidget = scrollArea_->scanlineWidget();
+	
 	status_ = new QLabel(i18n("Idle"), this);
 	status_->setAlignment(Qt::AlignHCenter);
 	progressBar_ = new QProgressBar(mainWidget);
 	progressBar_->setMaximum(100);
-	vboxLayout->addWidget(scanlineWidget_);
+	
+	vboxLayout->addWidget(scrollArea_);
 	vboxLayout->addWidget(status_);
 	vboxLayout->addWidget(progressBar_);
 
-	connect(this, SIGNAL(lineFinished(int)), scanlineWidget_, SLOT(updateLine(int)));
+	connect(this, SIGNAL(lineFinished(int)), scanlineWidget, SLOT(updateLine(int)));
 	connect(this, SIGNAL(percent(int)), progressBar_, SLOT(setValue(int)));
 
 	setMainWidget(mainWidget);

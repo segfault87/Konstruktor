@@ -83,11 +83,11 @@ class KonstruktorRenderWidget : public QGLWidget
 	void updatePositionVector(const QPoint &pos);
 	
 	void rotate();
-	void renderScene();
 	void renderGrid(float xg, float yg, int xc, int yc, float xo, float yo, float zo);
 	void renderViewportName();
 	
 	void initializeGL();
+	void paintGL();
 	void resizeGL(int width, int height);
 	void paintEvent(QPaintEvent *event);
 	

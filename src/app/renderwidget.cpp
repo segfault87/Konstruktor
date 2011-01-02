@@ -370,93 +370,6 @@ void KonstruktorRenderWidget::rotate()
 	}
 }
 
-void KonstruktorRenderWidget::renderScene()
-{
-	if(*activeDocument_) {
-		ldraw::model *curmodel = (*activeDocument_)->getActiveModel();
-		if (curmodel != tmodel_) {
-			tmodel_ = curmodel;
-			tvset_ = KonstruktorVisibilityExtension::query(curmodel);
-		}
-
-		// Set default color and depth
-		qglClearColor(KonstruktorApplication::self()->config()->backgroundColor());
-		glClearDepth(1.0f);
-		
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		
-		glEnable(GL_DEPTH_TEST);
-		glDepthFunc(GL_LEQUAL);
-		if (KonstruktorApplication::self()->config()->multisampling())
-			glEnable(GL_MULTISAMPLE);
-
-		glMatrixMode(GL_PROJECTION);
-		set3DViewport();
-
-		resizeGL(width(), height());
-		
-		glMatrixMode(GL_MODELVIEW);
-		glLoadIdentity();
-
-		rotate();
-		if (params_->get_rendering_mode() == ldraw_renderer::parameters::model_boundingboxes)
-			glColor3ub(0, 0, 0);
-		renderer_->render(curmodel, tvset_);
-
-		if (behavior_ == Placing) {
-			glDisable(GL_DEPTH_TEST);
-			qglColor(highlightColor_);
-			glLineWidth(2.0f);
-			glPushMatrix();
-			
-			glTranslatef(translation_.x(), translation_.y(), translation_.z());
-			glRotatef(90.0f, 0.0f, 1.0f, 0.0f);
-			
-			renderer_->render_bounding_box(objectmetrics_);
-			
-			glPopMatrix();
-			glEnable(GL_DEPTH_TEST);
-		}
-		
-		if (tsset_->hasSelection()) {
-			glDisable(GL_DEPTH_TEST);
-			qglColor(highlightColor_);
-			glLineWidth(2.0f);
-			glPushMatrix();
-			
-			if (behavior_ == Moving)
-				glTranslatef(translation_.x(), translation_.y(), translation_.z());
-
-			const QSet<int> *sel = tsset_->getSelection();
-			for (QSet<int>::ConstIterator it = sel->begin(); it != sel->end(); ++it) {
-				const ldraw::element_base *e = tmodel_->elements()[*it];
-				if (e->get_type() == ldraw::type_ref) {
-					const ldraw::element_ref *r = CAST_AS_CONST_REF(e);
-					if (r->get_model()) {
-						glPushMatrix();
-						glMultMatrixf(r->get_matrix().transpose().get_pointer());
-						if (!r->get_model()->custom_data<ldraw::metrics>())
-							r->get_model()->update_custom_data<ldraw::metrics>();
-						renderer_->render_bounding_box(*r->get_model()->custom_data<ldraw::metrics>());
-						glPopMatrix();
-					}
-				}
-			}
-
-			glPopMatrix();
-
-			glEnable(GL_DEPTH_TEST);
-		}
-
-		glEnable(GL_BLEND);
-
-		glDisable(GL_LIGHTING);
-		
-		if (KonstruktorApplication::self()->config()->drawGrids())
-			renderGrid(gridResolution_, gridResolution_, gridRows_, gridColumns_, gridX_, gridY_, gridZ_);
-	}
-}
-
 void KonstruktorRenderWidget::renderGrid(float xg, float yg, int xc, int yc, float xo, float yo, float zo)
 {
 	glLineWidth(1.0f);
@@ -523,8 +436,103 @@ void KonstruktorRenderWidget::initializeGL()
 {
 	// libldr_renderer initialize proc
 	renderer_->setup();
+	
+	glDepthFunc(GL_LEQUAL);
+	
+	// Set default color and depth
+	qglClearColor(KonstruktorApplication::self()->config()->backgroundColor());
+	glClearDepth(1.0f);
+}
 
-	glEnable(GL_MULTISAMPLE);
+void KonstruktorRenderWidget::paintGL()
+{
+	makeCurrent();
+
+	glPushAttrib(GL_ALL_ATTRIB_BITS);
+	
+	/* disable shading if not free view */
+	if (viewportMode_ != Free)
+		params_->set_shading(false);
+
+	if(*activeDocument_) {
+		ldraw::model *curmodel = (*activeDocument_)->getActiveModel();
+		if (curmodel != tmodel_) {
+			tmodel_ = curmodel;
+			tvset_ = KonstruktorVisibilityExtension::query(curmodel);
+		}
+
+		if (KonstruktorApplication::self()->config()->multisampling())
+		glEnable(GL_MULTISAMPLE);
+		
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		
+		glEnable(GL_DEPTH_TEST);
+
+		glMatrixMode(GL_PROJECTION);
+		set3DViewport();
+		
+		glMatrixMode(GL_MODELVIEW);
+		glLoadIdentity();
+
+		glEnable(GL_BLEND);
+
+		rotate();
+		if (params_->get_rendering_mode() == ldraw_renderer::parameters::model_boundingboxes)
+			glColor3ub(0, 0, 0);
+		renderer_->render(curmodel, tvset_);
+
+		if (behavior_ == Placing) {
+			glDisable(GL_DEPTH_TEST);
+			qglColor(highlightColor_);
+			glLineWidth(2.0f);
+			glPushMatrix();
+			
+			glTranslatef(translation_.x(), translation_.y(), translation_.z());
+			glRotatef(90.0f, 0.0f, 1.0f, 0.0f);
+			
+			renderer_->render_bounding_box(objectmetrics_);
+			
+			glPopMatrix();
+			glEnable(GL_DEPTH_TEST);
+		}
+		
+		if (tsset_->hasSelection()) {
+			glDisable(GL_DEPTH_TEST);
+			qglColor(highlightColor_);
+			glLineWidth(2.0f);
+			glPushMatrix();
+			
+			if (behavior_ == Moving)
+				glTranslatef(translation_.x(), translation_.y(), translation_.z());
+
+			const QSet<int> *sel = tsset_->getSelection();
+			for (QSet<int>::ConstIterator it = sel->begin(); it != sel->end(); ++it) {
+				const ldraw::element_base *e = tmodel_->elements()[*it];
+				if (e->get_type() == ldraw::type_ref) {
+					const ldraw::element_ref *r = CAST_AS_CONST_REF(e);
+					if (r->get_model()) {
+						glPushMatrix();
+						glMultMatrixf(r->get_matrix().transpose().get_pointer());
+						if (!r->get_model()->custom_data<ldraw::metrics>())
+							r->get_model()->update_custom_data<ldraw::metrics>();
+						renderer_->render_bounding_box(*r->get_model()->custom_data<ldraw::metrics>());
+						glPopMatrix();
+					}
+				}
+			}
+
+			glPopMatrix();
+
+			glEnable(GL_DEPTH_TEST);
+		}
+		
+		glDisable(GL_LIGHTING);
+		
+		if (KonstruktorApplication::self()->config()->drawGrids())
+			renderGrid(gridResolution_, gridResolution_, gridRows_, gridColumns_, gridX_, gridY_, gridZ_);
+	}
+
+	glPopAttrib();
 }
 
 void KonstruktorRenderWidget::resizeGL(int width, int height)
@@ -535,37 +543,12 @@ void KonstruktorRenderWidget::resizeGL(int width, int height)
 	length_ = std::sqrt(pow((double)width_, 2.0) + pow((double)height_, 2.0));
 }
 
-void KonstruktorRenderWidget::paintEvent(QPaintEvent *)
+void KonstruktorRenderWidget::paintEvent(QPaintEvent *event)
 {
-	makeCurrent();
-
 	QPainter p;
 	p.begin(this);
-	
-	/* disable shading if not free view */
-	if (viewportMode_ != Free)
-		params_->set_shading(false);
 
-	glPushAttrib(GL_ALL_ATTRIB_BITS);
-
-	glMatrixMode(GL_MODELVIEW);
-	glPushMatrix();
-
-	glMatrixMode(GL_PROJECTION);
-	glPushMatrix();
-
-	renderer_->setup();
-	renderScene();
-
-	glMatrixMode(GL_PROJECTION);
-	glPopMatrix();
-
-	glMatrixMode(GL_MODELVIEW);
-	glPopMatrix();
-
-	glPopAttrib();
-
-	glClear(GL_DEPTH_BUFFER_BIT);
+	QGLWidget::paintEvent(event);
 	
 	p.setRenderHint(QPainter::Antialiasing);
 	
@@ -711,7 +694,7 @@ void KonstruktorRenderWidget::mouseReleaseEvent(QMouseEvent *event)
 		float matrix[16];
 		glGetFloatv(GL_MODELVIEW_MATRIX, matrix);
 		std::list<int> result = renderer_->select(projectionMatrix_, matrix, region_.x(), region_.y(), region_.width(), region_.height(), (*activeDocument_)->getActiveModel(), tvset_);
-		
+
 		params_->set_rendering_mode(renderMode_);
 
 		emit madeSelection(result);

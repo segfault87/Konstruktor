@@ -4,6 +4,7 @@
 #ifndef _SCANLINEWIDGET_H_
 #define _SCANLINEWIDGET_H_
 
+#include <QScrollArea>
 #include <QWidget>
 
 class QImage;
@@ -27,6 +28,20 @@ class KonstruktorScanlineWidget : public QWidget
 
 	const QImage &image_;
 	int lastline_;
+};
+
+class KonstruktorScanlineWidgetContainer : public QScrollArea
+{
+  public:
+	KonstruktorScanlineWidgetContainer(const QImage &image, QWidget *parent = 0L);
+	~KonstruktorScanlineWidgetContainer();
+
+	QSize sizeHint() const;
+
+	KonstruktorScanlineWidget* scanlineWidget();
+
+  private:
+	KonstruktorScanlineWidget *scanlineWidget_;
 };
 
 #endif

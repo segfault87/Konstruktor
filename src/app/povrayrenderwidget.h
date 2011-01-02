@@ -15,7 +15,7 @@ class KProcess;
 
 class KonstruktorPOVRayRenderParameters;
 class KonstruktorPOVRayExporter;
-class KonstruktorScanlineWidget;
+class KonstruktorScanlineWidgetContainer;
 
 class KonstruktorPOVRayRenderWidget : public KDialog
 {
@@ -46,7 +46,7 @@ class KonstruktorPOVRayRenderWidget : public KDialog
   private:
 	void setPixel(int x, int y, uint c);
 
-	KonstruktorScanlineWidget *scanlineWidget_;
+	KonstruktorScanlineWidgetContainer *scrollArea_;
 	QLabel *status_;
 	QProgressBar *progressBar_;
 	

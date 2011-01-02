@@ -7,13 +7,13 @@
 
 KonstruktorPOVRayRenderParameters::KonstruktorPOVRayRenderParameters()
 {
-	width_ = 512;
-	height_ = 384;
+	width_ = 1024;
+	height_ = 768;
 	antialiasing_ = true;
 
 	seamWidth_ = 0.8f;
 	
-	backgroundColor_ = QColor(64, 64, 64);
+	backgroundColor_ = QColor(32, 32, 32);
 	
 	drawPlane_ = true;
 	planePositionAuto_ = true;
@@ -26,11 +26,11 @@ KonstruktorPOVRayRenderParameters::KonstruktorPOVRayRenderParameters()
 	fov_ = 60.0f;
 	orthographic_ = false;
 	
-	lights_ = 2;
+	lights_ = 1;
 	lightsLongitude_ = 60.0f;
 	lightsLatitudeOffset_ = 180.0f - 22.5f;
 	lightsRadius_ = 2.0f;
-	lightsIntensity_ = 1.5f;
+	lightsIntensity_ = 1.0f;
 	lightsColor_ = QColor(255, 255, 255);
 }
 
