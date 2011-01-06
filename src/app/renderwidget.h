@@ -114,6 +114,7 @@ class KonstruktorRenderWidget : public QGLWidget
 	QString viewportName_;
 	QSize textSize_;
 	int screenId_;
+	bool initialized_;
 	
 	int width_, height_;
 	float length_;

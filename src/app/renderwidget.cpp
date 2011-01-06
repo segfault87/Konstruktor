@@ -90,6 +90,7 @@ KonstruktorRenderWidget::KonstruktorRenderWidget(KonstruktorMainWindow *mainwind
 	
 	activeDocument_ = document;
 	behavior_ = Idle;
+	initialized_ = false;
 
 	readConfig();
 
@@ -481,6 +482,8 @@ void KonstruktorRenderWidget::paintGL()
 			glColor3ub(0, 0, 0);
 		renderer_->render(curmodel, tvset_);
 
+		glDisable(GL_LIGHTING);
+
 		if (behavior_ == Placing) {
 			glDisable(GL_DEPTH_TEST);
 			qglColor(highlightColor_);
@@ -548,7 +551,16 @@ void KonstruktorRenderWidget::paintEvent(QPaintEvent *event)
 	QPainter p;
 	p.begin(this);
 
-	QGLWidget::paintEvent(event);
+	makeCurrent();
+
+	if (!initialized_) {
+		initializeGL();
+		resizeGL(width(), height());
+
+		initialized_ = true;
+	}
+
+	paintGL();
 	
 	p.setRenderHint(QPainter::Antialiasing);
 	
@@ -615,13 +627,14 @@ void KonstruktorRenderWidget::mousePressEvent(QMouseEvent *event)
 		
 		update();
 	} else if (event->button() & Qt::LeftButton) {
-		// convert from QSet to std::set. wtf!!!
+		makeCurrent();
 
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
 		rotate();
 		float matrix[16];
 		glGetFloatv(GL_MODELVIEW_MATRIX, matrix);
+
 		if (viewportMode_ != Free && tsset_->hasSelection() && tsset_->getSelection()->size() > 0 && renderer_->hit_test(projectionMatrix_, matrix, event->pos().x(), event->pos().y(), 1, 1, (*activeDocument_)->getActiveModel(), tsset_)) {
 			params_->set_rendering_mode(dragMode_);
 			
@@ -641,6 +654,8 @@ void KonstruktorRenderWidget::mousePressEvent(QMouseEvent *event)
 			behavior_ = Dragging;
 			region_ = QRect(event->pos(), QSize(0, 0));
 		}
+
+		doneCurrent();
 		
 		update();
 	}
@@ -688,6 +703,8 @@ void KonstruktorRenderWidget::mouseReleaseEvent(QMouseEvent *event)
 		behavior_ = Idle;
 		region_.setCoords(region_.x(), region_.y(), event->pos().x(), event->pos().y());
 
+		makeCurrent();
+
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
 		rotate();
@@ -696,6 +713,8 @@ void KonstruktorRenderWidget::mouseReleaseEvent(QMouseEvent *event)
 		std::list<int> result = renderer_->select(projectionMatrix_, matrix, region_.x(), region_.y(), region_.width(), region_.height(), (*activeDocument_)->getActiveModel(), tvset_);
 
 		params_->set_rendering_mode(renderMode_);
+
+		doneCurrent();
 
 		emit madeSelection(result);
 

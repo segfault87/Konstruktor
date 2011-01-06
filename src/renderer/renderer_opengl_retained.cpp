@@ -155,7 +155,10 @@ void renderer_opengl_retained::render(ldraw::model *m, const render_filter *filt
 
 void renderer_opengl_retained::render_bounding_box(const ldraw::metrics &metrics)
 {
+	opengl_extension_vbo *vbo = opengl_extension_vbo::self();
+	
 	glEnableClientState(GL_VERTEX_ARRAY);
+	glDisableClientState(GL_COLOR_ARRAY);
 
 	const ldraw::vector &pos = metrics.min();
 	ldraw::vector len = metrics.max() - metrics.min();
@@ -167,20 +170,25 @@ void renderer_opengl_retained::render_bounding_box(const ldraw::metrics &metrics
 	const float *bbox = 0L;
 	
 	if (m_vbo)
-		opengl_extension_vbo::self()->glBindBuffer(GL_ARRAY_BUFFER_ARB, m_vbo_bbox_lines);
+		vbo->glBindBuffer(GL_ARRAY_BUFFER_ARB, m_vbo_bbox_lines);
 	else
 		bbox = m_bbox_lines;
+	glVertexPointer(3, GL_FLOAT, 0, bbox);
 
-	glDrawArrays(GL_LINES, 0, sizeof(m_vbo_bbox_lines) / sizeof(float));
+	glDrawArrays(GL_LINES, 0, sizeof(m_bbox_lines) / sizeof(float) / 3);
 
 	glPopMatrix();
 
-	glDisableClientState(GL_VERTEX_ARRAY);
+	if (m_vbo)
+		vbo->glBindBuffer(GL_ARRAY_BUFFER_ARB, 0);
 }
 
 void renderer_opengl_retained::render_bounding_box_filled(const ldraw::metrics &metrics)
 {
+	opengl_extension_vbo *vbo = opengl_extension_vbo::self();
+	
 	glEnableClientState(GL_VERTEX_ARRAY);
+	glDisableClientState(GL_COLOR_ARRAY);
 
 	const ldraw::vector &pos = metrics.min();
 	ldraw::vector len = metrics.max() - metrics.min();
@@ -192,21 +200,26 @@ void renderer_opengl_retained::render_bounding_box_filled(const ldraw::metrics &
 	const float *bbox = 0L;
 	
 	if (m_vbo)
-		opengl_extension_vbo::self()->glBindBuffer(GL_ARRAY_BUFFER_ARB, m_vbo_bbox_filled);
+		vbo->glBindBuffer(GL_ARRAY_BUFFER_ARB, m_vbo_bbox_filled);
 	else
 		bbox = m_bbox_filled;
+	glVertexPointer(3, GL_FLOAT, 0, bbox);
 
-	glDrawArrays(GL_LINES, 0, sizeof(m_vbo_bbox_filled) / sizeof(float));
+	glDrawArrays(GL_QUADS, 0, sizeof(m_bbox_filled) / sizeof(float) / 3);
 
 	glPopMatrix();
 
-	glDisableClientState(GL_VERTEX_ARRAY);
+	if (m_vbo)
+		vbo->glBindBuffer(GL_ARRAY_BUFFER_ARB, 0);
 }
 
 bool renderer_opengl_retained::hit_test(float *projection_matrix, float *modelview_matrix, int x, int y, int w, int h, ldraw::model *m, const render_filter *skip_filter)
 {
 	GLint viewport[4];
 	GLuint selectionBuffer[4];
+
+	if (m_vbo)
+		opengl_extension_vbo::self()->glBindBuffer(GL_ARRAY_BUFFER_ARB, 0);
 	
 	if (w == 0)
 		w = 1;
@@ -261,6 +274,9 @@ bool renderer_opengl_retained::hit_test(float *projection_matrix, float *modelvi
 		++i;
 	}
 
+	if (m_vbo)
+		opengl_extension_vbo::self()->glBindBuffer(GL_ARRAY_BUFFER_ARB, 0);
+
 	if (i == 0)
 		return false;
 
@@ -274,6 +290,9 @@ std::list<int> renderer_opengl_retained::select(float *projection_matrix, float 
 {
 	GLint hits, viewport[4];
 	GLuint selectionBuffer[1024];
+
+	if (m_vbo)
+		opengl_extension_vbo::self()->glBindBuffer(GL_ARRAY_BUFFER_ARB, 0);
 
 	if (w == 0)
 		w = 1;
@@ -305,7 +324,7 @@ std::list<int> renderer_opengl_retained::select(float *projection_matrix, float 
 	// Iterate!
 	int i = 0;
 	for (ldraw::model::const_iterator it = m->elements().begin(); it != m->elements().end(); ++it) {
- 		if (skip_filter->query(m, i, 0)) {
+ 		if (skip_filter && skip_filter->query(m, i, 0)) {
 			++i;
 			continue;
 		}
