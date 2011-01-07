@@ -156,7 +156,7 @@
 	<choice name="Edges" />
 	<choice name="BoundingBoxes" />
       </choices>
-      <default>BoundingBoxes</default>
+      <default>Full</default>
     </entry>
     <entry name="StudMode" type="Enum">
       <label>Stud rendering mode</label>

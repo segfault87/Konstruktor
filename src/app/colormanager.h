@@ -1,5 +1,5 @@
 // Konstruktor - An interactive LDraw modeler for KDE
-// Copyright (c)2006-2008 Park "segfault" J. K. <mastermind@planetmono.org>
+// Copyright (c)2006-2011 Park "segfault" J. K. <mastermind@planetmono.org>
 
 #ifndef _COLORMANAGER_H_
 #define _COLORMANAGER_H_

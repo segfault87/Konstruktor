@@ -136,20 +136,26 @@ void renderer_opengl_retained::render(ldraw::model *m, const render_filter *filt
 	opengl_extension_vbo *vbo = opengl_extension_vbo::self();
 	
 	glEnableClientState(GL_VERTEX_ARRAY);
-	glEnableClientState(GL_COLOR_ARRAY);
 
-	if (m_shader)
-		shader->glEnableVertexAttribArray(m_vs_color_location_verttype);
+	if (m_params->get_rendering_mode() == parameters::model_boundingboxes) {
+		render_bounding_boxes(m, filter);
+	} else {
+		glEnableClientState(GL_COLOR_ARRAY);
+		
+		if (m_shader)
+			shader->glEnableVertexAttribArray(m_vs_color_location_verttype);
+		
+		render_recursive(m, filter, 0);
+		
+		if (m_shader)
+			shader->glDisableVertexAttribArray(m_vs_color_location_verttype);
+		
+		if (m_vbo)
+			vbo->glBindBuffer(GL_ARRAY_BUFFER_ARB, 0);
+
+		glDisableClientState(GL_COLOR_ARRAY);
+	}
 	
-	render_recursive(m, filter, 0);
-
-	if (m_shader)
-		shader->glDisableVertexAttribArray(m_vs_color_location_verttype);
-
-	if (m_vbo)
-		vbo->glBindBuffer(GL_ARRAY_BUFFER_ARB, 0);
-
-	glDisableClientState(GL_COLOR_ARRAY);
 	glDisableClientState(GL_VERTEX_ARRAY);
 }
 
@@ -211,6 +217,30 @@ void renderer_opengl_retained::render_bounding_box_filled(const ldraw::metrics &
 
 	if (m_vbo)
 		vbo->glBindBuffer(GL_ARRAY_BUFFER_ARB, 0);
+}
+
+void renderer_opengl_retained::render_bounding_boxes(ldraw::model *m, const render_filter *filter)
+{
+	int i = 0;
+	for (ldraw::model::const_iterator it = m->elements().begin(); it != m->elements().end(); ++it) {
+		if ((*it)->get_type() == ldraw::type_ref) {
+			ldraw::element_ref *r = CAST_AS_REF(*it);
+			ldraw::model *rm = r->get_model();
+
+			if (rm) {
+				if (!filter || (filter && !filter->query(rm, i, 0))) {
+					if (!rm->custom_data<ldraw::metrics>())
+						rm->init_custom_data<ldraw::metrics>();
+
+					glPushMatrix();
+					glMultMatrixf(r->get_matrix().transpose().get_pointer());
+					render_bounding_box(*rm->custom_data<ldraw::metrics>());
+					glPopMatrix();
+				}
+			}
+		}
+		++i;
+	}
 }
 
 bool renderer_opengl_retained::hit_test(float *projection_matrix, float *modelview_matrix, int x, int y, int w, int h, ldraw::model *m, const render_filter *skip_filter)
@@ -338,22 +368,21 @@ std::list<int> renderer_opengl_retained::select(float *projection_matrix, float 
 				++i;
 				continue;
 			}
+
+			ldraw::model *rm = l->get_model();
 			
-			if (!l->get_model()->custom_data<ldraw::metrics>())
-				l->get_model()->update_custom_data<ldraw::metrics>();
-			
-			glPushMatrix();
-			glMultMatrixf(l->get_matrix().transpose().get_pointer());
+			if (!rm->custom_data<ldraw::metrics>())
+				rm->init_custom_data<ldraw::metrics>();
 			
 			glLoadName(i);
-			const ldraw::metrics *metrics = l->get_model()->custom_data<ldraw::metrics>();
-			ldraw::vector center = (metrics->min() + metrics->max()) * 0.5;
-			
+
+			const ldraw::metrics *rmm = rm->custom_data<ldraw::metrics>();
+			const ldraw::matrix &rmt = l->get_matrix();
+			ldraw::vector center = (rmt * rmm->min() + rmt * rmm->max()) * 0.5f;
+
 			glBegin(GL_POINTS);
 			glVertex3fv(center.get_pointer());
 			glEnd();
-			
-			glPopMatrix();
 		}
 		
 		++i;
@@ -439,6 +468,8 @@ void renderer_opengl_retained::render_recursive(ldraw::model *m, const render_fi
 {
 	if (!m)
 		return;
+
+	bool edgesonly = m_params->get_rendering_mode() == parameters::model_edges;
 	
 	bool collapse = false;
 	parameters::vbuffer_criteria vc = m_params->get_vbuffer_criteria();
@@ -522,67 +553,69 @@ void renderer_opengl_retained::render_recursive(ldraw::model *m, const render_fi
 #endif
 		}
 
-		if (shading) {
-			glEnable(GL_LIGHTING);
-			glEnableClientState(GL_NORMAL_ARRAY);
-		}
-		
-		/* triangles */
-		if (ve->count(vbuffer_extension::type_triangles) > 0) {
-			if (m_vbo)
-				vbo->glBindBuffer(GL_ARRAY_BUFFER_ARB, ve->get_vbo_vertices(vbuffer_extension::type_triangles));
-			glVertexPointer(3, GL_FLOAT, 0, ve->get_vertex_array(vbuffer_extension::type_triangles));
+		if (!edgesonly) {
 			if (shading) {
-				if (m_vbo)
-					vbo->glBindBuffer(GL_ARRAY_BUFFER_ARB, ve->get_vbo_normals(vbuffer_extension::type_triangles));
-				glNormalPointer(GL_FLOAT, 0, ve->get_normal_array(vbuffer_extension::type_triangles));
+				glEnable(GL_LIGHTING);
+				glEnableClientState(GL_NORMAL_ARRAY);
 			}
 			
-			if (m_vbo) {
-				if (m_shader)
-					vbo_color = ve->get_vbo_colors(vbuffer_extension::type_triangles);
-				else
-					vbo_color = ve->get_vbo_precolored(vbuffer_extension::type_triangles, m_colorstack.top());
-				vbo->glBindBuffer(GL_ARRAY_BUFFER_ARB, vbo_color);
-			}
-			if (m_shader)
-				color = ve->get_color_array(vbuffer_extension::type_triangles);
-			else
-				color = ve->get_precolored_array(vbuffer_extension::type_triangles, m_colorstack.top());
-			glColorPointer(4, GL_FLOAT, 0, color);
-			glDrawArrays(GL_TRIANGLES, 0, ve->count(vbuffer_extension::type_triangles));
-		}
-		
-		/* quads */
-		if (ve->count(vbuffer_extension::type_quads) > 0) {
-			if (m_vbo)
-				vbo->glBindBuffer(GL_ARRAY_BUFFER_ARB, ve->get_vbo_vertices(vbuffer_extension::type_quads));
-			glVertexPointer(3, GL_FLOAT, 0, ve->get_vertex_array(vbuffer_extension::type_quads));
-			if (shading) {
+			/* triangles */
+			if (ve->count(vbuffer_extension::type_triangles) > 0) {
 				if (m_vbo)
-					vbo->glBindBuffer(GL_ARRAY_BUFFER_ARB, ve->get_vbo_normals(vbuffer_extension::type_quads));
-				glNormalPointer(GL_FLOAT, 0, ve->get_normal_array(vbuffer_extension::type_quads));
-			}
-			if (m_vbo) {
+					vbo->glBindBuffer(GL_ARRAY_BUFFER_ARB, ve->get_vbo_vertices(vbuffer_extension::type_triangles));
+				glVertexPointer(3, GL_FLOAT, 0, ve->get_vertex_array(vbuffer_extension::type_triangles));
+				if (shading) {
+					if (m_vbo)
+						vbo->glBindBuffer(GL_ARRAY_BUFFER_ARB, ve->get_vbo_normals(vbuffer_extension::type_triangles));
+					glNormalPointer(GL_FLOAT, 0, ve->get_normal_array(vbuffer_extension::type_triangles));
+				}
+				
+				if (m_vbo) {
+					if (m_shader)
+						vbo_color = ve->get_vbo_colors(vbuffer_extension::type_triangles);
+					else
+						vbo_color = ve->get_vbo_precolored(vbuffer_extension::type_triangles, m_colorstack.top());
+					vbo->glBindBuffer(GL_ARRAY_BUFFER_ARB, vbo_color);
+				}
 				if (m_shader)
-					vbo_color = ve->get_vbo_colors(vbuffer_extension::type_quads);
+					color = ve->get_color_array(vbuffer_extension::type_triangles);
 				else
-					vbo_color = ve->get_vbo_precolored(vbuffer_extension::type_quads, m_colorstack.top());
-				vbo->glBindBuffer(GL_ARRAY_BUFFER_ARB, vbo_color);
+					color = ve->get_precolored_array(vbuffer_extension::type_triangles, m_colorstack.top());
+				glColorPointer(4, GL_FLOAT, 0, color);
+				glDrawArrays(GL_TRIANGLES, 0, ve->count(vbuffer_extension::type_triangles));
 			}
+			
+			/* quads */
+			if (ve->count(vbuffer_extension::type_quads) > 0) {
+				if (m_vbo)
+					vbo->glBindBuffer(GL_ARRAY_BUFFER_ARB, ve->get_vbo_vertices(vbuffer_extension::type_quads));
+				glVertexPointer(3, GL_FLOAT, 0, ve->get_vertex_array(vbuffer_extension::type_quads));
+				if (shading) {
+					if (m_vbo)
+						vbo->glBindBuffer(GL_ARRAY_BUFFER_ARB, ve->get_vbo_normals(vbuffer_extension::type_quads));
+					glNormalPointer(GL_FLOAT, 0, ve->get_normal_array(vbuffer_extension::type_quads));
+				}
+				if (m_vbo) {
+					if (m_shader)
+						vbo_color = ve->get_vbo_colors(vbuffer_extension::type_quads);
+					else
+						vbo_color = ve->get_vbo_precolored(vbuffer_extension::type_quads, m_colorstack.top());
+					vbo->glBindBuffer(GL_ARRAY_BUFFER_ARB, vbo_color);
+				}
+				if (m_shader)
+					color = ve->get_color_array(vbuffer_extension::type_quads);
+				else
+					color = ve->get_precolored_array(vbuffer_extension::type_quads, m_colorstack.top());
+				glColorPointer(4, GL_FLOAT, 0, color);
+				glDrawArrays(GL_QUADS, 0, ve->count(vbuffer_extension::type_quads));
+			}
+			
 			if (m_shader)
-				color = ve->get_color_array(vbuffer_extension::type_quads);
-			else
-				color = ve->get_precolored_array(vbuffer_extension::type_quads, m_colorstack.top());
-			glColorPointer(4, GL_FLOAT, 0, color);
-			glDrawArrays(GL_QUADS, 0, ve->count(vbuffer_extension::type_quads));
+				shader->glUseProgram(0);
+			
+			if (shading)
+				glDisableClientState(GL_NORMAL_ARRAY);
 		}
-
-		if (m_shader)
-			shader->glUseProgram(0);
-
-		if (shading)
-			glDisableClientState(GL_NORMAL_ARRAY);
 	}
 
 	if (!collapse) {

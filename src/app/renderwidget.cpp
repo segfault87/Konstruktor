@@ -1,10 +1,12 @@
 // Konstruktor - An interactive LDraw modeler for KDE
-// Copyright (c)2006-2008 Park "segfault" J. K. <mastermind@planetmono.org>
+// Copyright (c)2006-2011 Park "segfault" J. K. <mastermind@planetmono.org>
 
 #include <cmath>
 
 #include <libldr/metrics.h>
 #include <libldr/utils.h>
+
+#include <renderer/opengl_extension_vbo.h>
 
 #include <QAction>
 #include <QActionGroup>
@@ -39,45 +41,6 @@ static const QString viewportNames[VIEWPORT_TYPES] = {
 	i18n("3D")
 };
 
-KonstruktorSelection::KonstruktorSelection()
-{
-	tsset_ = 0L;
-}
-
-KonstruktorSelection::~KonstruktorSelection()
-{
-
-}
-
-
-void KonstruktorSelection::setSelection(const QSet<int> &set)
-{
-	tsset_ = &set;
-}
-
-void KonstruktorSelection::resetSelection()
-{
-	tsset_ = 0L;
-}
-
-const QSet<int>* KonstruktorSelection::getSelection() const
-{
-	return tsset_;
-}
-
-bool KonstruktorSelection::hasSelection() const
-{
-	return tsset_ != 0L;
-}
-
-bool KonstruktorSelection::query(const ldraw::model *, int index, int) const
-{
-	if (!tsset_)
-		return false;
-	
-	return tsset_->contains(index);
-}
-
 KonstruktorRenderWidget::KonstruktorRenderWidget(KonstruktorMainWindow *mainwindow, KonstruktorDocument **document, ViewportMode viewport, QGLContext *context, QGLWidget *shareWidget, QWidget *parent)
 	: QGLWidget(context, parent, shareWidget), objectmetrics_(0L)
 {
@@ -93,11 +56,15 @@ KonstruktorRenderWidget::KonstruktorRenderWidget(KonstruktorMainWindow *mainwind
 	initialized_ = false;
 
 	readConfig();
+	gridVbo_[0] = 0;
+	gridVbo_[1] = 0;
 
 	makeCurrent();
 	
 	params_ = new ldraw_renderer::parameters(*KonstruktorApplication::self()->renderer_params());
 	renderer_ = ldraw_renderer::renderer_opengl_factory(params_, ldraw_renderer::renderer_opengl_factory::mode_vbo).create_renderer();
+
+	reapplyConfigurations();
 
 	params_->set_rendering_mode(renderMode_);
 
@@ -269,6 +236,8 @@ void KonstruktorRenderWidget::readConfig()
 		case KonstruktorConfig::EnumRenderMode::BoundingBoxes:
 			renderMode_ = ldraw_renderer::parameters::model_boundingboxes;
 	}
+
+	reapplyConfigurations();
 }
 
 void KonstruktorRenderWidget::set3DViewport()
@@ -371,6 +340,48 @@ void KonstruktorRenderWidget::rotate()
 	}
 }
 
+void KonstruktorRenderWidget::renderPointArray()
+{
+	if (!tmodel_)
+		return;
+
+	const unsigned char c1[] = {255, 255, 255};
+	const unsigned char c2[] = {0, 0, 0};
+	const unsigned char *colors[] = {c1, c2};
+	const float psizes[] = {8.0f, 6.0f};
+	
+	for (int i = 0; i < 2; ++i) {
+		glColor3ubv(colors[i]);
+		glPointSize(psizes[i]);
+		
+		glBegin(GL_POINTS);
+		
+		int i = 0;
+		for (ldraw::model::const_iterator it = tmodel_->elements().begin(); it != tmodel_->elements().end(); ++it) {
+			if ((*it)->get_type() == ldraw::type_ref) {
+				ldraw::element_ref *r = CAST_AS_REF(*it);
+				ldraw::model *rm = r->get_model();
+				
+				if (rm) {
+					if (!tvset_->query(rm, i, 0)) {
+						if (!rm->custom_data<ldraw::metrics>())
+							rm->init_custom_data<ldraw::metrics>();
+						
+						const ldraw::metrics *rmm = rm->custom_data<ldraw::metrics>();
+						const ldraw::matrix &rmt = r->get_matrix();
+						ldraw::vector center = (rmt * rmm->min() + rmt * rmm->max()) * 0.5f;
+						
+						glVertex3fv(center.get_pointer());
+					}				
+				}
+			}
+			++i;
+		}
+		
+		glEnd();
+	}
+}
+
 void KonstruktorRenderWidget::renderGrid(float xg, float yg, int xc, int yc, float xo, float yo, float zo)
 {
 	glLineWidth(1.0f);
@@ -431,6 +442,18 @@ void KonstruktorRenderWidget::renderGrid(float xg, float yg, int xc, int yc, flo
 			
 			return;
 	}
+}
+
+void KonstruktorRenderWidget::reapplyConfigurations()
+{
+	initializeGridVbo();
+}
+
+void KonstruktorRenderWidget::initializeGridVbo()
+{
+	//ldraw_renderer::opengl_extension_vbo *vbo = ldraw_renderer::opengl_extension_vbo::self();
+
+
 }
 
 void KonstruktorRenderWidget::initializeGL()
@@ -496,11 +519,14 @@ void KonstruktorRenderWidget::paintGL()
 			renderer_->render_bounding_box(objectmetrics_);
 			
 			glPopMatrix();
-			glEnable(GL_DEPTH_TEST);
+		} else if (behavior_ == Dragging) {
+			glDisable(GL_DEPTH_TEST);
+			renderPointArray();
 		}
+
+		glDisable(GL_DEPTH_TEST);
 		
 		if (tsset_->hasSelection()) {
-			glDisable(GL_DEPTH_TEST);
 			qglColor(highlightColor_);
 			glLineWidth(2.0f);
 			glPushMatrix();
@@ -508,28 +534,20 @@ void KonstruktorRenderWidget::paintGL()
 			if (behavior_ == Moving)
 				glTranslatef(translation_.x(), translation_.y(), translation_.z());
 
-			const QSet<int> *sel = tsset_->getSelection();
-			for (QSet<int>::ConstIterator it = sel->begin(); it != sel->end(); ++it) {
-				const ldraw::element_base *e = tmodel_->elements()[*it];
-				if (e->get_type() == ldraw::type_ref) {
-					const ldraw::element_ref *r = CAST_AS_CONST_REF(e);
-					if (r->get_model()) {
-						glPushMatrix();
-						glMultMatrixf(r->get_matrix().transpose().get_pointer());
-						if (!r->get_model()->custom_data<ldraw::metrics>())
-							r->get_model()->update_custom_data<ldraw::metrics>();
-						renderer_->render_bounding_box(*r->get_model()->custom_data<ldraw::metrics>());
-						glPopMatrix();
-					}
-				}
-			}
+			params_->set_rendering_mode(ldraw_renderer::parameters::model_boundingboxes);
+			tsset_->setInversed(true);
+			renderer_->render(tmodel_, tsset_);
+			tsset_->setInversed(false);
+			
+			if (behavior_ == Idle)
+				params_->set_rendering_mode(renderMode_);
+			else
+				params_->set_rendering_mode(dragMode_);
 
 			glPopMatrix();
-
-			glEnable(GL_DEPTH_TEST);
 		}
-		
-		glDisable(GL_LIGHTING);
+
+		glEnable(GL_DEPTH_TEST);
 		
 		if (KonstruktorApplication::self()->config()->drawGrids())
 			renderGrid(gridResolution_, gridResolution_, gridRows_, gridColumns_, gridX_, gridY_, gridZ_);
@@ -649,7 +667,7 @@ void KonstruktorRenderWidget::mousePressEvent(QMouseEvent *event)
 					tvset_->insert(*it);
 			}
 		} else {
-			params_->set_rendering_mode(ldraw_renderer::parameters::model_boundingboxes);
+			params_->set_rendering_mode(dragMode_);
 			
 			behavior_ = Dragging;
 			region_ = QRect(event->pos(), QSize(0, 0));

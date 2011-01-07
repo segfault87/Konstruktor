@@ -1,5 +1,5 @@
 // Konstruktor - An interactive LDraw modeler for KDE
-// Copyright (c)2006-2008 Park "segfault" J. K. <mastermind@planetmono.org>
+// Copyright (c)2006-2011 Park "segfault" J. K. <mastermind@planetmono.org>
 
 #include <kaboutdata.h>
 #include <kapplication.h>
@@ -15,7 +15,7 @@ int main(int argc, char *argv[])
 		ki18n("Part database updater for Konstruktor"), "0.6.0",
 		ki18n("Updates the part database. Must be called internally by Konstruktor."),
 		KAboutData::License_GPL_V3,
-		ki18n("(c)2006-2008, Park \"segfault\" Joon-Kyu"));
+		ki18n("(c)2006-2011, Park \"segfault\" Joon-Kyu"));
 	
 	KCmdLineArgs::init(argc, argv, &about);
 

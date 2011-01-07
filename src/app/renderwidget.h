@@ -1,5 +1,5 @@
 // Konstruktor - An interactive LDraw modeler for KDE
-// Copyright (c)2006-2008 Park "segfault" J. K. <mastermind@planetmono.org>
+// Copyright (c)2006-2011 Park "segfault" J. K. <mastermind@planetmono.org>
 
 #ifndef _RENDERWIDGET_H_
 #define _RENDERWIDGET_H_
@@ -22,6 +22,7 @@
 #include <renderer/renderer_opengl.h>
 
 #include "document.h"
+#include "selection.h"
 
 #define MAGNIFICATION_FACTOR 1.375f
 #define VIEWPORT_TYPES 7
@@ -32,24 +33,6 @@ class QGLContext;
 
 class KonstruktorMainWindow;
 class KonstruktorVisibilityExtension;
-
-class KonstruktorSelection : public ldraw_renderer::render_filter
-{
-  public:
-	KonstruktorSelection();
-	~KonstruktorSelection();
-
-	void setSelection(const QSet<int> &set);
-	void resetSelection();
-
-	const QSet<int>* getSelection() const;
-	bool hasSelection() const;
-
-	bool query(const ldraw::model *m, int index, int depth) const;
-
-  private:
-	const QSet<int> *tsset_;
-};
 
 class KonstruktorRenderWidget : public QGLWidget
 {
@@ -81,10 +64,13 @@ class KonstruktorRenderWidget : public QGLWidget
   private:
 	void set3DViewport();
 	void updatePositionVector(const QPoint &pos);
-	
 	void rotate();
+
+	void renderPointArray();
 	void renderGrid(float xg, float yg, int xc, int yc, float xo, float yo, float zo);
-	void renderViewportName();
+
+	void reapplyConfigurations();
+	void initializeGridVbo();
 	
 	void initializeGL();
 	void paintGL();
@@ -128,7 +114,8 @@ class KonstruktorRenderWidget : public QGLWidget
 
 	QAction *viewportActions_[VIEWPORT_TYPES];
 	QActionGroup *viewportActionGroup_;
-	
+
+	GLuint gridVbo_[2];
 	float gridResolution_;
 	int gridRows_, gridColumns_;
 	float gridX_, gridY_, gridZ_;

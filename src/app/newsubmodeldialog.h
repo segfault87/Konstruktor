@@ -1,5 +1,5 @@
 // Konstruktor - An interactive LDraw modeler for KDE
-// Copyright (c)2006-2008 Park "segfault" J. K. <mastermind@planetmono.org>
+// Copyright (c)2006-2011 Park "segfault" J. K. <mastermind@planetmono.org>
 
 #ifndef _NEWSUBMODELDIALOG_H_
 #define _NEWSUBMODELDIALOG_H_

@@ -34,6 +34,7 @@ set(konstruktor_SRCS
   refobject.cpp
   renderwidget.cpp
   scanlinewidget.cpp
+  selection.cpp
   submodelmodel.cpp
   submodelwidget.cpp
   undostackextension.cpp
