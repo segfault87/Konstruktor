@@ -68,3 +68,36 @@ bool KonstruktorSelection::query(const ldraw::model *, int index, int) const
 	else
 		return tsset_->contains(index);
 }
+
+KonstruktorIntermediateSelection::KonstruktorIntermediateSelection()
+{
+
+}
+
+KonstruktorIntermediateSelection::~KonstruktorIntermediateSelection()
+{
+
+}
+
+void KonstruktorIntermediateSelection::setList(const std::list<std::pair<int, GLuint> > &list)
+{
+	tsset_.clear();
+	
+	for (std::list<std::pair<int, GLuint> >::const_iterator it = list.begin(); it != list.end(); ++it)
+		tsset_.insert((*it).first);
+}
+
+void KonstruktorIntermediateSelection::clear()
+{
+	tsset_.clear();
+}
+
+bool KonstruktorIntermediateSelection::hasSelection() const
+{
+	return tsset_.size() > 0;
+}
+
+bool KonstruktorIntermediateSelection::query(const ldraw::model *, int index, int) const
+{
+	return !(tsset_.find(index) != tsset_.end());
+}

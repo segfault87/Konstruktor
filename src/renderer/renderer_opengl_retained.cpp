@@ -316,7 +316,7 @@ bool renderer_opengl_retained::hit_test(float *projection_matrix, float *modelvi
 		return false;
 }
 
-std::list<std::pair<int, GLuint> > renderer_opengl_retained::select(float *projection_matrix, float *modelview_matrix, int x, int y, int w, int h, ldraw::model *m, const render_filter *skip_filter)
+selection_list renderer_opengl_retained::select(float *projection_matrix, float *modelview_matrix, int x, int y, int w, int h, ldraw::model *m, const render_filter *skip_filter)
 {
 	GLint hits, viewport[4];
 	GLuint selectionBuffer[4096];

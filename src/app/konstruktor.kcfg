@@ -171,6 +171,10 @@
       <label>Bounding box color for selected object(s)</label>
       <default>#FF00FF</default>
     </entry>
+    <entry name="HighlightDragColor" type="Color">
+      <label>Bounding box color for object(s) to be selected</label>
+      <default>#4188D4</default>
+    </entry>
     <entry name="DrawGrids" type="Bool">
       <label>Draw Grids</label>
       <default>true</default>

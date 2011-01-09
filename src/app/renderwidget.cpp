@@ -52,6 +52,7 @@ KonstruktorRenderWidget::KonstruktorRenderWidget(KonstruktorMainWindow *mainwind
 	tmodel_ = 0L;
 	tvset_ = 0L;
 	tsset_ = new KonstruktorSelection();
+	tisset_ = new KonstruktorIntermediateSelection();
 	
 	activeDocument_ = document;
 	behavior_ = Idle;
@@ -216,6 +217,7 @@ void KonstruktorRenderWidget::readConfig()
 	gridZ_ = conf->gridZOffset();
 
 	highlightColor_ = conf->highlightColor();
+	highlightDragColor_ = conf->highlightDragColor();
 	
 	switch (conf->dragMode()) {
 		case KonstruktorConfig::EnumDragMode::Full:
@@ -479,6 +481,8 @@ void KonstruktorRenderWidget::paintGL()
 	/* disable shading if not free view */
 	if (viewportMode_ != Free)
 		params_->set_shading(false);
+	else
+		params_->set_shading(true);
 
 	if(*activeDocument_) {
 		ldraw::model *curmodel = (*activeDocument_)->getActiveModel();
@@ -551,6 +555,25 @@ void KonstruktorRenderWidget::paintGL()
 			glPopMatrix();
 		}
 
+		if (tisset_->hasSelection()) {
+			qglColor(highlightDragColor_);
+			glLineWidth(2.0f);
+			glPushMatrix();
+			
+			if (behavior_ == Moving)
+				glTranslatef(translation_.x(), translation_.y(), translation_.z());
+
+			params_->set_rendering_mode(ldraw_renderer::parameters::model_boundingboxes);
+			renderer_->render(tmodel_, tisset_);
+			
+			if (behavior_ == Idle)
+				params_->set_rendering_mode(renderMode_);
+			else
+				params_->set_rendering_mode(dragMode_);
+
+			glPopMatrix();
+		}
+
 		glEnable(GL_DEPTH_TEST);
 		
 		if (KonstruktorApplication::self()->config()->drawGrids())
@@ -608,6 +631,8 @@ void KonstruktorRenderWidget::mousePressEvent(QMouseEvent *event)
 {
 	// Cancel select
 	if (behavior_ != Idle && event->button() & Qt::RightButton) {
+		tisset_->clear();
+		
 		behavior_ = Idle;
 		params_->set_rendering_mode(renderMode_);
 
@@ -709,6 +734,20 @@ void KonstruktorRenderWidget::mouseMoveEvent(QMouseEvent *event)
 
 		if (region_.width() > 3 || region_.height() > 3)
 			isRegion_ = true;
+
+		makeCurrent();
+
+		glMatrixMode(GL_MODELVIEW);
+		glLoadIdentity();
+		rotate();
+		float matrix[16];
+		glGetFloatv(GL_MODELVIEW_MATRIX, matrix);
+
+		ldraw_renderer::selection_list result = renderer_->select(projectionMatrix_, matrix, region_.x(), region_.y(), region_.width(), region_.height(), (*activeDocument_)->getActiveModel(), tvset_);
+
+		tisset_->setList(result);
+
+		doneCurrent();
 		
 		update();
 	} else if (behavior_ == Moving) {
@@ -739,11 +778,8 @@ void KonstruktorRenderWidget::mouseReleaseEvent(QMouseEvent *event)
 
 		if (!isRegion_)
 			renderer_->set_selection_type(ldraw_renderer::renderer::selection_model_full);
-
-
-		typedef std::list<std::pair<int, GLuint> > selectionList;
 		
-		selectionList resultWithDepth = renderer_->select(projectionMatrix_, matrix, region_.x(), region_.y(), region_.width(), region_.height(), (*activeDocument_)->getActiveModel(), tvset_);
+		ldraw_renderer::selection_list resultWithDepth = renderer_->select(projectionMatrix_, matrix, region_.x(), region_.y(), region_.width(), region_.height(), (*activeDocument_)->getActiveModel(), tvset_);
 
 		if (!isRegion_)
 			renderer_->set_selection_type(ldraw_renderer::renderer::selection_points);
@@ -759,7 +795,7 @@ void KonstruktorRenderWidget::mouseReleaseEvent(QMouseEvent *event)
 		if (!isRegion_ && resultWithDepth.size() > 0) {
 			int idx = 0;
 			GLuint min = UINT_MAX;
-			for (selectionList::iterator it = resultWithDepth.begin(); it != resultWithDepth.end(); ++it, ++i) {
+			for (ldraw_renderer::selection_list::iterator it = resultWithDepth.begin(); it != resultWithDepth.end(); ++it, ++i) {
 				if ((*it).second < min) {
 					min = (*it).second;
 					idx = (*it).first;
@@ -768,11 +804,13 @@ void KonstruktorRenderWidget::mouseReleaseEvent(QMouseEvent *event)
 			
 			result.push_back(idx);
 		} else {
-			for (selectionList::iterator it = resultWithDepth.begin(); it != resultWithDepth.end(); ++it, ++i)
+			for (ldraw_renderer::selection_list::iterator it = resultWithDepth.begin(); it != resultWithDepth.end(); ++it, ++i)
 				result.push_back((*it).first);
 		}
 
 		emit madeSelection(result);
+
+		tisset_->clear();
 
 		update();
 	} else if (behavior_ == Moving && event->button() & Qt::LeftButton) {
@@ -892,6 +930,5 @@ void KonstruktorRenderWidget::dropEvent(QDropEvent *event)
 	
 	update();
 }
-
 
 #include "renderwidget.moc"

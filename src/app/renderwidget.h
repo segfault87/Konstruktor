@@ -94,6 +94,7 @@ class KonstruktorRenderWidget : public QGLWidget
 	ldraw_renderer::parameters *params_;
 	KonstruktorVisibilityExtension *tvset_;
 	KonstruktorSelection *tsset_;
+	KonstruktorIntermediateSelection *tisset_;
 
 	float projectionMatrix_[16];
 	ViewportMode viewportMode_;
@@ -122,6 +123,7 @@ class KonstruktorRenderWidget : public QGLWidget
 	float gridX_, gridY_, gridZ_;
 	ldraw_renderer::parameters::render_method renderMode_, dragMode_;
 	QColor highlightColor_;
+	QColor highlightDragColor_;
 
 	KonstruktorMainWindow *parent_;
 };

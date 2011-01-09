@@ -4,6 +4,12 @@
 #ifndef _SELECTION_H_
 #define _SELECTION_H_
 
+#include <GL/gl.h>
+
+#include <list>
+#include <set>
+#include <utility>
+
 #include <QSet>
 
 #include <renderer/renderer_opengl.h>
@@ -31,6 +37,22 @@ class KonstruktorSelection : public ldraw_renderer::render_filter
   private:
 	const QSet<int> *tsset_;
 	bool inversed_;
+};
+
+class KonstruktorIntermediateSelection : public ldraw_renderer::render_filter
+{
+  public:
+	KonstruktorIntermediateSelection();
+	~KonstruktorIntermediateSelection();
+
+	void setList(const std::list<std::pair<int, GLuint> > &list);
+	void clear();
+
+	bool hasSelection() const;
+	bool query(const ldraw::model *m, int index, int depth) const;
+
+  private:
+	std::set<int> tsset_;
 };
 
 #endif

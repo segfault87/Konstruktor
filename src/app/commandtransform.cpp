@@ -43,9 +43,9 @@ void KonstruktorCommandTransform::redo()
 				cmat = matrix_ * r->get_matrix();
 			else
 				cmat = r->get_matrix() * matrix_;
-
+			
 			for (int i = 0; i < 3; ++i) {
-                for (int j = 0; j < 3; ++j) {
+				for (int j = 0; j < 3; ++j) {
 					float e = cmat.value(i, j);
 					if (std::fabs(std::fabs(e) - 1.0f) < LDR_EPSILON)
 						cmat.value(i, j) = e > 0.0f ? 1.0f:-1.0f;
@@ -57,7 +57,7 @@ void KonstruktorCommandTransform::redo()
 						cmat.value(i, j) = e > 0.0f ? 0.5f:-0.5f;
 					else if (std::fabs(std::fabs(e) - 0.866025f) < LDR_EPSILON)
 						cmat.value(i, j) = e > 0.0f ? 0.866025f:-0.866025f;
-                }
+				}
 			}
 
 			r->set_matrix(cmat);

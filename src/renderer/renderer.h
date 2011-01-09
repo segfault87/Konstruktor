@@ -26,6 +26,8 @@ namespace ldraw_renderer
 
 class parameters;
 
+typedef std::list<std::pair<int, unsigned int> > selection_list;
+
 class LIBLDR_EXPORT render_filter
 {
   public:
@@ -49,7 +51,7 @@ class LIBLDR_EXPORT renderer
 	virtual void render_bounding_box(const ldraw::metrics &metrics) = 0;
 	
 	virtual bool hit_test(float *projection_matrix, float *modelview_matrix, int x, int y, int w, int h, ldraw::model *m, const render_filter *hit_filter) = 0;
-	virtual std::list<std::pair<int, unsigned int> > select(float *projection_matrix, float *modelview_matrix, int x, int y, int wh, int h, ldraw::model *m, const render_filter *skip_filter) = 0;
+	virtual selection_list select(float *projection_matrix, float *modelview_matrix, int x, int y, int wh, int h, ldraw::model *m, const render_filter *skip_filter) = 0;
 
 	virtual void setup();
 
