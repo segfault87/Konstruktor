@@ -49,8 +49,9 @@ KonstruktorRenderWidget::KonstruktorRenderWidget(KonstruktorMainWindow *mainwind
 	viewportMode_ = Uninitialized;
 	parent_ = mainwindow;
 
-	tmodel_ = 0L;
+	currentModel_ = 0L;
 	tvset_ = 0L;
+	
 	tsset_ = new KonstruktorSelection();
 	tisset_ = new KonstruktorIntermediateSelection(tsset_);
 	
@@ -311,6 +312,35 @@ void KonstruktorRenderWidget::updatePositionVector(const QPoint &pos)
 	}
 }
 
+ldraw::matrix KonstruktorRenderWidget::retranslate() const
+{
+	ldraw::matrix matrix = objectmatrix_;
+	ldraw::vector ovec = matrix.get_translation_vector();
+	ldraw::vector adjustedvec = translation_;
+
+	switch (viewportMode_) {
+		case Top:
+		case Bottom:
+			adjustedvec.y() = ovec.y();
+			break;
+		case Front:
+		case Back:
+			adjustedvec.z() = ovec.z();
+			break;
+		case Left:
+		case Right:
+			adjustedvec.x() = ovec.x();
+			break;
+		default:
+			break;
+	};
+	
+	matrix.set_translation_vector(adjustedvec);
+
+	return matrix;
+}
+
+
 // Set viewport
 void KonstruktorRenderWidget::rotate()
 {
@@ -346,7 +376,7 @@ void KonstruktorRenderWidget::rotate()
 
 void KonstruktorRenderWidget::renderPointArray()
 {
-	if (!tmodel_)
+	if (!currentModel_)
 		return;
 
 	const unsigned char c1[] = {255, 255, 255};
@@ -361,7 +391,7 @@ void KonstruktorRenderWidget::renderPointArray()
 		glBegin(GL_POINTS);
 		
 		int i = 0;
-		for (ldraw::model::const_iterator it = tmodel_->elements().begin(); it != tmodel_->elements().end(); ++it) {
+		for (ldraw::model::const_iterator it = currentModel_->elements().begin(); it != currentModel_->elements().end(); ++it) {
 			if ((*it)->get_type() == ldraw::type_ref) {
 				ldraw::element_ref *r = CAST_AS_REF(*it);
 				ldraw::model *rm = r->get_model();
@@ -486,8 +516,9 @@ void KonstruktorRenderWidget::paintGL()
 
 	if(*activeDocument_) {
 		ldraw::model *curmodel = (*activeDocument_)->getActiveModel();
-		if (curmodel != tmodel_) {
-			tmodel_ = curmodel;
+		if (curmodel != currentModel_) {
+			currentModel_ = curmodel;
+			tsset_->setModel(currentModel_);
 			tvset_ = KonstruktorVisibilityExtension::query(curmodel);
 		}
 
@@ -519,8 +550,8 @@ void KonstruktorRenderWidget::paintGL()
 			glLineWidth(2.0f);
 			glPushMatrix();
 			
-			glTranslatef(translation_.x(), translation_.y(), translation_.z());
-			glRotatef(90.0f, 0.0f, 1.0f, 0.0f);
+			glMultMatrixf(retranslate().transpose().get_pointer());
+			glRotatef(90.0f, 0.0f, -1.0f, 0.0f);
 			
 			renderer_->render_bounding_box(objectmetrics_);
 			
@@ -544,7 +575,7 @@ void KonstruktorRenderWidget::paintGL()
 
 			params_->set_rendering_mode(ldraw_renderer::parameters::model_boundingboxes);
 			tsset_->setInversed(true);
-			renderer_->render(tmodel_, tsset_);
+			renderer_->render(currentModel_, tsset_);
 			tsset_->setInversed(false);
 			
 			if (behavior_ == Idle)
@@ -565,7 +596,7 @@ void KonstruktorRenderWidget::paintGL()
 
 			params_->set_rendering_mode(ldraw_renderer::parameters::model_boundingboxes);
 			tisset_->setSelectionMethod(selectionMethod_);
-			renderer_->render(tmodel_, tisset_);
+			renderer_->render(currentModel_, tisset_);
 			
 			if (behavior_ == Idle)
 				params_->set_rendering_mode(renderMode_);
@@ -888,6 +919,8 @@ void KonstruktorRenderWidget::dragEnterEvent(QDragEnterEvent *event)
 
 	behavior_ = Placing;
 	objectmetrics_ = refobj.metrics();
+	objectmatrix_ = tsset_->getLastMatrix();
+	objectcolor_ = tsset_->getLastColor();
 	
 	params_->set_rendering_mode(dragMode_);
 
@@ -929,9 +962,7 @@ void KonstruktorRenderWidget::dropEvent(QDropEvent *event)
 		return;
 
 	KonstruktorRefObject refobj = KonstruktorRefObject::deserialize(data);
-	ldraw::matrix matrix;
-	matrix.set_translation_vector(translation_);
-
+	
 	// Cyclic reference test
 	ldraw::model *sm = (*activeDocument_)->contents()->find_submodel(refobj.filename().toLocal8Bit().data());
 	if (sm) {
@@ -942,7 +973,7 @@ void KonstruktorRenderWidget::dropEvent(QDropEvent *event)
 		}
 	}
 	
-	emit objectDropped(refobj.filename(), matrix, ldraw::color(0));
+	emit objectDropped(refobj.filename(), retranslate(), objectcolor_);
 	
 	update();
 }

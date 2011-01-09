@@ -70,7 +70,7 @@ set(konstruktor_db_updater_SRCS
 kde4_add_kcfg_files(konstruktor_db_updater_SRCS config.kcfgc)
 
 kde4_add_executable(konstruktor_db_updater ${konstruktor_db_updater_SRCS})
-add_definitions(-DKONSTRUKTOR_DB_UPDATER)
+set_target_properties(konstruktor_db_updater PROPERTIES COMPILE_FLAGS -DKONSTRUKTOR_DB_UPDATER)
 target_link_libraries(konstruktor_db_updater libldrawrenderer ${SQLITE_LIBRARIES} ${QT_QTCORE_LIBRARY} ${QT_QTGUI_LIBRARY} ${QT_QTOPENGL_LIBRARY} ${KDE4_KDECORE_LIBRARY} ${KDE4_KDEUI_LIBRARY})
 
 # install

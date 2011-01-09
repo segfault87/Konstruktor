@@ -63,11 +63,7 @@ void KonstruktorPixmapRenderer::setNewSize(int width, int height)
 	height_ = height;
 	
 	delete buffer_;
-#ifndef KONSTRUKTOR_DB_UPDATER
-	buffer_ = new QGLPixelBuffer(width_, height_, *KonstruktorApplication::self()->getGlFormat(), shareWidget_);
-#else
 	buffer_ = new QGLPixelBuffer(width_, height_, QGLFormat::defaultFormat(), shareWidget_);
-#endif
 	
 	buffer_->makeCurrent();
 	glViewport(0, 0, width_, height_);

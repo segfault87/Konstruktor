@@ -65,6 +65,7 @@ class KonstruktorRenderWidget : public QGLWidget
   private:
 	void set3DViewport();
 	void updatePositionVector(const QPoint &pos);
+	ldraw::matrix retranslate() const;
 	void rotate();
 
 	void renderPointArray();
@@ -90,7 +91,8 @@ class KonstruktorRenderWidget : public QGLWidget
 	
   private:
 	KonstruktorDocument **activeDocument_;
-	ldraw::model *tmodel_;
+	ldraw::model *currentModel_;
+	
 	ldraw_renderer::renderer_opengl *renderer_;
 	ldraw_renderer::parameters *params_;
 	KonstruktorVisibilityExtension *tvset_;
@@ -114,6 +116,8 @@ class KonstruktorRenderWidget : public QGLWidget
 	SelectionMethod selectionMethod_;
 	ldraw::vector translation_;
 	ldraw::metrics objectmetrics_;
+	ldraw::matrix objectmatrix_;
+	ldraw::color objectcolor_;
 	KonstruktorViewport stretched_;
 
 	QAction *viewportActions_[VIEWPORT_TYPES];

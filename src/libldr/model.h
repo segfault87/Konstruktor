@@ -34,7 +34,7 @@ class LIBLDR_EXPORT model
   public:
 	enum model_type { primitive, part, submodel, external_file, general };
 	typedef std::vector<element_base*>::const_iterator const_iterator;
-	typedef std::vector<element_base*>::reverse_iterator reverse_iterator;
+	typedef std::vector<element_base*>::const_reverse_iterator reverse_iterator;
 	
 	explicit model(model_multipart *parent = 0L)
 		: m_null(true), m_parent(parent), m_model_type(general) {}

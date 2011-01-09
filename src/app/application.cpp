@@ -108,6 +108,8 @@ bool KonstruktorApplication::initialize()
 	params_->set_shader(false);
 	params_->set_vbuffer_criteria(ldraw_renderer::parameters::vbuffer_parts);
 
+	configUpdated();
+
 	testPovRay(true);
 
 	startDBUpdater();

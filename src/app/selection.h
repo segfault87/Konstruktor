@@ -12,6 +12,8 @@
 
 #include <QSet>
 
+#include <libldr/math.h>
+
 #include <renderer/renderer_opengl.h>
 
 class KonstruktorSelection : public ldraw_renderer::render_filter
@@ -21,6 +23,7 @@ class KonstruktorSelection : public ldraw_renderer::render_filter
 	~KonstruktorSelection();
 
 	void setSelection(const QSet<int> &set);
+	void setModel(const ldraw::model *m);
 
 	void resetSelection();
 	void setInversed(bool i);
@@ -28,10 +31,17 @@ class KonstruktorSelection : public ldraw_renderer::render_filter
 	const QSet<int>* getSelection() const;
 	bool hasSelection() const;
 
+	/* utility */
+	const ldraw::element_ref* getLastRef() const;
+	ldraw::matrix getLastMatrix() const;
+	ldraw::color getLastColor() const;
+
 	bool query(const ldraw::model *m, int index, int depth) const;
 
   private:
 	const QSet<int> *tsset_;
+	const ldraw::model *model_;
+	
 	bool inversed_;
 };
 

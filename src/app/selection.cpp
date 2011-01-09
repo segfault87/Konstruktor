@@ -22,6 +22,12 @@ void KonstruktorSelection::setSelection(const QSet<int> &set)
 	tsset_ = &set;
 }
 
+void KonstruktorSelection::setModel(const ldraw::model *m)
+{
+	model_ = m;
+	tsset_ = 0L;
+}
+
 void KonstruktorSelection::resetSelection()
 {
 	tsset_ = 0L;
@@ -40,6 +46,44 @@ const QSet<int>* KonstruktorSelection::getSelection() const
 bool KonstruktorSelection::hasSelection() const
 {
 	return tsset_ != 0L;
+}
+
+const ldraw::element_ref* KonstruktorSelection::getLastRef() const
+{
+	if (tsset_ && tsset_->count() == 1) {
+		int ptr = *tsset_->begin();
+		
+		const ldraw::element_base *eb = model_->elements()[ptr];
+		if (eb->get_type() == ldraw::type_ref)
+			return CAST_AS_CONST_REF(eb);
+	} else {
+		for (ldraw::model::reverse_iterator it = model_->elements().rbegin(); it != model_->elements().rend(); ++it) {
+			if ((*it)->get_type() == ldraw::type_ref)
+				return CAST_AS_CONST_REF(*it);
+		}
+	}
+
+	return 0L;
+}
+
+ldraw::matrix KonstruktorSelection::getLastMatrix() const
+{
+	const ldraw::element_ref *ref = getLastRef();
+
+	if (ref)
+		return ref->get_matrix();
+	else
+		return ldraw::matrix();
+}
+
+ldraw::color KonstruktorSelection::getLastColor() const
+{
+	const ldraw::element_ref *ref = getLastRef();
+
+	if (ref)
+		return ref->get_color();
+	else
+		return ldraw::color(0);
 }
 
 bool KonstruktorSelection::query(const ldraw::model *, int index, int) const
