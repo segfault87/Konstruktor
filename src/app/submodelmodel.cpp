@@ -76,7 +76,12 @@ QVariant KonstruktorSubmodelModel::data(const QModelIndex &index, int role) cons
 		else
 			m = submodelList_[index.row() - 1].second;
 
-		return m->custom_data<KonstruktorPixmapExtension>()->pixmap().scaled(96, 96, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+		const QPixmap &thumbnail = m->custom_data<KonstruktorPixmapExtension>()->pixmap();
+
+		if (thumbnail.width() > 96 || thumbnail.height() > 96)
+			return thumbnail.scaled(96, 96, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+		else
+			return thumbnail;
 	} else if (role == Qt::UserRole) {
 		if (index.row() == 0) {
 			return "";

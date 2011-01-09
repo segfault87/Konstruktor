@@ -173,6 +173,13 @@ QPixmap KonstruktorPixmapRenderer::renderToPixmap(ldraw::model *m, bool crop)
 		int w, h;
 		float xl = std::fabs(dvp.right-dvp.left);
 		float yl = std::fabs(dvp.bottom-dvp.top);
+
+		if (xl == 0.0f || yl == 0.0f) {
+			QPixmap np = QPixmap(16, 16);
+			np.fill(Qt::transparent);
+			
+			return np;
+		}
 		
 		if (xl >= yl) {
 			w = width_;
@@ -184,6 +191,9 @@ QPixmap KonstruktorPixmapRenderer::renderToPixmap(ldraw::model *m, bool crop)
 		
 		return QPixmap::fromImage(buffer_->toImage().copy(width_/2 - w/2, height_/2 - h/2, w, h));
 	} else {
-		return QPixmap::fromImage(buffer_->toImage());
+		QPixmap np = QPixmap(16, 16);
+		np.fill(Qt::transparent);
+		
+		return np;
 	}
 }
