@@ -1,6 +1,8 @@
 // Konstruktor - An interactive LDraw modeler for KDE
 // Copyright (c)2006-2011 Park "segfault" J. K. <mastermind@planetmono.org>
 
+#include <limits.h>
+
 #include <cmath>
 
 #include <libldr/metrics.h>
@@ -520,8 +522,10 @@ void KonstruktorRenderWidget::paintGL()
 			
 			glPopMatrix();
 		} else if (behavior_ == Dragging) {
-			glDisable(GL_DEPTH_TEST);
-			renderPointArray();
+			if (isRegion_) {
+				glDisable(GL_DEPTH_TEST);
+				renderPointArray();
+			}
 		}
 
 		glDisable(GL_DEPTH_TEST);
@@ -671,6 +675,7 @@ void KonstruktorRenderWidget::mousePressEvent(QMouseEvent *event)
 			
 			behavior_ = Dragging;
 			region_ = QRect(event->pos(), QSize(0, 0));
+			isRegion_ = false;
 		}
 
 		doneCurrent();
@@ -701,6 +706,9 @@ void KonstruktorRenderWidget::mouseMoveEvent(QMouseEvent *event)
 		update();
 	} else if (behavior_ == Dragging) {
 		region_.setCoords(region_.x(), region_.y(), event->pos().x(), event->pos().y());
+
+		if (region_.width() > 3 || region_.height() > 3)
+			isRegion_ = true;
 		
 		update();
 	} else if (behavior_ == Moving) {
@@ -728,11 +736,41 @@ void KonstruktorRenderWidget::mouseReleaseEvent(QMouseEvent *event)
 		rotate();
 		float matrix[16];
 		glGetFloatv(GL_MODELVIEW_MATRIX, matrix);
-		std::list<int> result = renderer_->select(projectionMatrix_, matrix, region_.x(), region_.y(), region_.width(), region_.height(), (*activeDocument_)->getActiveModel(), tvset_);
+
+		if (!isRegion_)
+			renderer_->set_selection_type(ldraw_renderer::renderer::selection_model_full);
+
+
+		typedef std::list<std::pair<int, GLuint> > selectionList;
+		
+		selectionList resultWithDepth = renderer_->select(projectionMatrix_, matrix, region_.x(), region_.y(), region_.width(), region_.height(), (*activeDocument_)->getActiveModel(), tvset_);
+
+		if (!isRegion_)
+			renderer_->set_selection_type(ldraw_renderer::renderer::selection_points);
 
 		params_->set_rendering_mode(renderMode_);
 
 		doneCurrent();
+
+		std::list<int> result;
+
+		int i = 0;
+		
+		if (!isRegion_ && resultWithDepth.size() > 0) {
+			int idx = 0;
+			GLuint min = UINT_MAX;
+			for (selectionList::iterator it = resultWithDepth.begin(); it != resultWithDepth.end(); ++it, ++i) {
+				if ((*it).second < min) {
+					min = (*it).second;
+					idx = (*it).first;
+				}
+			}
+			
+			result.push_back(idx);
+		} else {
+			for (selectionList::iterator it = resultWithDepth.begin(); it != resultWithDepth.end(); ++it, ++i)
+				result.push_back((*it).first);
+		}
 
 		emit madeSelection(result);
 

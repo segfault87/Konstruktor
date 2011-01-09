@@ -16,6 +16,7 @@ renderer::renderer(const parameters *rp)
 	set_base_color(ldraw::color(7));
 	
 	m_params = rp;
+	m_selection = selection_points;
 }
 
 renderer::~renderer()
@@ -29,6 +30,11 @@ void renderer::set_base_color(const ldraw::color &c)
 		m_colorstack.pop();
 	
 	m_colorstack.push(c);
+}
+
+void renderer::set_selection_type(selection s)
+{
+	m_selection = s;
 }
 
 void renderer::setup()

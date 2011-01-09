@@ -108,6 +108,7 @@ class KonstruktorRenderWidget : public QGLWidget
 	Behavior behavior_;
 	QPoint lastPos_;
 	QRect region_;
+	bool isRegion_;
 	ldraw::vector translation_;
 	ldraw::metrics objectmetrics_;
 	KonstruktorViewport stretched_;

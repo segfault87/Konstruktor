@@ -30,7 +30,7 @@ class LIBLDR_EXPORT renderer_opengl_retained : public renderer_opengl
 	void render_bounding_boxes(ldraw::model *m, const render_filter *filter);
 
 	bool hit_test(float *projection_matrix, float *modelview_matrix, int x, int y, int w, int h, ldraw::model *m, const render_filter *filter);
-	std::list<int> select(float *projection_matrix, float *modelview_matrix, int x, int y, int w, int h, ldraw::model *m, const render_filter *filter);
+	std::list<std::pair<int, GLuint> > select(float *projection_matrix, float *modelview_matrix, int x, int y, int w, int h, ldraw::model *m, const render_filter *filter);
 	
   private:
 	friend class renderer_opengl_factory;

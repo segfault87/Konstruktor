@@ -316,10 +316,10 @@ bool renderer_opengl_retained::hit_test(float *projection_matrix, float *modelvi
 		return false;
 }
 
-std::list<int> renderer_opengl_retained::select(float *projection_matrix, float *modelview_matrix, int x, int y, int w, int h, ldraw::model *m, const render_filter *skip_filter)
+std::list<std::pair<int, GLuint> > renderer_opengl_retained::select(float *projection_matrix, float *modelview_matrix, int x, int y, int w, int h, ldraw::model *m, const render_filter *skip_filter)
 {
 	GLint hits, viewport[4];
-	GLuint selectionBuffer[1024];
+	GLuint selectionBuffer[4096];
 
 	if (m_vbo)
 		opengl_extension_vbo::self()->glBindBuffer(GL_ARRAY_BUFFER_ARB, 0);
@@ -351,6 +351,11 @@ std::list<int> renderer_opengl_retained::select(float *projection_matrix, float 
 
 	glPointSize(7.0f);
 
+	if (m_selection == selection_model_full) {
+		glPushAttrib(GL_ENABLE_BIT);
+		glEnable(GL_DEPTH_TEST);
+	}
+
 	// Iterate!
 	int i = 0;
 	for (ldraw::model::const_iterator it = m->elements().begin(); it != m->elements().end(); ++it) {
@@ -378,11 +383,24 @@ std::list<int> renderer_opengl_retained::select(float *projection_matrix, float 
 
 			const ldraw::metrics *rmm = rm->custom_data<ldraw::metrics>();
 			const ldraw::matrix &rmt = l->get_matrix();
-			ldraw::vector center = (rmt * rmm->min() + rmt * rmm->max()) * 0.5f;
+			
+			if (m_selection == selection_points) {
+				ldraw::vector center = (rmt * rmm->min() + rmt * rmm->max()) * 0.5f;
+				
+				glBegin(GL_POINTS);
+				glVertex3fv(center.get_pointer());
+				glEnd();
+			} else {
+				glPushMatrix();
+				glMultMatrixf(l->get_matrix().transpose().get_pointer());
 
-			glBegin(GL_POINTS);
-			glVertex3fv(center.get_pointer());
-			glEnd();
+				if (m_selection == selection_model_full)
+					render_bounding_box_filled(*rmm);
+				else
+					render(rm, 0L);
+				
+				glPopMatrix();
+			}
 		}
 		
 		++i;
@@ -390,9 +408,13 @@ std::list<int> renderer_opengl_retained::select(float *projection_matrix, float 
 
 	hits = glRenderMode(GL_RENDER);
 
-	std::list<int> result;
+	if (m_selection == selection_model_full) {
+		glPopAttrib();
+	}
+
+	std::list<std::pair<int, GLuint> > result;
 	for (int i = 0; i < hits; ++i)
-		result.push_back(selectionBuffer[i * 4 + 3]);
+		result.push_back(std::pair<int, GLuint>(selectionBuffer[i * 4 + 3], selectionBuffer[i * 4 + 1]));
 
 	return result;
 }
@@ -403,14 +425,14 @@ void printInfo(GLenum e)
     int charsWritten  = 0;
     char *infoLog;
 	
-        glGetObjectParameterivARB(e, GL_OBJECT_INFO_LOG_LENGTH_ARB,
-                                         &infologLength);
-
+	glGetObjectParameterivARB(e, GL_OBJECT_INFO_LOG_LENGTH_ARB,
+							  &infologLength);
+	
     if (infologLength > 0)
     {
         infoLog = new char[infologLength];
         glGetInfoLogARB(e, infologLength, &charsWritten, infoLog);
-                printf("%s\n",infoLog);
+		printf("%s\n",infoLog);
         delete infoLog;
     }
 }

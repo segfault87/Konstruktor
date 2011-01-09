@@ -410,7 +410,7 @@ bool renderer_opengl_immediate::hit_test(float *projection_matrix, float *modelv
 }
 
 // Get selection
-std::list<int> renderer_opengl_immediate::select(float *projection_matrix, float *modelview_matrix, int x, int y, int w, int h, ldraw::model *m, const render_filter *skip_filter)
+std::list<std::pair<int, GLuint> > renderer_opengl_immediate::select(float *projection_matrix, float *modelview_matrix, int x, int y, int w, int h, ldraw::model *m, const render_filter *skip_filter)
 {
 	GLint hits, viewport[4];
 	GLuint selectionBuffer[1024];
@@ -482,9 +482,9 @@ std::list<int> renderer_opengl_immediate::select(float *projection_matrix, float
 
 	hits = glRenderMode(GL_RENDER);
 
-	std::list<int> result;
+	std::list<std::pair<int, GLuint> > result;
 	for (int i = 0; i < hits; ++i)
-		result.push_back(selectionBuffer[i * 4 + 3]);
+		result.push_back(std::pair<int, GLuint>(selectionBuffer[i * 4 + 3], selectionBuffer[i * 4 + 1]));
 
 	return result;
 }

@@ -51,7 +51,7 @@ class LIBLDR_EXPORT renderer_opengl_immediate : public renderer_opengl
 	void render_bounding_box(const ldraw::metrics &metrics);
 	
 	bool hit_test(float *projection_matrix, float *modelview_matrix, int x, int y, int w, int h, ldraw::model *m, const render_filter *filter);
-	std::list<int> select(float *projection_matrix, float *modelview_matrix, int x, int y, int w, int h, ldraw::model *m, const render_filter *filter);
+	std::list<std::pair<int, GLuint> > select(float *projection_matrix, float *modelview_matrix, int x, int y, int w, int h, ldraw::model *m, const render_filter *filter);
 	
   protected:
 	void draw_model_full(const ldraw::model_multipart *base, ldraw::model *m, int depth, const render_filter *filter);
