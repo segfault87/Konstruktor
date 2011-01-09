@@ -792,7 +792,7 @@ void KonstruktorMainWindow::initConnections()
 	for (int i = 0; i < 4; ++i) {
 		connect(this, SIGNAL(activeModelChanged(ldraw::model *)), renderWidget_[i], SLOT(modelChanged(ldraw::model *)));
 		connect(contentList_, SIGNAL(selectionChanged(const QSet<int> &)), renderWidget_[i], SLOT(selectionChanged(const QSet<int> &)));
-		connect(renderWidget_[i], SIGNAL(madeSelection(const std::list<int> &)), contentList_, SLOT(updateSelection(const std::list<int> &)));
+		connect(renderWidget_[i], SIGNAL(madeSelection(const std::list<int> &, KonstruktorRenderWidget::SelectionMethod)), contentList_, SLOT(updateSelection(const std::list<int> &, KonstruktorRenderWidget::SelectionMethod)));
 		connect(renderWidget_[i], SIGNAL(translateObject(const ldraw::vector &)), editorGroup_, SLOT(move(const ldraw::vector &)));
 		connect(renderWidget_[i], SIGNAL(objectDropped(const QString &, const ldraw::matrix &, const ldraw::color &)), editorGroup_, SLOT(insert(const QString &, const ldraw::matrix &, const ldraw::color &)));
 	}

@@ -10,6 +10,7 @@
 #include <QTreeView>
 
 #include "commandbase.h"
+#include "renderwidget.h"
 
 namespace ldraw
 {
@@ -36,7 +37,7 @@ class KonstruktorContentsView : public QTreeView
 	void hideSelected();
 	void unhideAll();
 	void modelChanged(ldraw::model *model);
-	void updateSelection(const std::list<int> &selection);
+	void updateSelection(const std::list<int> &selection, KonstruktorRenderWidget::SelectionMethod method);
 	void rowsChanged(const QPair<KonstruktorCommandBase::AffectedRow, QSet<int> > &rows);
 
   private slots:

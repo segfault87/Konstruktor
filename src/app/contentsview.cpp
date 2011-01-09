@@ -118,13 +118,32 @@ void KonstruktorContentsView::modelChanged(ldraw::model *)
 	hiddenIndexes_.clear();
 }
 
-void KonstruktorContentsView::updateSelection(const std::list<int> &selection)
+void KonstruktorContentsView::updateSelection(const std::list<int> &selection, KonstruktorRenderWidget::SelectionMethod method)
 {
+	const int maxcol = model()->columnCount() - 1;
+	
 	QItemSelection s;
-	for (std::list<int>::const_iterator it = selection.begin(); it != selection.end(); ++it)
-		s.select(model()->index(*it, 0), model()->index(*it, model()->columnCount() - 1));
 
-	selectionModel()->select(s, QItemSelectionModel::ClearAndSelect);
+	if (method == KonstruktorRenderWidget::Intersection) {
+		const QItemSelection &cis = selectionModel()->selection();
+		
+		for (std::list<int>::const_iterator it = selection.begin(); it != selection.end(); ++it) {
+			if (cis.contains(model()->index(*it, 0)))
+				s.select(model()->index(*it, 0), model()->index(*it, maxcol));
+		}
+	} else {
+		for (std::list<int>::const_iterator it = selection.begin(); it != selection.end(); ++it)
+			s.select(model()->index(*it, 0), model()->index(*it, maxcol));
+	}
+
+	QItemSelectionModel::SelectionFlag flag = QItemSelectionModel::ClearAndSelect;
+	
+	if (method == KonstruktorRenderWidget::Addition)
+		flag = QItemSelectionModel::Select;
+	else if (method == KonstruktorRenderWidget::Subtraction)
+		flag = QItemSelectionModel::Deselect;
+	
+	selectionModel()->select(s, flag);
 }
 
 void KonstruktorContentsView::rowsChanged(const QPair<KonstruktorCommandBase::AffectedRow, QSet<int> > &rows)

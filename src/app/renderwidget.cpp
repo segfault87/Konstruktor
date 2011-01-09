@@ -52,7 +52,7 @@ KonstruktorRenderWidget::KonstruktorRenderWidget(KonstruktorMainWindow *mainwind
 	tmodel_ = 0L;
 	tvset_ = 0L;
 	tsset_ = new KonstruktorSelection();
-	tisset_ = new KonstruktorIntermediateSelection();
+	tisset_ = new KonstruktorIntermediateSelection(tsset_);
 	
 	activeDocument_ = document;
 	behavior_ = Idle;
@@ -564,6 +564,7 @@ void KonstruktorRenderWidget::paintGL()
 				glTranslatef(translation_.x(), translation_.y(), translation_.z());
 
 			params_->set_rendering_mode(ldraw_renderer::parameters::model_boundingboxes);
+			tisset_->setSelectionMethod(selectionMethod_);
 			renderer_->render(tmodel_, tisset_);
 			
 			if (behavior_ == Idle)
@@ -696,6 +697,15 @@ void KonstruktorRenderWidget::mousePressEvent(QMouseEvent *event)
 					tvset_->insert(*it);
 			}
 		} else {
+			if (event->modifiers() == Qt::ControlModifier)
+				selectionMethod_ = Addition;
+			else if (event->modifiers() == Qt::ShiftModifier)
+				selectionMethod_ = Subtraction;
+			else if (event->modifiers() == (Qt::ControlModifier | Qt::ShiftModifier))
+				selectionMethod_ = Intersection;
+			else
+				selectionMethod_ = Normal;
+			
 			params_->set_rendering_mode(dragMode_);
 			
 			behavior_ = Dragging;
@@ -711,6 +721,9 @@ void KonstruktorRenderWidget::mousePressEvent(QMouseEvent *event)
 
 void KonstruktorRenderWidget::mouseMoveEvent(QMouseEvent *event)
 {
+	if (!(*activeDocument_))
+		return;
+	
 	if (behavior_ == Rotating) {
 		(*activeDocument_)->getMouseRotation().move_event(event->pos().x(), event->pos().y(), width_, height_);
 		
@@ -732,7 +745,7 @@ void KonstruktorRenderWidget::mouseMoveEvent(QMouseEvent *event)
 	} else if (behavior_ == Dragging) {
 		region_.setCoords(region_.x(), region_.y(), event->pos().x(), event->pos().y());
 
-		if (region_.width() > 3 || region_.height() > 3)
+		if (region_.width() > 3 || region_.height() > 3 || region_.width() < -3 || region_.height() < -3)
 			isRegion_ = true;
 
 		makeCurrent();
@@ -759,6 +772,9 @@ void KonstruktorRenderWidget::mouseMoveEvent(QMouseEvent *event)
 
 void KonstruktorRenderWidget::mouseReleaseEvent(QMouseEvent *event)
 {
+	if (!(*activeDocument_))
+		return;
+	
 	if ((behavior_ == Rotating && event->button() & Qt::RightButton) || (behavior_ == Panning && event->button() & Qt::MidButton)) {
 		behavior_ = Idle;
 		params_->set_rendering_mode(renderMode_);
@@ -808,7 +824,7 @@ void KonstruktorRenderWidget::mouseReleaseEvent(QMouseEvent *event)
 				result.push_back((*it).first);
 		}
 
-		emit madeSelection(result);
+		emit madeSelection(result, selectionMethod_);
 
 		tisset_->clear();
 

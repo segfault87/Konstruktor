@@ -22,10 +22,6 @@ class KonstruktorSelection : public ldraw_renderer::render_filter
 
 	void setSelection(const QSet<int> &set);
 
-	void add(const QSet<int> &set);
-	void subtract(const QSet<int> &set);
-	void intersect(const QSet<int> &set);
-	
 	void resetSelection();
 	void setInversed(bool i);
 
@@ -42,17 +38,21 @@ class KonstruktorSelection : public ldraw_renderer::render_filter
 class KonstruktorIntermediateSelection : public ldraw_renderer::render_filter
 {
   public:
-	KonstruktorIntermediateSelection();
+	KonstruktorIntermediateSelection(KonstruktorSelection *currentSelection);
 	~KonstruktorIntermediateSelection();
 
 	void setList(const std::list<std::pair<int, GLuint> > &list);
 	void clear();
+
+	void setSelectionMethod(int method);
 
 	bool hasSelection() const;
 	bool query(const ldraw::model *m, int index, int depth) const;
 
   private:
 	std::set<int> tsset_;
+	KonstruktorSelection *currentSelection_;
+	int selectionMethod_;
 };
 
 #endif

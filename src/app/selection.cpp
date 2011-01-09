@@ -1,6 +1,8 @@
 // Konstruktor - An interactive LDraw modeler for KDE
 // Copyright (c)2006-2011 Park "segfault" J. K. <mastermind@planetmono.org>
 
+#include "renderwidget.h"
+
 #include "selection.h"
 
 KonstruktorSelection::KonstruktorSelection()
@@ -19,24 +21,6 @@ void KonstruktorSelection::setSelection(const QSet<int> &set)
 {
 	tsset_ = &set;
 }
-
-/*void KonstruktorSelection::add(const QSet<int> &set)
-{
-	if (tsset_)
-		tsset_->unite(set);
-}
-
-void KonstruktorSelection::subtract(const QSet<int> &set)
-{
-	if (tsset_)
-		tsset_->subtract(set);
-}
-
-void KonstruktorSelection::intersect(const QSet<int> &set)
-{
-	if (tsset_)
-		tsset_->intersect(set);
-}*/
 
 void KonstruktorSelection::resetSelection()
 {
@@ -69,9 +53,10 @@ bool KonstruktorSelection::query(const ldraw::model *, int index, int) const
 		return tsset_->contains(index);
 }
 
-KonstruktorIntermediateSelection::KonstruktorIntermediateSelection()
+KonstruktorIntermediateSelection::KonstruktorIntermediateSelection(KonstruktorSelection *currentSelection)
+	: currentSelection_(currentSelection)
 {
-
+	selectionMethod_ = KonstruktorRenderWidget::Normal;
 }
 
 KonstruktorIntermediateSelection::~KonstruktorIntermediateSelection()
@@ -92,6 +77,11 @@ void KonstruktorIntermediateSelection::clear()
 	tsset_.clear();
 }
 
+void KonstruktorIntermediateSelection::setSelectionMethod(int method)
+{
+	selectionMethod_ = method;
+}
+
 bool KonstruktorIntermediateSelection::hasSelection() const
 {
 	return tsset_.size() > 0;
@@ -99,5 +89,8 @@ bool KonstruktorIntermediateSelection::hasSelection() const
 
 bool KonstruktorIntermediateSelection::query(const ldraw::model *, int index, int) const
 {
-	return !(tsset_.find(index) != tsset_.end());
+	if ((selectionMethod_ == KonstruktorRenderWidget::Subtraction || selectionMethod_ == KonstruktorRenderWidget::Intersection) && currentSelection_->hasSelection())
+		return !(tsset_.find(index) != tsset_.end() && currentSelection_->getSelection()->contains(index));
+	else
+		return !(tsset_.find(index) != tsset_.end());
 }

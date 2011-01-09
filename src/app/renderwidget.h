@@ -41,6 +41,7 @@ class KonstruktorRenderWidget : public QGLWidget
   public:
 	enum ViewportMode { Top, Bottom, Front, Back, Left, Right, Free, Uninitialized };
 	enum Behavior { Idle, Placing, Moving, Dragging, Rotating, Panning };
+	enum SelectionMethod { Normal, Addition, Subtraction, Intersection };
 	
 	KonstruktorRenderWidget(KonstruktorMainWindow *mainwindow, KonstruktorDocument **document, ViewportMode viewport, QGLContext *context, QGLWidget *shareWidget, QWidget *parent = 0L);
 	~KonstruktorRenderWidget();
@@ -52,7 +53,7 @@ class KonstruktorRenderWidget : public QGLWidget
 
   signals:
 	void objectDropped(const QString &filename, const ldraw::matrix &matrix, const ldraw::color &color);
-	void madeSelection(const std::list<int> &selection);
+	void madeSelection(const std::list<int> &selection, KonstruktorRenderWidget::SelectionMethod method = Normal);
 	void translateObject(const ldraw::vector &vector);
 						 
   public slots:
@@ -110,6 +111,7 @@ class KonstruktorRenderWidget : public QGLWidget
 	QPoint lastPos_;
 	QRect region_;
 	bool isRegion_;
+	SelectionMethod selectionMethod_;
 	ldraw::vector translation_;
 	ldraw::metrics objectmetrics_;
 	KonstruktorViewport stretched_;
