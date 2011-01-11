@@ -50,7 +50,7 @@ void KonstruktorPartsWidget::initialize(const QString &search, bool hideUnoffici
 	if (hideUnofficial)
 		subq1 = QString("p.unofficial = 0 AND");
 	if (!search.isEmpty())
-		subq2 = QString("p.desc LIKE '%%1%' AND").arg(search);
+		subq2 = QString("(p.desc LIKE '%%1%' OR p.partid LIKE '%%1%) AND").arg(search);
 	
 	categories_.clear();
 	categorymap_.clear();
@@ -72,9 +72,19 @@ void KonstruktorPartsWidget::initialize(const QString &search, bool hideUnoffici
 	for (QStringList::Iterator it = parts.begin(); it != parts.end(); ++it) {
 		QString desc = *it++;
 		QString fn = *it++;
-		ldraw::vector min((*it++).toFloat(), (*it++).toFloat(), (*it++).toFloat());
-		ldraw::vector max((*it++).toFloat(), (*it++).toFloat(), (*it++).toFloat());
-		list_[(*it).toInt()].append(KonstruktorPartItem(categorymap_[(*it).toInt()], desc, fn, ldraw::metrics(min, max)));
+
+		float minx, miny, minz;
+		float maxx, maxy, maxz;
+
+		minx = (*it++).toFloat();
+		miny = (*it++).toFloat();
+		minz = (*it++).toFloat();
+
+		maxx = (*it++).toFloat();
+		maxy = (*it++).toFloat();
+		maxz = (*it++).toFloat();
+		
+		list_[(*it).toInt()].append(KonstruktorPartItem(categorymap_[(*it).toInt()], desc, fn, ldraw::metrics(ldraw::vector(minx, miny, minz), ldraw::vector(maxx, maxy, maxz))));
 	}
 
 	// Delete if there is no part in the category

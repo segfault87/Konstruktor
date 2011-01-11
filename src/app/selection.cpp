@@ -50,17 +50,22 @@ bool KonstruktorSelection::hasSelection() const
 
 const ldraw::element_ref* KonstruktorSelection::getLastRef() const
 {
-	if (tsset_ && tsset_->count() == 1) {
-		int ptr = *tsset_->begin();
-		
-		const ldraw::element_base *eb = model_->elements()[ptr];
-		if (eb->get_type() == ldraw::type_ref)
-			return CAST_AS_CONST_REF(eb);
-	} else {
-		for (ldraw::model::reverse_iterator it = model_->elements().rbegin(); it != model_->elements().rend(); ++it) {
-			if ((*it)->get_type() == ldraw::type_ref)
-				return CAST_AS_CONST_REF(*it);
+	if (tsset_) {
+		if (tsset_->count() == 1) {
+			int ptr = *tsset_->begin();
+			
+			const ldraw::element_base *eb = model_->elements()[ptr];
+			if (eb->get_type() == ldraw::type_ref)
+				return CAST_AS_CONST_REF(eb);
+		} else if (tsset_->count() == 0) {
+			return 0L;
+		} else {
+			for (ldraw::model::reverse_iterator it = model_->elements().rbegin(); it != model_->elements().rend(); ++it) {
+				if ((*it)->get_type() == ldraw::type_ref)
+					return CAST_AS_CONST_REF(*it);
+			}
 		}
+		
 	}
 
 	return 0L;

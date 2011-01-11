@@ -551,7 +551,6 @@ void KonstruktorRenderWidget::paintGL()
 			glPushMatrix();
 			
 			glMultMatrixf(retranslate().transpose().get_pointer());
-			glRotatef(90.0f, 0.0f, -1.0f, 0.0f);
 			
 			renderer_->render_bounding_box(objectmetrics_);
 			
@@ -921,7 +920,7 @@ void KonstruktorRenderWidget::dragEnterEvent(QDragEnterEvent *event)
 	objectmetrics_ = refobj.metrics();
 	objectmatrix_ = tsset_->getLastMatrix();
 	objectcolor_ = tsset_->getLastColor();
-	
+
 	params_->set_rendering_mode(dragMode_);
 
 	float x = -stretched_.left / (stretched_.right - stretched_.left) * width_;
