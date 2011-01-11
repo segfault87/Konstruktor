@@ -576,6 +576,9 @@ void vbuffer_extension::fill_elements_recursive(std::stack<ldraw::color> &colors
 	if (!m->custom_data<normal_extension>())
 		m->update_custom_data<normal_extension>();
 
+	ldraw::matrix transform_wo_position = transform;
+	transform_wo_position.set_translation_vector(ldraw::vector());
+
 	const std::map<int, ldraw::vector> &norms = m->custom_data<normal_extension>()->normals();
 	
 	int i = 0;
@@ -597,7 +600,7 @@ void vbuffer_extension::fill_elements_recursive(std::stack<ldraw::color> &colors
 			fill_element_atomic(transform * l->pos2(), m_vertices[1], &m_vertptr[1]);
 			fill_element_atomic(transform * l->pos3(), m_vertices[1], &m_vertptr[1]);
 
-			ldraw::vector n = (*norms.find(i)).second;
+			ldraw::vector n = transform_wo_position * (*norms.find(i)).second;
 			
 			fill_element_atomic(n, m_normals[0], &m_normptr[0]);
 			fill_element_atomic(n, m_normals[0], &m_normptr[0]);
@@ -611,8 +614,8 @@ void vbuffer_extension::fill_elements_recursive(std::stack<ldraw::color> &colors
 			fill_element_atomic(transform * l->pos2(), m_vertices[2], &m_vertptr[2]);
 			fill_element_atomic(transform * l->pos3(), m_vertices[2], &m_vertptr[2]);
 			fill_element_atomic(transform * l->pos4(), m_vertices[2], &m_vertptr[2]);
-
-			ldraw::vector n = (*norms.find(i)).second;
+			
+			ldraw::vector n = transform_wo_position * (*norms.find(i)).second;
 			
 			fill_element_atomic(n, m_normals[1], &m_normptr[1]);
 			fill_element_atomic(n, m_normals[1], &m_normptr[1]);
