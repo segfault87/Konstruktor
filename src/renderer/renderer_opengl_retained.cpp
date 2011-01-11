@@ -646,7 +646,7 @@ void renderer_opengl_retained::render_recursive(ldraw::model *m, const render_fi
 			if ((*it)->get_type() == ldraw::type_ref) {
 				ldraw::element_ref *r = CAST_AS_REF(*it);
 
-				if (!filter || (filter && !filter->query(r->get_model(), i, depth))) {
+				if (!filter || (filter && !filter->query(m, i, depth))) {
 					m_colorstack.push(r->get_color());
 					
 					glPushMatrix();

@@ -13,6 +13,8 @@ KonstruktorContentsView::KonstruktorContentsView(QWidget *parent)
 	setRootIsDecorated(false);
 	setSelectionBehavior(QTreeView::SelectRows);
 	setSelectionMode(QTreeView::ExtendedSelection);
+
+	hiddenIndices_ = 0L;
 }
 
 KonstruktorContentsView::~KonstruktorContentsView()
@@ -22,31 +24,31 @@ KonstruktorContentsView::~KonstruktorContentsView()
 
 int KonstruktorContentsView::uniqueSelection() const
 {
-	if (selectedIndexes_.size() == 1)
-		return *selectedIndexes_.begin();
+	if (selectedIndices_.size() == 1)
+		return *selectedIndices_.begin();
 
 	return -1;
 }
 
 void KonstruktorContentsView::hide(const QModelIndex &index)
 {
-	if (selectedIndexes_.contains(index.row())) {
-		hiddenIndexes_.insert(index.row());
-		selectedIndexes_.remove(index.row());
+	if (selectedIndices_.contains(index.row())) {
+		hiddenIndices_->insert(index.row());
+		selectedIndices_.remove(index.row());
 
-		emit selectionChanged(selectedIndexes_);
+		emit selectionChanged(selectedIndices_);
 	}
 }
 
 void KonstruktorContentsView::unhide(const QModelIndex &index)
 {
-	if (hiddenIndexes_.contains(index.row())) {
-		hiddenIndexes_.remove(index.row());
+	if (hiddenIndices_->find(index.row()) != hiddenIndices_->end()) {
+		hiddenIndices_->erase(index.row());
 
 		if (selectionModel()->isSelected(index))
-			selectedIndexes_.insert(index.row());
+			selectedIndices_.insert(index.row());
 
-		emit selectionChanged(selectedIndexes_);
+		emit selectionChanged(selectedIndices_);
 	}
 }
 
@@ -60,62 +62,68 @@ void KonstruktorContentsView::selectionChanged(const QItemSelection &selected, c
 
 	const QModelIndexList &list = selected.indexes();
 	for (QModelIndexList::ConstIterator it = list.begin(); it != list.end(); ++it) {
-		if ((*it).column() == 0 && (*it).isValid() && !selectedIndexes_.contains((*it).row())) {
+		if ((*it).column() == 0 && (*it).isValid() && !selectedIndices_.contains((*it).row())) {
 			if (static_cast<ldraw::element_base *>((*it).internalPointer())->line_type() == 0)
 				continue;
 			
-			selectedIndexes_.insert((*it).row());
+			selectedIndices_.insert((*it).row());
 			++affected;
 		}
 	}
 
 	const QModelIndexList &delist = deselected.indexes();
 	for (QModelIndexList::ConstIterator it = delist.begin(); it != delist.end(); ++it) {
-		if ((*it).column() == 0 && (*it).isValid() && selectedIndexes_.contains((*it).row())) {
+		if ((*it).column() == 0 && (*it).isValid() && selectedIndices_.contains((*it).row())) {
 			if (static_cast<ldraw::element_base *>((*it).internalPointer())->line_type() == 0)
 					continue;
 			
-			if (selectedIndexes_.contains((*it).row()))
-				selectedIndexes_.remove((*it).row());
-			else if (hiddenIndexes_.contains((*it).row()))
-				hiddenIndexes_.remove((*it).row());
+			if (selectedIndices_.contains((*it).row()))
+				selectedIndices_.remove((*it).row());
+			else if (hiddenIndices_->find((*it).row()) != hiddenIndices_->end())
+				hiddenIndices_->erase((*it).row());
 
 			++affected;
 		}
 	}
 	
 	if (affected)
-	  emit selectionChanged(selectedIndexes_);
+		emit selectionChanged(selectedIndices_);
 }
 
 void KonstruktorContentsView::hideSelected()
 {
-	dynamic_cast<KonstruktorContentsModel *>(model())->hideSelected(selectedIndexes_);
+	dynamic_cast<KonstruktorContentsModel *>(model())->hideSelected(selectedIndices_);
 
-	for (QSet<int>::ConstIterator it = selectedIndexes_.constBegin(); it != selectedIndexes_.constEnd(); ++it)
-		hiddenIndexes_.insert(*it);
-	selectedIndexes_.clear();
+	for (QSet<int>::ConstIterator it = selectedIndices_.constBegin(); it != selectedIndices_.constEnd(); ++it)
+		hiddenIndices_->insert(*it);
+	selectedIndices_.clear();
 
-	emit selectionChanged(selectedIndexes_);
+	emit selectionChanged(selectedIndices_);
 }
 
 void KonstruktorContentsView::unhideAll()
 {
 	dynamic_cast<KonstruktorContentsModel *>(model())->unhideAll();
 
-	selectedIndexes_.clear();
-	hiddenIndexes_.clear();
+	selectedIndices_.clear();
+	hiddenIndices_->clear();
 	QModelIndexList selection = selectionModel()->selection().indexes();
 	for (QModelIndexList::Iterator it = selection.begin(); it != selection.end(); ++it)
-		selectedIndexes_.insert((*it).row());
+		selectedIndices_.insert((*it).row());
 
-	emit selectionChanged(selectedIndexes_);
+	emit selectionChanged(selectedIndices_);
 }
 
-void KonstruktorContentsView::modelChanged(ldraw::model *)
+void KonstruktorContentsView::modelChanged(ldraw::model *m)
 {
-	selectedIndexes_.clear();
-	hiddenIndexes_.clear();
+	model_ = m;
+	
+	selectedIndices_.clear();
+
+	if (!model_)
+		return;
+	
+	hiddenIndices_ = &KonstruktorVisibilityExtension::query(model_)->set();
 }
 
 void KonstruktorContentsView::updateSelection(const std::list<int> &selection, KonstruktorRenderWidget::SelectionMethod method)
@@ -148,13 +156,13 @@ void KonstruktorContentsView::updateSelection(const std::list<int> &selection, K
 
 void KonstruktorContentsView::rowsChanged(const QPair<KonstruktorCommandBase::AffectedRow, QSet<int> > &rows)
 {
-	// FIXME preserve visibility
+	// TODO preserve visibility
 	
 	if (!rows.second.size())
 		return;
 		
-	selectedIndexes_.clear();
-	hiddenIndexes_.clear();
+	selectedIndices_.clear();
+	hiddenIndices_->clear();
 
 	if (rows.first == KonstruktorCommandBase::Removed)
 		clearSelection();

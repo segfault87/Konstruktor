@@ -518,12 +518,13 @@ void KonstruktorRenderWidget::paintGL()
 		ldraw::model *curmodel = (*activeDocument_)->getActiveModel();
 		if (curmodel != currentModel_) {
 			currentModel_ = curmodel;
-			tsset_->setModel(currentModel_);
 			tvset_ = KonstruktorVisibilityExtension::query(curmodel);
+			tsset_->setModel(currentModel_);
+			
 		}
 
 		if (KonstruktorApplication::self()->config()->multisampling())
-		glEnable(GL_MULTISAMPLE);
+			glEnable(GL_MULTISAMPLE);
 		
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		
@@ -722,10 +723,11 @@ void KonstruktorRenderWidget::mousePressEvent(QMouseEvent *event)
 			translation_ = ldraw::vector(0.0f, 0.0f, 0.0f);
 
 			const QSet<int> *sel = tsset_->getSelection();
-			if (params_->get_rendering_mode() == ldraw_renderer::parameters::model_boundingboxes) {
-				for (QSet<int>::ConstIterator it = sel->constBegin(); it != sel->constEnd(); ++it)
-					tvset_->insert(*it);
-			}
+			// TODO implement temporal exclusion for visibility extension
+			//if (params_->get_rendering_mode() == ldraw_renderer::parameters::model_boundingboxes) {
+			//	for (QSet<int>::ConstIterator it = sel->constBegin(); it != sel->constEnd(); ++it)
+			//		tvset_->insert(*it);
+			//}
 		} else {
 			if (event->modifiers() == Qt::ControlModifier)
 				selectionMethod_ = Addition;
@@ -825,7 +827,7 @@ void KonstruktorRenderWidget::mouseReleaseEvent(QMouseEvent *event)
 		if (!isRegion_)
 			renderer_->set_selection_type(ldraw_renderer::renderer::selection_model_full);
 		
-		ldraw_renderer::selection_list resultWithDepth = renderer_->select(projectionMatrix_, matrix, region_.x(), region_.y(), region_.width(), region_.height(), (*activeDocument_)->getActiveModel(), tvset_);
+		ldraw_renderer::selection_list resultWithDepth = renderer_->select(projectionMatrix_, matrix, region_.x(), region_.y(), region_.width(), region_.height(), (*activeDocument_)->getActiveModel(), tvset_ );
 
 		if (!isRegion_)
 			renderer_->set_selection_type(ldraw_renderer::renderer::selection_points);

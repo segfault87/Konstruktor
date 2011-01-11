@@ -2,12 +2,15 @@
 // Copyright (c)2006-2011 Park "segfault" J. K. <mastermind@planetmono.org>
 
 #include "renderwidget.h"
+#include "visibilityextension.h"
 
 #include "selection.h"
 
 KonstruktorSelection::KonstruktorSelection()
 {
 	tsset_ = 0L;
+	model_ = 0L;
+	visibility_ = 0L;
 	inversed_ = false;
 }
 
@@ -26,6 +29,7 @@ void KonstruktorSelection::setModel(const ldraw::model *m)
 {
 	model_ = m;
 	tsset_ = 0L;
+	visibility_ = m->const_custom_data<KonstruktorVisibilityExtension>();
 }
 
 void KonstruktorSelection::resetSelection()
@@ -96,10 +100,15 @@ bool KonstruktorSelection::query(const ldraw::model *, int index, int) const
 	if (!tsset_)
 		return false;
 
+	bool visibility = false;
+
+	if (visibility_)
+		visibility = !visibility_->find(index);
+
 	if (inversed_)
-		return !tsset_->contains(index);
+		return !(tsset_->contains(index) && visibility);
 	else
-		return tsset_->contains(index);
+		return tsset_->contains(index) && visibility;
 }
 
 KonstruktorIntermediateSelection::KonstruktorIntermediateSelection(KonstruktorSelection *currentSelection)

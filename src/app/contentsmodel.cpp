@@ -294,7 +294,7 @@ Qt::ItemFlags KonstruktorContentsModel::flags(const QModelIndex &index) const
 	if (!checkTable_->find(index.row()))
 		flags |= Qt::ItemIsSelectable;
 	
-	if (index.column() == ColumnIndex)
+	if (index.column() == ColumnIndex && model_->elements()[index.row()]->get_type() == ldraw::type_ref)
 		flags |= Qt::ItemIsUserCheckable;
 	
 	return flags;

@@ -5,6 +5,7 @@
 #define _CONTENTSVIEW_H_
 
 #include <list>
+#include <set>
 
 #include <QSet>
 #include <QTreeView>
@@ -25,7 +26,7 @@ class KonstruktorContentsView : public QTreeView
 	KonstruktorContentsView(QWidget *parent = 0L);
 	virtual ~KonstruktorContentsView();
 
-	const QSet<int>& selected() const { return selectedIndexes_; }
+	const QSet<int>& selected() const { return selectedIndices_; }
 	int uniqueSelection() const;
 
   signals:
@@ -44,8 +45,8 @@ class KonstruktorContentsView : public QTreeView
 	void selectionChanged(const QItemSelection &selected, const QItemSelection &unselected);
 
   private:
-	QSet<int> selectedIndexes_;
-	QSet<int> hiddenIndexes_;
+	QSet<int> selectedIndices_;
+	std::set<int> *hiddenIndices_;
 	ldraw::model *model_;
 };
 

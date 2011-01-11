@@ -93,6 +93,11 @@ class LIBLDR_EXPORT model
 	
 		return dynamic_cast<T *>((*it).second);
 	}
+
+	template <class T> const T* const_custom_data() const
+	{
+		return custom_data<T>();
+	}
 	
 	template <class T> void update_custom_data(void *data = 0L, bool recursive = false, bool preserve = false)
 	{

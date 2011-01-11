@@ -16,6 +16,8 @@
 
 #include <renderer/renderer_opengl.h>
 
+class KonstruktorVisibilityExtension;
+
 class KonstruktorSelection : public ldraw_renderer::render_filter
 {
   public:
@@ -41,6 +43,7 @@ class KonstruktorSelection : public ldraw_renderer::render_filter
   private:
 	const QSet<int> *tsset_;
 	const ldraw::model *model_;
+	const KonstruktorVisibilityExtension *visibility_;
 	
 	bool inversed_;
 };
