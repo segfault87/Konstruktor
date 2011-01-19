@@ -1,6 +1,10 @@
 // Konstruktor - An interactive LDraw modeler for KDE
 // Copyright (c)2006-2011 Park "segfault" J. K. <mastermind@planetmono.org>
 
+#include <stdexcept>
+
+#include <QMessageBox>
+
 #include <kaboutdata.h>
 #include <kapplication.h>
 #include <kcmdlineargs.h>
@@ -26,9 +30,17 @@ int main(int argc, char *argv[])
 	
 	KApplication app;
 
-	KonstruktorDBUpdater updater;
+	int status;
+	try {
+		KonstruktorDBUpdater updater;
+		
+		status = updater.start();
+	} catch (const std::runtime_error &e) {
+		QMessageBox::critical(0L, i18n("Error"), QString(e.what()));
 
-	int status = updater.start();
+		status = -1;
+	}
+	
 	app.exit(status);
 
 	return status;

@@ -3,6 +3,7 @@
 
 #include <cmath>
 #include <iostream>
+#include <stdexcept>
 
 #include <libldr/metrics.h>
 #include <libldr/model.h>
@@ -23,9 +24,13 @@ KonstruktorPixmapRenderer::KonstruktorPixmapRenderer(int width, int height, QGLW
 	QGLFormat fmt = QGLFormat::defaultFormat();
 	fmt.setAlpha(true);
 	fmt.setSampleBuffers(true);
+
+	if (!QGLPixelBuffer::hasOpenGLPbuffers()) {
+		throw std::runtime_error("OpenGL Pbuffer extension required.");
+	}
 	
 	buffer_ = new QGLPixelBuffer(width_, height_, fmt, shareWidget_);
-	buffer_->makeCurrent();
+	buffer_->makeCurrent();	
 	
 	// Initialize GL
 #ifndef KONSTRUKTOR_DB_UPDATER
