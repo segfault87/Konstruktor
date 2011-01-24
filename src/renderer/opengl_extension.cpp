@@ -7,7 +7,12 @@
 #include <cstring>
 
 #include <GL/gl.h>
+
+#if defined(WIN32)
+#include <wingdi.h>
+#else
 #include <GL/glx.h>
+#endif
 
 #include "opengl_extension.h"
 
@@ -31,8 +36,8 @@ bool opengl_extension::is_supported() const
 
 opengl_extension::func_ptr opengl_extension::get_glext_proc(const char *procname)
 {
-#ifdef WIN32
-	return 0L;
+#if defined(WIN32)
+	return wglGetProcAddress(procname);
 #else
 	return glXGetProcAddress((const GLubyte *)procname);
 #endif

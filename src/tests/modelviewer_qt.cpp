@@ -1,6 +1,7 @@
 #include <iostream>
 
 #include <QApplication>
+#include <QFileDialog>
 #include <QGLWidget>
 #include <QPaintEvent>
 #include <QTime>
@@ -99,15 +100,12 @@ int main(int argc, char *argv[])
 
 	ModelViewerWidget mvw(0L);
 
-	if (argc < 2) {
-		std::cerr << "Usage: " << argv[0] << " [filename]" << std::endl;
-		return -2;
-	} else if (argc > 2) {
-		if (std::strcmp(argv[2], "-immediate") == 0)
+	if (argc > 1) {
+		if (std::strcmp(argv[1], "-immediate") == 0)
 			mode_ = ldraw_renderer::renderer_opengl_factory::mode_immediate;
-		else if (std::strcmp(argv[2], "-varray") == 0)
+		else if (std::strcmp(argv[1], "-varray") == 0)
 			mode_ = ldraw_renderer::renderer_opengl_factory::mode_varray;
-		else if (std::strcmp(argv[2], "-vbo") == 0)
+		else if (std::strcmp(argv[1], "-vbo") == 0)
 			mode_ = ldraw_renderer::renderer_opengl_factory::mode_vbo;
 		else {
 			std::cerr << "invalid option." << std::endl;
@@ -115,7 +113,12 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	if (!initializeModel(argv[1]))
+	QString fn = QFileDialog::getOpenFileName(0L, "Select a file to load", QString(), "LDraw Model Files (*.dat *.ldr *.mpd)");
+
+	if (fn.isNull())
+		return -1;
+	
+	if (!initializeModel(fn.toLocal8Bit().data()))
 		return -1;
 
 	mvw.show();
