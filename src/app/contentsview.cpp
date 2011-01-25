@@ -38,6 +38,8 @@ void KonstruktorContentsView::hide(const QModelIndex &index)
 
 		emit selectionChanged(selectedIndices_);
 	}
+
+	clearSelection();
 }
 
 void KonstruktorContentsView::unhide(const QModelIndex &index)
@@ -50,6 +52,8 @@ void KonstruktorContentsView::unhide(const QModelIndex &index)
 
 		emit selectionChanged(selectedIndices_);
 	}
+
+	update();
 }
 
 void KonstruktorContentsView::selectionChanged(const QItemSelection &selected, const QItemSelection &deselected)
@@ -99,6 +103,8 @@ void KonstruktorContentsView::hideSelected()
 	selectedIndices_.clear();
 
 	emit selectionChanged(selectedIndices_);
+
+	clearSelection();
 }
 
 void KonstruktorContentsView::unhideAll()

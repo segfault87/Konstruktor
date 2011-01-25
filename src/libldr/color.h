@@ -61,6 +61,7 @@ class LIBLDR_EXPORT color
 	static const material_traits_glitter material_chart_glitter[];
 	static const material_traits_speckle material_chart_speckle[];
 	static const color_entity color_chart[];
+	static const int color_chart_count;
 	static const std::map<int, const color_entity *> color_map;
 
 	static void init();
@@ -73,7 +74,7 @@ class LIBLDR_EXPORT color
 	void operator=(int cid) { m_id = cid; link(); }
 	void operator=(const color &rhs) { m_id = rhs.get_id(); link(); }
 	bool operator<(const color &rhs) const { return m_id < rhs.get_id(); }
-	
+	bool operator==(const color &rhs) const { return m_id == rhs.get_id(); }
 	
 	int get_id() const { return m_id; }
 	void set_id(int i) { m_id = i; link(); }

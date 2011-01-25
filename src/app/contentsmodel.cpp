@@ -68,7 +68,7 @@ QVariant KonstruktorContentsModel::headerData(int section, Qt::Orientation orien
 				default:
 					return QVariant();
 			}
-		} else if (role == Qt::DecorationRole && section == ColumnIndex) {
+		} else if (role == Qt::DecorationRole && section == ColumnCheck) {
 			return KIcon("edit-delete");
 		}
 	}
@@ -89,7 +89,7 @@ QVariant KonstruktorContentsModel::data(const QModelIndex &index, int role) cons
 					case ldraw::type_comment:
 						return i18n("Comment");
 					case ldraw::type_state:
-						return i18n("State");
+						return i18n("Meta");
 					case ldraw::type_print:
 						return i18n("Print");
 					case ldraw::type_ref:
@@ -230,17 +230,17 @@ QVariant KonstruktorContentsModel::data(const QModelIndex &index, int role) cons
 				return QVariant();
 		}
 	} else if (role == Qt::TextAlignmentRole) {
-		if (index.column() == ColumnIndex)
+		if (index.column() == ColumnIndex || index.column() == ColumnObjectType)
 			return Qt::AlignHCenter;
 	} else if (role == Qt::DecorationRole) {
 		if (index.column() == ColumnData && model_->elements()[index.row()]->capabilities() & ldraw::capability_color) {
 			const ldraw::color &c = dynamic_cast<const ldraw::element_colored_base *>(model_->elements()[index.row()])->get_color();
-			return KonstruktorApplication::self()->colorManager()->colorPixmap(c);
+			return KonstruktorColorManager::colorPixmap(c);
 		}
 	} else if (role == Qt::CheckStateRole) {
-		if (index.column() == ColumnIndex) {
+		if (index.column() == ColumnCheck) {
 			if (model_->elements()[index.row()]->line_type() == 0)
-				return Qt::Unchecked;
+				return QVariant();
 			else if (checkTable_->find(index.row()))
 				return Qt::Checked;
 			else
@@ -253,7 +253,7 @@ QVariant KonstruktorContentsModel::data(const QModelIndex &index, int role) cons
 
 bool KonstruktorContentsModel::setData(const QModelIndex &index, const QVariant &value, int role)
 {
-	if (index.column() == ColumnIndex && role == Qt::CheckStateRole) {
+	if (index.column() == ColumnCheck && role == Qt::CheckStateRole) {
 		if (model_->elements()[index.row()]->line_type() == 0)
 			return false;
 		
@@ -280,7 +280,7 @@ QModelIndex KonstruktorContentsModel::index(int row, int column, const QModelInd
 	if (parent.isValid()) {
 		return QModelIndex();
 	} else {
-		if (column == ColumnIndex)
+		if (column == ColumnCheck)
 			return createIndex(row, column, (void *)model_->elements()[row]);
 		else
 			return createIndex(row, column);
@@ -294,7 +294,7 @@ Qt::ItemFlags KonstruktorContentsModel::flags(const QModelIndex &index) const
 	if (!checkTable_->find(index.row()))
 		flags |= Qt::ItemIsSelectable;
 	
-	if (index.column() == ColumnIndex && model_->elements()[index.row()]->get_type() == ldraw::type_ref)
+	if (index.column() == ColumnCheck && model_->elements()[index.row()]->get_type() == ldraw::type_ref)
 		flags |= Qt::ItemIsUserCheckable;
 	
 	return flags;

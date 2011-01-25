@@ -166,12 +166,13 @@ const color_entity color::color_chart[] = {
 	{    material_metallic, {174, 122,  89, 255}, {114,  62,  29, 255},  0, 495,         "Electric Contact Copper", 0L }
 };
 
+const int color::color_chart_count = sizeof(color_chart) / sizeof(color_entity);
+
 void color::init()
 {
 	color_map_type &m = *const_cast<color_map_type *>(&color_map);
 	
-	int count = sizeof(color_chart) / sizeof(color_entity);
-	for (int i = 0; i < count; ++i)
+	for (int i = 0; i < color_chart_count; ++i)
 		m[color_chart[i].id] = &color_chart[i];
 	
 	m_initialized = true;

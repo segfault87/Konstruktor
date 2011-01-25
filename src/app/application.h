@@ -53,6 +53,7 @@ class KonstruktorApplication : public QObject
 	KonstruktorConfig* config() { return config_; }
 	KonstruktorDBManager* database() { return db_; }
 	KonstruktorColorManager* colorManager() { return colorManager_; }
+	QWidget* rootWindow();
 	bool hasPovRay() const { return hasPovRay_; }
 
   public slots:

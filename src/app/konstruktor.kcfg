@@ -40,6 +40,10 @@
       <label>List of your favorite colors</label>
       <default>0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15</default>
     </entry>
+    <entry name="RecentlyUsedColorCount" type="Int">
+      <label>Maximum number of recently used colors to keep</label>
+      <default>10</default>
+    </entry>
   </group>
   <group name="UI">
     <entry name="ListRefColorize" type="Bool">

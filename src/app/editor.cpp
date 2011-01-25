@@ -17,6 +17,7 @@
 #include <kstandardshortcut.h>
 
 #include "application.h"
+#include "colordialog.h"
 #include "colormanager.h"
 #include "commandcolor.h"
 #include "commandinsert.h"
@@ -192,26 +193,44 @@ void KonstruktorEditor::editColor()
 	KMenu menu(i18n("Select Color"));
 	menu.addTitle(i18n("Shortcuts"));
 
-	const QList<ldraw::color> &clist = KonstruktorApplication::self()->colorManager()->colorList();
-	for (QList<ldraw::color>::ConstIterator it = clist.constBegin(); it != clist.constEnd(); ++it) {
-		QAction *action = menu.addAction(QIcon(KonstruktorApplication::self()->colorManager()->colorPixmap(*it)), (*it).get_entity()->name.c_str());
-		action->setData((*it).get_id());
+	KonstruktorColorManager *cm = KonstruktorApplication::self()->colorManager();
+
+	foreach (const ldraw::color &it, cm->colorList()) {
+		QAction *action = menu.addAction(QIcon(KonstruktorColorManager::colorPixmap(it)), it.get_entity()->name.c_str());
+		action->setData(it.get_id());
 	}
 
 	menu.addTitle(i18n("Recently Used"));
 
+	foreach (const KonstruktorColorManager::RecentColorPair &it, cm->recentlyUsed()) {
+		QAction *action = menu.addAction(QIcon(KonstruktorColorManager::colorPixmap(it.first)), it.first.get_entity()->name.c_str());
+		action->setData(it.first.get_id());
+	}
+	
 	menu.addSeparator();
-	QAction *customize = menu.addAction(i18n("&Customize..."));
+	QAction *customize = menu.addAction(i18n("&More..."));
 
 	QAction *result = menu.exec(QCursor::pos());
 	if (result) {
 		if (result == customize) {
-			// to be implemented
-		} else {
-			activeStack()->push(new KonstruktorCommandColor(ldraw::color(result->data().toInt()), *selection_, model_));
-		}
+			KonstruktorColorDialog *colordialog = new KonstruktorColorDialog(KonstruktorApplication::self()->rootWindow());
 
-		emit modified();
+			if (colordialog->exec() == QDialog::Accepted) {
+				activeStack()->push(new KonstruktorCommandColor(colordialog->getSelected(), *selection_, model_));
+				cm->hit(colordialog->getSelected());
+				
+				emit modified();
+			}
+			
+			delete colordialog;
+		} else {
+			ldraw::color selected(result->data().toInt());
+			
+			activeStack()->push(new KonstruktorCommandColor(selected, *selection_, model_));
+			cm->hit(selected);
+			
+			emit modified();
+		}
 	}
 }
 

@@ -643,7 +643,7 @@ void KonstruktorRenderWidget::paintEvent(QPaintEvent *event)
 	
 	// Viewport name
 	if (behavior_ == Dragging) {
-		p.setBrush(QBrush(QColor(51, 115, 186, 160)));
+		p.setBrush(QBrush(QColor(51, 115, 186, 96)));
 		p.setPen(QPen(QColor(25, 59, 93)));
 		p.drawRect(region_);
 	}

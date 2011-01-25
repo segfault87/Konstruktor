@@ -7,6 +7,7 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR} ${SQ
 
 set(konstruktor_SRCS
   application.cpp
+  colordialog.cpp
   colormanager.cpp
   commandbase.cpp
   commandcolor.cpp
@@ -46,6 +47,7 @@ set(konstruktor_SRCS
 
 kde4_add_kcfg_files(konstruktor_SRCS config.kcfgc)
 kde4_add_ui_files(konstruktor_SRCS
+  colordialog.ui
   configdisplayform.ui
   configrenderform.ui
   newmodeldialog.ui

@@ -21,6 +21,7 @@ class KonstruktorContentsModel : public QAbstractItemModel
 	
   public:
 	enum {
+		ColumnCheck,
 		ColumnIndex,
 		ColumnObjectType,
 		ColumnPosition,

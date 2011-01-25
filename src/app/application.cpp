@@ -145,6 +145,11 @@ QString KonstruktorApplication::saveLocation(const QString &directory)
 	return result;
 }
 
+QWidget* KonstruktorApplication::rootWindow()
+{
+	return static_cast<QWidget *>(window_);
+}
+
 void KonstruktorApplication::testPovRay(bool overrideconfig)
 {
 	if (!config_->povRayExecutablePath().isEmpty()) {

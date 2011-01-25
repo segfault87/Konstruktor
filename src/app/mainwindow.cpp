@@ -520,6 +520,11 @@ void KonstruktorMainWindow::initGui()
 	dockList->setWidget(contentList_);
 	addDockWidget(Qt::TopDockWidgetArea, dockList);
 
+	contentList_->setColumnWidth(0, 32);
+	contentList_->setColumnWidth(1, 40);
+	contentList_->setColumnWidth(2, 96);
+	contentList_->setColumnWidth(3, 150);
+
 	// submodel lists
 	submodelList_ = new KonstruktorSubmodelWidget(dockSubmodels);
 	dockSubmodels->setWidget(submodelList_);

@@ -7,23 +7,33 @@
 #include <libldr/color.h>
 
 #include <QList>
+#include <QPair>
 
 class KonstruktorColorManager
 {
   public:
+	typedef QPair<ldraw::color, int> RecentColorPair;
+	
 	KonstruktorColorManager();
 	~KonstruktorColorManager();
 
 	void initList();
+	
 	const QList<ldraw::color>& colorList() const;
+	void setColorList(const QList<ldraw::color> &clist);
 
-	const QPixmap colorPixmap(const ldraw::color &color);
+	const QList<QPair<ldraw::color, int> >& recentlyUsed() const;
+	void hit(const ldraw::color &color);
+
+	static const QPixmap colorPixmap(const ldraw::color &color);
 
   private:
-	QPixmap generatePixmap(const ldraw::color &color);
+	static QPixmap generatePixmap(const ldraw::color &color);
+	static bool compare(const RecentColorPair &i1, const RecentColorPair &i2);
 
   private:
 	QList<ldraw::color> colorList_;
+	QList<RecentColorPair> recentlyUsed_;
 };
 
 #endif
