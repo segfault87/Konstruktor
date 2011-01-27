@@ -8,13 +8,16 @@
 
 namespace Ui { class NewSubmodelDialog; }
 
-class KonstruktorNewSubmodelDialog : public QDialog
+namespace Konstruktor
+{
+
+class NewSubmodelDialog : public QDialog
 {
 	Q_OBJECT;
 
   public:
-	KonstruktorNewSubmodelDialog(QWidget *parent = 0L);
-	virtual ~KonstruktorNewSubmodelDialog();
+	NewSubmodelDialog(QWidget *parent = 0L);
+	virtual ~NewSubmodelDialog();
 
 	QString textName() const;
 	QString textDesc() const;
@@ -25,6 +28,8 @@ class KonstruktorNewSubmodelDialog : public QDialog
   private:
 	Ui::NewSubmodelDialog *ui_;
 };
+
+}
 
 #endif
 

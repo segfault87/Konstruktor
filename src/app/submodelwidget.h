@@ -8,16 +8,21 @@
 
 class QContextMenuEvent;
 
-class KonstruktorSubmodelWidget : public QTreeView
+namespace Konstruktor
+{
+
+class SubmodelWidget : public QTreeView
 {
 	Q_OBJECT;
 
   public:
-	KonstruktorSubmodelWidget(QWidget *parent = 0L);
-	virtual ~KonstruktorSubmodelWidget();
+	SubmodelWidget(QWidget *parent = 0L);
+	virtual ~SubmodelWidget();
 
   private:
 	void contextMenuEvent(QContextMenuEvent *event);
 };
+
+}
 
 #endif

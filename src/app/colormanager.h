@@ -9,13 +9,16 @@
 #include <QList>
 #include <QPair>
 
-class KonstruktorColorManager
+namespace Konstruktor
+{
+
+class ColorManager
 {
   public:
 	typedef QPair<ldraw::color, int> RecentColorPair;
 	
-	KonstruktorColorManager();
-	~KonstruktorColorManager();
+	ColorManager();
+	~ColorManager();
 
 	void initList();
 	
@@ -35,5 +38,7 @@ class KonstruktorColorManager
 	QList<ldraw::color> colorList_;
 	QList<RecentColorPair> recentlyUsed_;
 };
+
+}
 
 #endif

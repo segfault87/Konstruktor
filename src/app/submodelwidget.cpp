@@ -9,7 +9,10 @@
 
 #include "submodelwidget.h"
 
-KonstruktorSubmodelWidget::KonstruktorSubmodelWidget(QWidget *parent)
+namespace Konstruktor
+{
+
+SubmodelWidget::SubmodelWidget(QWidget *parent)
 {
 	setRootIsDecorated(false);
 	setHeaderHidden(true);
@@ -17,12 +20,12 @@ KonstruktorSubmodelWidget::KonstruktorSubmodelWidget(QWidget *parent)
 	setDragEnabled(true);
 }
 
-KonstruktorSubmodelWidget::~KonstruktorSubmodelWidget()
+SubmodelWidget::~SubmodelWidget()
 {
 
 }
 
-void KonstruktorSubmodelWidget::contextMenuEvent(QContextMenuEvent *event)
+void SubmodelWidget::contextMenuEvent(QContextMenuEvent *event)
 {
 	if (selectedIndexes().count() != 1) {
 		event->ignore();
@@ -39,4 +42,6 @@ void KonstruktorSubmodelWidget::contextMenuEvent(QContextMenuEvent *event)
 	}
 
 	event->accept();
+}
+
 }

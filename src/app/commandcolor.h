@@ -10,11 +10,14 @@
 
 #include "commandbase.h"
 
-class KonstruktorCommandColor : public KonstruktorCommandBase
+namespace Konstruktor
+{
+
+class CommandColor : public CommandBase
 {
   public:
-	KonstruktorCommandColor(const ldraw::color &color, const QSet<int> &selection, ldraw::model *model);
-	~KonstruktorCommandColor();
+	CommandColor(const ldraw::color &color, const QSet<int> &selection, ldraw::model *model);
+	~CommandColor();
 
 	void redo();
 	void undo();
@@ -23,5 +26,7 @@ class KonstruktorCommandColor : public KonstruktorCommandBase
 	ldraw::color color_;
 	std::map<int, ldraw::color> oldcolors_;
 };
+
+}
 
 #endif

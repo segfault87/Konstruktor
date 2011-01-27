@@ -8,15 +8,20 @@
 
 class QMimeData;
 
-class KonstruktorPartsIconWidget : public QListWidget
+namespace Konstruktor
+{
+
+class PartsIconWidget : public QListWidget
 {
   public:
-	KonstruktorPartsIconWidget(QWidget *parent = 0L);
-	~KonstruktorPartsIconWidget();
+	PartsIconWidget(QWidget *parent = 0L);
+	~PartsIconWidget();
 
   private:
 	QMimeData* mimeData(const QList<QListWidgetItem *> items) const;
 	QStringList mimeTypes() const;
-};	
+};
+
+}
 
 #endif

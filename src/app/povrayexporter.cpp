@@ -18,20 +18,23 @@
 
 #define RADIAN(n) (n / 180.0f * M_PI)
 
+namespace Konstruktor
+{
+
 /* POV-Ray exporter
  * Exports a LDraw model to POV-Ray format.
  * Large amount of serialization scheme has been borrowed from L3P.
  * L3P by Lars C. Hassing. (http://www.hassings.dk/l3/l3p.html) 
  */
 
-KonstruktorPOVRayExporter::KonstruktorPOVRayExporter(const ldraw::model *m, const KonstruktorPOVRayRenderParameters *p, QObject *parent)
+POVRayExporter::POVRayExporter(const ldraw::model *m, const POVRayRenderParameters *p, QObject *parent)
 	: QObject(parent), stream_(&output_, QIODevice::WriteOnly)
 {
 	model_ = m;
 	params_ = p;
 }
 
-void KonstruktorPOVRayExporter::start()
+void POVRayExporter::start()
 {
 	output_.clear();
 	
@@ -43,7 +46,7 @@ void KonstruktorPOVRayExporter::start()
 	stream_.flush();
 }
 
-QString KonstruktorPOVRayExporter::convertNameFormat(const std::string &s)
+QString POVRayExporter::convertNameFormat(const std::string &s)
 {
 	QString cs(s.c_str());
 	
@@ -62,7 +65,7 @@ QString KonstruktorPOVRayExporter::convertNameFormat(const std::string &s)
 	return cs;
 }
 
-void KonstruktorPOVRayExporter::fillHeader()
+void POVRayExporter::fillHeader()
 {
 	// LEGO Logo
 	
@@ -101,14 +104,14 @@ void KonstruktorPOVRayExporter::fillHeader()
 	stream_ << "}\n\n";
 }
 
-void KonstruktorPOVRayExporter::fillColors()
+void POVRayExporter::fillColors()
 {
 	std::set<int> colorList;
 	
 	fillColorsRecursive(model_, colorList);
 }
 
-void KonstruktorPOVRayExporter::fillColorsRecursive(const ldraw::model *m, std::set<int> &cset)
+void POVRayExporter::fillColorsRecursive(const ldraw::model *m, std::set<int> &cset)
 {
 	int i = 0;
 	
@@ -185,7 +188,7 @@ void KonstruktorPOVRayExporter::fillColorsRecursive(const ldraw::model *m, std::
 	}
 }
 
-void KonstruktorPOVRayExporter::fillParts()
+void POVRayExporter::fillParts()
 {
 	std::set<const ldraw::model *> partList;
 	std::set<const ldraw::model *> blackList; // Blacklist for null model (model with no renderable elements)
@@ -195,7 +198,7 @@ void KonstruktorPOVRayExporter::fillParts()
 	stream_ << "object { " << convertNameFormat(model_->name()) << " /*material { Color0 }*/ }\n"; 
 }
 
-void KonstruktorPOVRayExporter::fillPartsRecursive(const ldraw::model_multipart *main, const ldraw::model *m, std::set<const ldraw::model *> &cset, std::set<const ldraw::model *> &blacklist)
+void POVRayExporter::fillPartsRecursive(const ldraw::model_multipart *main, const ldraw::model *m, std::set<const ldraw::model *> &cset, std::set<const ldraw::model *> &blacklist)
 {
 	bool foundFlag;
 	QString modelName = convertNameFormat(m->name());
@@ -344,7 +347,7 @@ void KonstruktorPOVRayExporter::fillPartsRecursive(const ldraw::model_multipart 
 	}
 }
 
-void KonstruktorPOVRayExporter::fillFooter()
+void POVRayExporter::fillFooter()
 {
 	ldraw::metrics metrics(const_cast<ldraw::model *>(model_));
 	metrics.update();
@@ -355,7 +358,7 @@ void KonstruktorPOVRayExporter::fillFooter()
 	setLights(metrics);
 }
 
-void KonstruktorPOVRayExporter::setPlane(const ldraw::metrics &metrics)
+void POVRayExporter::setPlane(const ldraw::metrics &metrics)
 {
 	if (!params_->drawPlane())
 		return;
@@ -368,7 +371,7 @@ void KonstruktorPOVRayExporter::setPlane(const ldraw::metrics &metrics)
 	stream_ << "}\n\n";
 }
 
-void KonstruktorPOVRayExporter::setBackground()
+void POVRayExporter::setBackground()
 {
 	const QColor &c = params_->backgroundColor(); 
 	
@@ -378,7 +381,7 @@ void KonstruktorPOVRayExporter::setBackground()
 // Determine camera position
 // NOTE Current viewport calculation method doesn't fit model on screen exactly.
 //      Anyone have better idea?
-void KonstruktorPOVRayExporter::setCamera(const ldraw::metrics &metrics)
+void POVRayExporter::setCamera(const ldraw::metrics &metrics)
 {
 	const float latitude = RADIAN(params_->cameraLatitude());
 	const float longitude = RADIAN(params_->cameraLongitude());
@@ -400,7 +403,7 @@ void KonstruktorPOVRayExporter::setCamera(const ldraw::metrics &metrics)
 	stream_ << "}\n\n";
 }
 
-void KonstruktorPOVRayExporter::setLights(const ldraw::metrics &metrics)
+void POVRayExporter::setLights(const ldraw::metrics &metrics)
 {
 	const float longitude = RADIAN(params_->lightsLongitude());
 	const ldraw::vector center = (metrics.min() + metrics.max()) * 0.5f;
@@ -422,12 +425,12 @@ void KonstruktorPOVRayExporter::setLights(const ldraw::metrics &metrics)
 	}
 }
 
-QString KonstruktorPOVRayExporter::serialize(const ldraw::vector &v)
+QString POVRayExporter::serialize(const ldraw::vector &v)
 {
 	return QString("<%1, %2, %3>").arg(v.x()).arg(v.y()).arg(v.z());
 }
 
-QString KonstruktorPOVRayExporter::serialize(const ldraw::matrix &m)
+QString POVRayExporter::serialize(const ldraw::matrix &m)
 {
 	return QString("<%1, %2, %3, ").arg(m.value(0, 0)).arg(m.value(0, 1)).arg(m.value(0, 2)) +
 		QString("%1, %2, %3, ").arg(m.value(1, 0)).arg(m.value(1, 1)).arg(m.value(1, 2)) +
@@ -435,7 +438,7 @@ QString KonstruktorPOVRayExporter::serialize(const ldraw::matrix &m)
 		QString("%1, %2, %3>").arg(m.value(3, 0)).arg(m.value(3, 1)).arg(m.value(3, 2));
 }
 
-bool KonstruktorPOVRayExporter::substitute(const QString &name)
+bool POVRayExporter::substitute(const QString &name)
 {
 	if (name == QString("_stud_dot_dat")) {
 		substituteStud();
@@ -474,7 +477,7 @@ bool KonstruktorPOVRayExporter::substitute(const QString &name)
 		return false;
 }
 
-void KonstruktorPOVRayExporter::substituteStud()
+void POVRayExporter::substituteStud()
 {
 	stream_ << "union {\n";
 	stream_ << "\tcylinder { <0, 0, 0>, <0, -4, 0>, 6 }\n";
@@ -482,7 +485,7 @@ void KonstruktorPOVRayExporter::substituteStud()
 	stream_ << "}\n";
 }
 
-void KonstruktorPOVRayExporter::substituteStud2()
+void POVRayExporter::substituteStud2()
 {
 	stream_ << "difference {\n";
 	stream_ << "\tcylinder { <0, 0, 0>, <0, -4, 0>, 6 }\n";
@@ -490,14 +493,14 @@ void KonstruktorPOVRayExporter::substituteStud2()
 	stream_ << "}\n";
 }
 
-void KonstruktorPOVRayExporter::substituteStud3()
+void POVRayExporter::substituteStud3()
 {
 	stream_ << "cylinder {\n";
 	stream_ << "\t<0, 0, 0>, <0, -4, 0>, 4\n";
 	stream_ << "}\n";
 }
 
-void KonstruktorPOVRayExporter::substituteStud4()
+void POVRayExporter::substituteStud4()
 {
 	stream_ << "difference {\n";
 	stream_ << "\tcylinder { <0, 0, 0>, <0, -4, 0>, 8 }\n";
@@ -505,7 +508,7 @@ void KonstruktorPOVRayExporter::substituteStud4()
 	stream_ << "}\n";	
 }
 
-void KonstruktorPOVRayExporter::substitutePeghole()
+void POVRayExporter::substitutePeghole()
 {
 	stream_ << "union {\n";
 	stream_ << "\tcylinder { <0, 0, 0>, <0, 2, 0>, 8 open }\n";
@@ -513,7 +516,7 @@ void KonstruktorPOVRayExporter::substitutePeghole()
 	stream_ << "}\n";
 }
 
-void KonstruktorPOVRayExporter::substitute2Dash4Cyli()
+void POVRayExporter::substitute2Dash4Cyli()
 {
 	stream_ << "cylinder {\n";
 	stream_ << "\t<0, 0, 0>, <0, 1, 0>, 1 open\n";
@@ -523,7 +526,7 @@ void KonstruktorPOVRayExporter::substitute2Dash4Cyli()
 	stream_ << "}\n";
 }
 
-void KonstruktorPOVRayExporter::substitute2Dash4Ndis()
+void POVRayExporter::substitute2Dash4Ndis()
 {
 	stream_ << "disc {\n";
 	stream_ << "\t<0, 0, 0>, <0, 1, 0>, 2, 1\n";
@@ -533,7 +536,7 @@ void KonstruktorPOVRayExporter::substitute2Dash4Ndis()
 	stream_ << "}\n";
 }
 
-void KonstruktorPOVRayExporter::substitute2Dash4Disc()
+void POVRayExporter::substitute2Dash4Disc()
 {
 	stream_ << "disc {\n";
 	stream_ << "\t<0, 0, 0>, <0, 1, 0>, 1\n";
@@ -543,12 +546,12 @@ void KonstruktorPOVRayExporter::substitute2Dash4Disc()
 	stream_ << "}\n";
 }
 
-void KonstruktorPOVRayExporter::substitute4Dash4Cyli()
+void POVRayExporter::substitute4Dash4Cyli()
 {
 	stream_ << "cylinder { <0, 0, 0>, <0, 1, 0>, 1 open }\n";
 }
 
-void KonstruktorPOVRayExporter::substitute4Dash4Ndis()
+void POVRayExporter::substitute4Dash4Ndis()
 {
 	stream_ << "disc {\n";
 	stream_ << "\t<0, 0, 0>, <0, 1, 0>, 2, 1\n";
@@ -558,12 +561,12 @@ void KonstruktorPOVRayExporter::substitute4Dash4Ndis()
 	stream_ << "}\n";
 }
 
-void KonstruktorPOVRayExporter::substitute8Dash8Sphe()
+void POVRayExporter::substitute8Dash8Sphe()
 {
 	stream_ << "sphere { <0, 0, 0>, 1 }\n";
 }
 
-bool KonstruktorPOVRayExporter::colorAmbiguityTest(const ldraw::model *m)
+bool POVRayExporter::colorAmbiguityTest(const ldraw::model *m)
 {
 	for (ldraw::model::const_iterator it = m->elements().begin(); it != m->elements().end(); ++it) {
 		if ((*it)->capabilities() & ldraw::capability_color) {
@@ -574,4 +577,6 @@ bool KonstruktorPOVRayExporter::colorAmbiguityTest(const ldraw::model *m)
 	}
 
 	return false;
+}
+
 }

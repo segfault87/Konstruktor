@@ -9,21 +9,24 @@
 
 #include "refobject.h"
 
-class KonstruktorPartItemBase
+namespace Konstruktor
+{
+
+class PartItemBase
 {
   public:
-	virtual ~KonstruktorPartItemBase() {}
+	virtual ~PartItemBase() {}
 	
 	enum Type { TypeCategory, TypePartItem, TypeFavorite };
 	
 	virtual Type type() = 0;
 };
 
-class KonstruktorPartCategory : public KonstruktorPartItemBase
+class PartCategory : public PartItemBase
 {
   public:
-	KonstruktorPartCategory() {}
-	KonstruktorPartCategory(const QString &name, int id, int visibility, int idx);
+	PartCategory() {}
+	PartCategory(const QString &name, int id, int visibility, int idx);
 
 	Type type() { return TypeCategory; }
 
@@ -39,29 +42,31 @@ class KonstruktorPartCategory : public KonstruktorPartItemBase
 	int index_;
 };
 
-class KonstruktorPartItem : public KonstruktorPartItemBase, public KonstruktorRefObject
+class PartItem : public PartItemBase, public RefObject
 {
   public:
-	KonstruktorPartItem() {}
-	KonstruktorPartItem(KonstruktorPartCategory *parent, const QString &desc, const QString &filename, const ldraw::metrics &metrics);
+	PartItem() {}
+	PartItem(PartCategory *parent, const QString &desc, const QString &filename, const ldraw::metrics &metrics);
 
 	Type type() { return TypePartItem; }
 
 	const QString& description() const { return desc_; }
-	KonstruktorPartCategory* parent() { return parent_; }
+	PartCategory* parent() { return parent_; }
 
   private:
 	QString desc_;
-	KonstruktorPartCategory *parent_;
+	PartCategory *parent_;
 };
 
-class KonstruktorFavorites : public KonstruktorPartItemBase
+class Favorites : public PartItemBase
 {
   public:
 	Type type() { return TypeFavorite; }
 };
 
-Q_DECLARE_METATYPE(KonstruktorPartItem);
+}
+
+Q_DECLARE_METATYPE(Konstruktor::PartItem);
 
 #endif
 

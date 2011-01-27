@@ -33,18 +33,21 @@
 #define _SLEEP(ms) ::usleep(ms)
 #endif
 
-KonstruktorDBManager::KonstruktorDBManager(QObject *parent) : QObject(parent)
+namespace Konstruktor
+{
+
+DBManager::DBManager(QObject *parent) : QObject(parent)
 {
 	isLoaded_ = false;
 }
 
-KonstruktorDBManager::~KonstruktorDBManager()
+DBManager::~DBManager()
 {
 	if (isLoaded_)
 		sqlite3_close(db_);
 }
 
-void KonstruktorDBManager::initialize(const QString &path)
+void DBManager::initialize(const QString &path)
 {
 	const QByteArray epath = QFile::encodeName(path);
 	
@@ -70,7 +73,7 @@ void KonstruktorDBManager::initialize(const QString &path)
 	query("PRAGMA default_synchronous = OFF;");
 }
 
-QStringList KonstruktorDBManager::query(const QString &statement)
+QStringList DBManager::query(const QString &statement)
 {
 	if (!isLoaded_) // There is no DB connection
 		return QStringList();
@@ -135,7 +138,7 @@ QStringList KonstruktorDBManager::query(const QString &statement)
 	return values;
 }
 
-int KonstruktorDBManager::insert(const QString &statement)
+int DBManager::insert(const QString &statement)
 {
 	if (!isLoaded_) // There is no DB connection
 		return 0;
@@ -196,3 +199,4 @@ int KonstruktorDBManager::insert(const QString &statement)
 	return sqlite3_last_insert_rowid(db_);
 }
 
+}

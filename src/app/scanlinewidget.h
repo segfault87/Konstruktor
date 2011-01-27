@@ -10,13 +10,16 @@
 class QImage;
 class QPaintEvent;
 
-class KonstruktorScanlineWidget : public QWidget
+namespace Konstruktor
+{
+
+class ScanlineWidget : public QWidget
 {
 	Q_OBJECT;
 	
   public:
-	KonstruktorScanlineWidget(const QImage &image, QWidget *parent = 0L);
-	~KonstruktorScanlineWidget();
+	ScanlineWidget(const QImage &image, QWidget *parent = 0L);
+	~ScanlineWidget();
 
 	QSize sizeHint() const;
 						   
@@ -30,18 +33,20 @@ class KonstruktorScanlineWidget : public QWidget
 	int lastline_;
 };
 
-class KonstruktorScanlineWidgetContainer : public QScrollArea
+class ScanlineWidgetContainer : public QScrollArea
 {
   public:
-	KonstruktorScanlineWidgetContainer(const QImage &image, QWidget *parent = 0L);
-	~KonstruktorScanlineWidgetContainer();
+	ScanlineWidgetContainer(const QImage &image, QWidget *parent = 0L);
+	~ScanlineWidgetContainer();
 
 	QSize sizeHint() const;
 
-	KonstruktorScanlineWidget* scanlineWidget();
+	ScanlineWidget* scanlineWidget();
 
   private:
-	KonstruktorScanlineWidget *scanlineWidget_;
+	ScanlineWidget *scanlineWidget_;
 };
+
+}
 
 #endif

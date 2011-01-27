@@ -20,7 +20,10 @@ class QAction;
 class KActionCollection;
 class KMenu;
 
-class KonstruktorEditor : public QUndoGroup
+namespace Konstruktor
+{
+
+class Editor : public QUndoGroup
 {
 	Q_OBJECT;
 	
@@ -28,8 +31,8 @@ class KonstruktorEditor : public QUndoGroup
 	enum GridMode { Grid20, Grid10, Grid5, Grid1 };
 	enum Axis { AxisX, AxisY, AxisZ };	
 	
-	KonstruktorEditor(QObject *parent = 0L);
-	~KonstruktorEditor();
+	Editor(QObject *parent = 0L);
+	~Editor();
 
 	QAction* createRedoAction(KActionCollection *actionCollection, const QString &actionName = QString());
 	QAction* createUndoAction(KActionCollection *actionCollection, const QString &actionName = QString());
@@ -46,7 +49,7 @@ class KonstruktorEditor : public QUndoGroup
 	void selectionIndexModified(const QSet<int> &selection);
 	void selectionRemoved(const QSet<int> &selection);
 	void objectInserted(int offset, int items);
-	void rowsChanged(const QPair<KonstruktorCommandBase::AffectedRow, QSet<int> > &rowList);
+	void rowsChanged(const QPair<CommandBase::AffectedRow, QSet<int> > &rowList);
 	void modified();
 	void needRepaint();
 
@@ -90,5 +93,7 @@ class KonstruktorEditor : public QUndoGroup
 	const QSet<int> *selection_;
 	ldraw::model *model_;
 };
+
+}
 
 #endif

@@ -9,14 +9,17 @@
 
 #include "commandbase.h"
 
-class KonstruktorCommandInsert : public KonstruktorCommandBase
+namespace Konstruktor
+{
+
+class CommandInsert : public CommandBase
 {
   public:
-	KonstruktorCommandInsert(const QString &filename, const ldraw::matrix &matrix, const ldraw::color &color, const QSet<int> &selection, ldraw::model *model);
-	~KonstruktorCommandInsert();
+	CommandInsert(const QString &filename, const ldraw::matrix &matrix, const ldraw::color &color, const QSet<int> &selection, ldraw::model *model);
+	~CommandInsert();
 
 	bool needUpdateDimension() const;
-	QPair<KonstruktorCommandBase::AffectedRow, QSet<int> > affectedRows() const;
+	QPair<CommandBase::AffectedRow, QSet<int> > affectedRows() const;
 
 	void redo();
 	void undo();
@@ -26,6 +29,8 @@ class KonstruktorCommandInsert : public KonstruktorCommandBase
 	ldraw::matrix matrix_;
 	ldraw::color color_;
 	int offset_;
-};	
+};
+
+}
 
 #endif

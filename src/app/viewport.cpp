@@ -3,5 +3,9 @@
 
 #include "viewport.h"
 
-const KonstruktorViewport defaultViewport = { -200.0f, -150.0f, 200.0f, 150.0f, 1.333333f };
+namespace Konstruktor
+{
 
+const Viewport defaultViewport = { -200.0f, -150.0f, 200.0f, 150.0f, 1.333333f };
+
+}

@@ -16,8 +16,11 @@
 
 #include "commandremove.h"
 
-KonstruktorCommandRemove::KonstruktorCommandRemove(const QSet<int> &selection, ldraw::model *model)
-	: KonstruktorCommandBase(selection, model)
+namespace Konstruktor
+{
+
+CommandRemove::CommandRemove(const QSet<int> &selection, ldraw::model *model)
+	: CommandBase(selection, model)
 {
 	if (selection.size() == 1)
 		setText(i18n("Delete an Object"));
@@ -39,28 +42,28 @@ KonstruktorCommandRemove::KonstruktorCommandRemove(const QSet<int> &selection, l
 	}
 }
 
-KonstruktorCommandRemove::~KonstruktorCommandRemove()
+CommandRemove::~CommandRemove()
 {
 
 }
 
-bool KonstruktorCommandRemove::needUpdateDimension() const
+bool CommandRemove::needUpdateDimension() const
 {
 	return true;
 }
 
-QPair<KonstruktorCommandBase::AffectedRow, QSet<int> > KonstruktorCommandRemove::affectedRows() const
+QPair<CommandBase::AffectedRow, QSet<int> > CommandRemove::affectedRows() const
 {
-	return QPair<KonstruktorCommandBase::AffectedRow, QSet<int> >(Removed, selection_);
+	return QPair<CommandBase::AffectedRow, QSet<int> >(Removed, selection_);
 }
 
-void KonstruktorCommandRemove::redo()
+void CommandRemove::redo()
 {
 	for (QList<int>::Iterator it = itemsToRemove_.begin(); it != itemsToRemove_.end(); ++it)
 		model_->delete_element(*it);
 }
 
-void KonstruktorCommandRemove::undo()
+void CommandRemove::undo()
 {
 	for (QMap<int, std::string>::Iterator it = objects_.begin(); it != objects_.end(); ++it) {
 		ldraw::element_base *elem = ldraw::reader::parse_line(*it, model_);
@@ -68,8 +71,9 @@ void KonstruktorCommandRemove::undo()
 		if (elem->get_type() == ldraw::type_ref) {
 			ldraw::element_ref *ref = CAST_AS_REF(elem);
 			if (!ref->get_model())
-				KonstruktorApplication::self()->library()->link_element(ref);
+				Application::self()->library()->link_element(ref);
 		}
 	}
 }
 
+}

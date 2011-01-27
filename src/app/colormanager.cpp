@@ -10,31 +10,34 @@
 #include "config.h"
 #include "application.h"
 
-KonstruktorColorManager::KonstruktorColorManager()
+namespace Konstruktor
+{
+
+ColorManager::ColorManager()
 {
 	initList();
 }
 
-KonstruktorColorManager::~KonstruktorColorManager()
+ColorManager::~ColorManager()
 {
 }
 
-void KonstruktorColorManager::initList()
+void ColorManager::initList()
 {
 	colorList_.clear();
 	
-	const QList<int> &clist = KonstruktorApplication::self()->config()->colorList();
+	const QList<int> &clist = Application::self()->config()->colorList();
 
 	foreach (int i, clist)
 		colorList_.append(ldraw::color(i));
 }
 
-const QList<ldraw::color>& KonstruktorColorManager::colorList() const
+const QList<ldraw::color>& ColorManager::colorList() const
 {
 	return colorList_;
 }
 
-void KonstruktorColorManager::setColorList(const QList<ldraw::color> &clist)
+void ColorManager::setColorList(const QList<ldraw::color> &clist)
 {
 	colorList_ = clist;
 
@@ -45,20 +48,20 @@ void KonstruktorColorManager::setColorList(const QList<ldraw::color> &clist)
 	foreach (const ldraw::color &c, clist)
 		nclist.append(c.get_id());
 
-	KonstruktorConfig *config = KonstruktorApplication::self()->config();
+	Config *config = Application::self()->config();
 	config->setColorList(nclist);
 }
 
-const QList<KonstruktorColorManager::RecentColorPair>& KonstruktorColorManager::recentlyUsed() const
+const QList<ColorManager::RecentColorPair>& ColorManager::recentlyUsed() const
 {
 	return recentlyUsed_;
 }
 
-void KonstruktorColorManager::hit(const ldraw::color &color)
+void ColorManager::hit(const ldraw::color &color)
 {
-	const int limit = KonstruktorApplication::self()->config()->recentlyUsedColorCount();
+	const int limit = Application::self()->config()->recentlyUsedColorCount();
 
-	for (QList<KonstruktorColorManager::RecentColorPair>::Iterator it = recentlyUsed_.begin(); it != recentlyUsed_.end(); ++it) {
+	for (QList<ColorManager::RecentColorPair>::Iterator it = recentlyUsed_.begin(); it != recentlyUsed_.end(); ++it) {
 		if ((*it).first == color) {
 			(*it).second += 1;
 			qSort(recentlyUsed_.begin(), recentlyUsed_.end(), compare);
@@ -73,7 +76,7 @@ void KonstruktorColorManager::hit(const ldraw::color &color)
 	recentlyUsed_.append(QPair<ldraw::color, int>(color, 1));
 }
 
-const QPixmap KonstruktorColorManager::colorPixmap(const ldraw::color &color)
+const QPixmap ColorManager::colorPixmap(const ldraw::color &color)
 {
 	QPixmap pixmap;
 
@@ -85,7 +88,7 @@ const QPixmap KonstruktorColorManager::colorPixmap(const ldraw::color &color)
 	return pixmap;
 }
 
-QPixmap KonstruktorColorManager::generatePixmap(const ldraw::color &color)
+QPixmap ColorManager::generatePixmap(const ldraw::color &color)
 {
 	const ldraw::color_entity *entity = color.get_entity();
 
@@ -116,7 +119,9 @@ QPixmap KonstruktorColorManager::generatePixmap(const ldraw::color &color)
 	return pm.scaled(16, 16, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
 }
 
-bool KonstruktorColorManager::compare(const KonstruktorColorManager::RecentColorPair &i1, const KonstruktorColorManager::RecentColorPair &i2)
+bool ColorManager::compare(const ColorManager::RecentColorPair &i1, const ColorManager::RecentColorPair &i2)
 {
 	return i1.second > i2.second;
+}
+
 }

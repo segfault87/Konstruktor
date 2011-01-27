@@ -13,16 +13,19 @@
 
 class QMimeData;
 
-class KonstruktorDocument;
-class KonstruktorPartsWidget;
+namespace Konstruktor
+{
 
-class KonstruktorPartsModel : public QAbstractItemModel
+class Document;
+class PartsWidget;
+
+class PartsModel : public QAbstractItemModel
 {
 	Q_OBJECT;
 	
   public:
-	KonstruktorPartsModel(QList<KonstruktorPartCategory> &categories, QMap<int, KonstruktorPartCategory *> &categorymap, QMap<int, QList<KonstruktorPartItem> > &list, QObject *parent = 0L);
-	virtual ~KonstruktorPartsModel();
+	PartsModel(QList<PartCategory> &categories, QMap<int, PartCategory *> &categorymap, QMap<int, QList<PartItem> > &list, QObject *parent = 0L);
+	virtual ~PartsModel();
 
 	int columnCount(const QModelIndex &) const { return 1; }
 	int rowCount(const QModelIndex &parent = QModelIndex()) const;
@@ -43,16 +46,19 @@ class KonstruktorPartsModel : public QAbstractItemModel
 	QMimeData* mimeData(const QModelIndexList &indexes) const;
 
   signals:
-	void iconViewChanged(const QList<QPair<QString, KonstruktorRefObject> > &list);
+	void iconViewChanged(const QList<QPair<QString, RefObject> > &list);
 	
   private:
-	friend class KonstruktorPartsWidget;
+	friend class PartsWidget;
 	
-	KonstruktorFavorites favorites_;
+	Favorites favorites_;
 
-	QList<KonstruktorPartCategory> &categories_;
-	QMap<int, KonstruktorPartCategory *> &categorymap_;
-	QMap<int, QList<KonstruktorPartItem> > &list_;
+	QList<PartCategory> &categories_;
+	QMap<int, PartCategory *> &categorymap_;
+	QMap<int, QList<PartItem> > &list_;
 };
+
+}
+
 
 #endif

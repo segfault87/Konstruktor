@@ -29,7 +29,10 @@
 
 #include "dbupdater.h"
 
-KonstruktorDBUpdater::KonstruktorDBUpdater(QObject *parent)
+namespace Konstruktor
+{
+
+DBUpdater::DBUpdater(QObject *parent)
 	: QObject(parent)
 {
 	config_ = 0L;
@@ -59,7 +62,7 @@ KonstruktorDBUpdater::KonstruktorDBUpdater(QObject *parent)
 	if (!QFile(dbfile).exists())
 		forceRescan_ = true;
 
-	manager_ = new KonstruktorDBManager(this);
+	manager_ = new DBManager(this);
 	manager_->initialize(dbfile);
 	if (!manager_->isInitialized()) {
 		std::cerr << "could not open database file" << std::endl;
@@ -73,23 +76,23 @@ KonstruktorDBUpdater::KonstruktorDBUpdater(QObject *parent)
 	ldraw::color::init();
 	reader_ = new ldraw::reader(library_->ldrawpath(ldraw::part_library::ldraw_parts_path));
 	
-	config_ = new KonstruktorConfig;
+	config_ = new Config;
 	
 	QSize pixsize = config_->thumbnailSize();
-	renderer_ = new KonstruktorPixmapRenderer(pixsize.width(), pixsize.height());
+	renderer_ = new PixmapRenderer(pixsize.width(), pixsize.height());
 
 	dropOutdatedTables();
 	constructTables();
 }
 
-KonstruktorDBUpdater::~KonstruktorDBUpdater()
+DBUpdater::~DBUpdater()
 {
 	if (config_) delete config_;
 	if (reader_) delete reader_;
 	if (library_) delete library_;
 }
 
-void KonstruktorDBUpdater::dropOutdatedTables()
+void DBUpdater::dropOutdatedTables()
 {
 	if (config_->databaseRevision() != DB_REVISION_NUMBER) {
 		manager_->query("DROP TABLE parts");
@@ -102,7 +105,7 @@ void KonstruktorDBUpdater::dropOutdatedTables()
 	}
 }
 
-void KonstruktorDBUpdater::constructTables()
+void DBUpdater::constructTables()
 {
 	if (!checkTable("parts")) {
 		manager_->query(
@@ -166,7 +169,7 @@ void KonstruktorDBUpdater::constructTables()
 	}
 }
 
-void KonstruktorDBUpdater::deleteAll()
+void DBUpdater::deleteAll()
 {
 	manager_->query("DELETE FROM parts");
 	manager_->query("DELETE FROM categories");
@@ -179,7 +182,7 @@ void KonstruktorDBUpdater::deleteAll()
 	config_->writeConfig();
 }
 
-int KonstruktorDBUpdater::start()
+int DBUpdater::start()
 {
 	if (!status_)
 		return 1;
@@ -368,7 +371,7 @@ int KonstruktorDBUpdater::start()
 	return 0;
 }
 
-bool KonstruktorDBUpdater::checkTable(const QString &name)
+bool DBUpdater::checkTable(const QString &name)
 {
 	if (manager_->query(QString("SELECT name FROM SQLITE_MASTER WHERE name='%1'").arg(escape(name))).isEmpty())
 		return false;
@@ -376,7 +379,7 @@ bool KonstruktorDBUpdater::checkTable(const QString &name)
 		return true;
 }
 
-QString KonstruktorDBUpdater::saveLocation(const QString &path)
+QString DBUpdater::saveLocation(const QString &path)
 {
 	globalMutex_.lock();
 	QString result = KGlobal::dirs()->saveLocation("data", QString("konstruktor/") + path, true);
@@ -386,7 +389,7 @@ QString KonstruktorDBUpdater::saveLocation(const QString &path)
 	return result;
 }
 
-QString KonstruktorDBUpdater::escape(const QString &string)
+QString DBUpdater::escape(const QString &string)
 {
 	QString n = string;
 	n.replace('\'', "''");
@@ -394,14 +397,14 @@ QString KonstruktorDBUpdater::escape(const QString &string)
 	return n;
 }
 
-QString KonstruktorDBUpdater::unescape(const QString &string)
+QString DBUpdater::unescape(const QString &string)
 {
 	QString r = string;
 	r.replace("''", "'");
 	return r;
 }
 
-void KonstruktorDBUpdater::determineSize(const QString &str, float &xs, float &ys, float &zs)
+void DBUpdater::determineSize(const QString &str, float &xs, float &ys, float &zs)
 {
 	static QRegExp triplet("([./\\d]+) *x *([./\\d]+) *x *([./\\d]+)");
 	static QRegExp pair("([./\\d]+) *x *([./\\d]+)");
@@ -429,7 +432,7 @@ void KonstruktorDBUpdater::determineSize(const QString &str, float &xs, float &y
 	}
 }
 
-float KonstruktorDBUpdater::floatify(const QString &str)
+float DBUpdater::floatify(const QString &str)
 {
 	if (str.contains('/'))
 		return str.section('/', 0, 0).toFloat() / str.section('/', 1, 1).toFloat();
@@ -437,7 +440,7 @@ float KonstruktorDBUpdater::floatify(const QString &str)
 		return str.toFloat();
 }
 
-void KonstruktorDBUpdater::deletePartImages()
+void DBUpdater::deletePartImages()
 {
 	QDir dir(saveLocation("partimgs/"));
 	QDirIterator it(dir);
@@ -446,4 +449,6 @@ void KonstruktorDBUpdater::deletePartImages()
 		QFSFileEngine fs(it.next());
 		fs.remove();
 	}
+}
+
 }

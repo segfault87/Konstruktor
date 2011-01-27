@@ -15,7 +15,10 @@
 
 #include "submodelmodel.h"
 
-KonstruktorSubmodelModel::KonstruktorSubmodelModel(KonstruktorDocument *document, QObject *parent)
+namespace Konstruktor
+{
+
+SubmodelModel::SubmodelModel(Document *document, QObject *parent)
 	: QAbstractItemModel(parent)
 {
 	document_ = document;
@@ -23,12 +26,12 @@ KonstruktorSubmodelModel::KonstruktorSubmodelModel(KonstruktorDocument *document
 	resetItems();
 }
 
-KonstruktorSubmodelModel::~KonstruktorSubmodelModel()
+SubmodelModel::~SubmodelModel()
 {
 	
 }
 
-QPair<std::string, ldraw::model *> KonstruktorSubmodelModel::modelIndexOf(const QModelIndex &index)
+QPair<std::string, ldraw::model *> SubmodelModel::modelIndexOf(const QModelIndex &index)
 {
 	if (index.row() == 0)
 		return QPair<std::string, ldraw::model *>("", 0L);
@@ -36,7 +39,7 @@ QPair<std::string, ldraw::model *> KonstruktorSubmodelModel::modelIndexOf(const 
 		return submodelList_[index.row() - 1];
 }
 
-void KonstruktorSubmodelModel::resetItems()
+void SubmodelModel::resetItems()
 {
 	for (std::map<std::string, ldraw::model *>::iterator it = document_->contents()->submodel_list().begin(); it != document_->contents()->submodel_list().end(); ++it) {
 		submodelList_.append(QPair<std::string, ldraw::model *>((*it).first, (*it).second));
@@ -44,13 +47,13 @@ void KonstruktorSubmodelModel::resetItems()
 		if (!m->custom_data<ldraw::metrics>())
 			m->update_custom_data<ldraw::metrics>();
 		
-		refobjects_.append(KonstruktorRefObject((*it).first.c_str(), *m->custom_data<ldraw::metrics>()));
+		refobjects_.append(RefObject((*it).first.c_str(), *m->custom_data<ldraw::metrics>()));
 	}
 
 	reset();
 }
 
-QVariant KonstruktorSubmodelModel::data(const QModelIndex &index, int role) const
+QVariant SubmodelModel::data(const QModelIndex &index, int role) const
 {
 	if (role == Qt::DisplayRole) {
 		if (index.row() == 0) {
@@ -76,7 +79,7 @@ QVariant KonstruktorSubmodelModel::data(const QModelIndex &index, int role) cons
 		else
 			m = submodelList_[index.row() - 1].second;
 
-		const QPixmap &thumbnail = m->custom_data<KonstruktorPixmapExtension>()->pixmap();
+		const QPixmap &thumbnail = m->custom_data<PixmapExtension>()->pixmap();
 
 		if (thumbnail.width() > 96 || thumbnail.height() > 96)
 			return thumbnail.scaled(96, 96, Qt::KeepAspectRatio, Qt::SmoothTransformation);
@@ -93,7 +96,7 @@ QVariant KonstruktorSubmodelModel::data(const QModelIndex &index, int role) cons
 	return QVariant();
 }
 
-Qt::ItemFlags KonstruktorSubmodelModel::flags(const QModelIndex &index) const
+Qt::ItemFlags SubmodelModel::flags(const QModelIndex &index) const
 {
 	if (index.row() != 0)
 		return Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsDragEnabled;
@@ -101,7 +104,7 @@ Qt::ItemFlags KonstruktorSubmodelModel::flags(const QModelIndex &index) const
 	return Qt::ItemIsEnabled | Qt::ItemIsSelectable;
 }
 
-QModelIndex KonstruktorSubmodelModel::index(int row, int column, const QModelIndex &parent) const
+QModelIndex SubmodelModel::index(int row, int column, const QModelIndex &parent) const
 {
 	if (parent.isValid())
 		return QModelIndex();
@@ -113,7 +116,7 @@ QModelIndex KonstruktorSubmodelModel::index(int row, int column, const QModelInd
 	}
 }
 
-QVariant KonstruktorSubmodelModel::headerData(int, Qt::Orientation orientation, int role) const
+QVariant SubmodelModel::headerData(int, Qt::Orientation orientation, int role) const
 {
 	if (orientation == Qt::Horizontal && role == Qt::DisplayRole)
 		return i18n("Submodel");
@@ -121,7 +124,7 @@ QVariant KonstruktorSubmodelModel::headerData(int, Qt::Orientation orientation, 
 		return QVariant();
 }
 
-int KonstruktorSubmodelModel::rowCount(const QModelIndex &parent) const
+int SubmodelModel::rowCount(const QModelIndex &parent) const
 {
 	if (!document_ || parent.isValid())
 		return 0;
@@ -129,14 +132,14 @@ int KonstruktorSubmodelModel::rowCount(const QModelIndex &parent) const
 	return submodelList_.size() + 1;
 }
 
-QStringList KonstruktorSubmodelModel::mimeTypes() const
+QStringList SubmodelModel::mimeTypes() const
 {
 	QStringList types;
 	types << "application/konstruktor-refobject";
 	return types;
 }
 
-QMimeData* KonstruktorSubmodelModel::mimeData(const QModelIndexList &indexes) const
+QMimeData* SubmodelModel::mimeData(const QModelIndexList &indexes) const
 {
 	if (indexes.size() != 1)
 		return 0L;
@@ -146,11 +149,13 @@ QMimeData* KonstruktorSubmodelModel::mimeData(const QModelIndexList &indexes) co
 	if (!index.isValid() || !index.internalPointer())
 		return 0L;
 
-	KonstruktorRefObject *item = static_cast<KonstruktorRefObject *>(index.internalPointer());
+	RefObject *item = static_cast<RefObject *>(index.internalPointer());
 	
 	QMimeData *mimeData = new QMimeData();
 	QByteArray encodedData = item->serialize();
 
 	mimeData->setData("application/konstruktor-refobject", encodedData);
 	return mimeData;
+}
+
 }

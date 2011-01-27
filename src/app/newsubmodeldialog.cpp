@@ -7,7 +7,10 @@
 
 #include "newsubmodeldialog.h"
 
-KonstruktorNewSubmodelDialog::KonstruktorNewSubmodelDialog(QWidget *parent) 
+namespace Konstruktor
+{
+
+NewSubmodelDialog::NewSubmodelDialog(QWidget *parent) 
 	: QDialog(parent)
 {
 	ui_ = new Ui::NewSubmodelDialog;
@@ -19,22 +22,22 @@ KonstruktorNewSubmodelDialog::KonstruktorNewSubmodelDialog(QWidget *parent)
 	connect(ui_->editDesc, SIGNAL(textChanged(const QString &)), this, SLOT(textChanged(const QString &)));
 }
 
-KonstruktorNewSubmodelDialog::~KonstruktorNewSubmodelDialog()
+NewSubmodelDialog::~NewSubmodelDialog()
 {
 	delete ui_;
 }
 
-QString KonstruktorNewSubmodelDialog::textName() const
+QString NewSubmodelDialog::textName() const
 {
 	return ui_->editName->text() + ".ldr";
 }
 
-QString KonstruktorNewSubmodelDialog::textDesc() const
+QString NewSubmodelDialog::textDesc() const
 {
 	return ui_->editDesc->text();
 }
 
-void KonstruktorNewSubmodelDialog::textChanged(const QString &)
+void NewSubmodelDialog::textChanged(const QString &)
 {
 	if (ui_->editDesc->text().isEmpty() ||
 		ui_->editName->text().isEmpty())
@@ -43,4 +46,4 @@ void KonstruktorNewSubmodelDialog::textChanged(const QString &)
 		ui_->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(true);
 }
 
-
+}

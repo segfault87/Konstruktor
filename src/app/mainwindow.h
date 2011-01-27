@@ -18,13 +18,6 @@ namespace ldraw
 class model;
 }
 
-class KonstruktorContentsModel;
-class KonstruktorContentsView;
-class KonstruktorDocument;
-class KonstruktorEditor;
-class KonstruktorPartsWidget;
-class KonstruktorRenderWidget;
-
 class QCloseEvent;
 class QModelIndex;
 class QTreeView;
@@ -35,16 +28,26 @@ class KSelectAction;
 class KTabBar;
 class KUrl;
 
-class KonstruktorMainWindow : public KXmlGuiWindow
+namespace Konstruktor
+{
+
+class ContentsModel;
+class ContentsView;
+class Document;
+class Editor;
+class PartsWidget;
+class RenderWidget;
+
+class MainWindow : public KXmlGuiWindow
 {
 	Q_OBJECT;
 	
   public:
-	KonstruktorMainWindow(QWidget *parent = 0L);
-	~KonstruktorMainWindow();
+	MainWindow(QWidget *parent = 0L);
+	~MainWindow();
 
 	unsigned int viewportModes() const;
-	const KonstruktorEditor* editor() const { return editorGroup_; }
+	const Editor* editor() const { return editorGroup_; }
 	
   signals:
 	void activeModelChanged(ldraw::model *m);
@@ -91,25 +94,25 @@ class KonstruktorMainWindow : public KXmlGuiWindow
 	void initActions();
 	void initConnections();
 	bool confirmQuit();
-	bool doSave(KonstruktorDocument *document, bool newname = false);
+	bool doSave(Document *document, bool newname = false);
 	
   private:
 	/*
 	 * Document management
 	 */
-	KonstruktorDocument *activeDocument_;
-	QVector<QPair<QString, KonstruktorDocument *> > documents_;
+	Document *activeDocument_;
+	QVector<QPair<QString, Document *> > documents_;
 	QSet<QString> openedUrls_;
-	KonstruktorContentsModel *contentsModel_;
-	KonstruktorEditor *editorGroup_;
+	ContentsModel *contentsModel_;
+	Editor *editorGroup_;
 	
 	/*
 	 * Widgets
 	 */
-	KonstruktorPartsWidget *partsWidget_;
+	PartsWidget *partsWidget_;
 	QTreeView *submodelList_;
-	KonstruktorContentsView *contentList_;	
-	KonstruktorRenderWidget *renderWidget_[4];
+	ContentsView *contentList_;	
+	RenderWidget *renderWidget_[4];
 	KTabBar *tabbar_;
 
 	/*
@@ -134,6 +137,9 @@ class KonstruktorMainWindow : public KXmlGuiWindow
 	KAction *actionQuit_;
 
 	// Edit menu
+	QAction *actionCopy_;
+	QAction *actionCut_;
+	QAction *actionPaste_;
 	QAction *actionUndo_;
 	QAction *actionRedo_;
 	KAction *actionSelectAll_;
@@ -176,5 +182,7 @@ class KonstruktorMainWindow : public KXmlGuiWindow
 	// Setting menu
 	KAction *actionConfigure_;
 };
+
+}
 
 #endif

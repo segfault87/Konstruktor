@@ -12,10 +12,13 @@
 
 namespace ldraw { class model; }
 
-class KonstruktorDocument;
-class KonstruktorVisibilityExtension;
+namespace Konstruktor
+{
 
-class KonstruktorContentsModel : public QAbstractItemModel
+class Document;
+class VisibilityExtension;
+
+class ContentsModel : public QAbstractItemModel
 {
 	Q_OBJECT;
 	
@@ -29,10 +32,10 @@ class KonstruktorContentsModel : public QAbstractItemModel
 		ColumnCount
 	};
 	
-	KonstruktorContentsModel(QObject *parent = 0L);
-	virtual ~KonstruktorContentsModel();
+	ContentsModel(QObject *parent = 0L);
+	virtual ~ContentsModel();
 
-	void setDocument(KonstruktorDocument *document);
+	void setDocument(Document *document);
 
 	// implementation
 
@@ -54,7 +57,7 @@ class KonstruktorContentsModel : public QAbstractItemModel
 	void viewChanged();
 
   public slots:
-	void rowsChanged(const QPair<KonstruktorCommandBase::AffectedRow, QSet<int> > &);
+	void rowsChanged(const QPair<CommandBase::AffectedRow, QSet<int> > &);
 	void hideSelected(const QSet<int> &selection);
 	void unhideAll();
 
@@ -63,7 +66,9 @@ class KonstruktorContentsModel : public QAbstractItemModel
 	
   private:
 	ldraw::model *model_;
-	KonstruktorVisibilityExtension *checkTable_;
+	VisibilityExtension *checkTable_;
 };
+
+}
 
 #endif

@@ -10,11 +10,14 @@
 
 #include <QPixmap>
 
-class KonstruktorPixmapExtension : public ldraw::extension
+namespace Konstruktor
+{
+
+class PixmapExtension : public ldraw::extension
 {
   public:
-	KonstruktorPixmapExtension(ldraw::model *m, void *arg = 0L);
-	~KonstruktorPixmapExtension();
+	PixmapExtension(ldraw::model *m, void *arg = 0L);
+	~PixmapExtension();
 
 	const QPixmap& pixmap() const;
 
@@ -24,7 +27,9 @@ class KonstruktorPixmapExtension : public ldraw::extension
 	void update();
 
 	QPixmap pixmap_;
-};	
+};
+
+}
 
 #endif
 

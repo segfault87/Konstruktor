@@ -6,14 +6,19 @@
 
 #include <QString>
 
-class KonstruktorUtils
+namespace Konstruktor
+{
+
+class Utils
 {
   private:
-	KonstruktorUtils() {}
-	~KonstruktorUtils() {}
+	Utils() {}
+	~Utils() {}
 	
   public:
 	static float floatModulo(float dividend, float divisor);
 };
+
+}
 
 #endif

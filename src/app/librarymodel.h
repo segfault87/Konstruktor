@@ -6,13 +6,16 @@
 
 #include <QAbstractItemModel>
 
-class KonstruktorLibraryModel : public QAbstractItemModel
+namespace Konstruktor
+{
+
+class LibraryModel : public QAbstractItemModel
 {
 	Q_OBJECT;
 
   public:
-	KonstruktorLibraryModel(QObject *parent = 0L);
-	virtual ~KonstruktorLibraryModel();
+	LibraryModel(QObject *parent = 0L);
+	virtual ~LibraryModel();
 
 	int columnCount(const QModelIndex &) const;
 	int rowCount(const QModelIndex &parent = QModelIndex()) const;
@@ -25,5 +28,7 @@ class KonstruktorLibraryModel : public QAbstractItemModel
 	
 	Qt::ItemFlags flags(const QModelIndex &index) const;
 };
+
+}
 
 #endif

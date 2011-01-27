@@ -11,11 +11,14 @@
 
 #include <renderer/renderer.h>
 
-class KonstruktorVisibilityExtension : public ldraw::extension, public ldraw_renderer::render_filter
+namespace Konstruktor
+{
+
+class VisibilityExtension : public ldraw::extension, public ldraw_renderer::render_filter
 {
   public:
-	KonstruktorVisibilityExtension(ldraw::model *m, void *arg = 0L);
-	~KonstruktorVisibilityExtension();
+	VisibilityExtension(ldraw::model *m, void *arg = 0L);
+	~VisibilityExtension();
 
 	const std::set<int>& set() const;
 	std::set<int>& set();
@@ -31,11 +34,13 @@ class KonstruktorVisibilityExtension : public ldraw::extension, public ldraw_ren
 
 	static const std::string identifier() { return "visibility"; }
 
-	static KonstruktorVisibilityExtension* query(ldraw::model *model);
+	static VisibilityExtension* query(ldraw::model *model);
 
   private:
 	std::set<int> visibilityset_;
-};	
+};
+
+}
 
 #endif
 

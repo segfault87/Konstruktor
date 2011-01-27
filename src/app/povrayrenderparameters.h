@@ -1,14 +1,20 @@
 // Konstruktor - An interactive LDraw modeler for KDE
 // Copyright (c)2006 Park "segfault" J. K. <mastermind@planetmono.org>
 
+#ifndef _POVRAYRENDERPARAMETERS_H_
+#define _POVRAYRENDERPARAMETERS_H_
+
 #include <QColor>
 
-class KonstruktorPOVRayRenderParameters
+namespace Konstruktor
+{
+
+class POVRayRenderParameters
 {
   public:
-	KonstruktorPOVRayRenderParameters();
-	KonstruktorPOVRayRenderParameters(const KonstruktorPOVRayRenderParameters &p);
-	~KonstruktorPOVRayRenderParameters() {}
+	POVRayRenderParameters();
+	POVRayRenderParameters(const POVRayRenderParameters &p);
+	~POVRayRenderParameters() {}
 	
 	/*
 	 * Output format
@@ -61,7 +67,7 @@ class KonstruktorPOVRayRenderParameters
 	float lightsIntensity() const { return lightsIntensity_; }
 	QColor lightsColor() const { return lightsColor_; }
 	
-	KonstruktorPOVRayRenderParameters operator= (const KonstruktorPOVRayRenderParameters &p) const;
+	POVRayRenderParameters operator= (const POVRayRenderParameters &p) const;
 	
   private:
 	int width_;
@@ -86,3 +92,7 @@ class KonstruktorPOVRayRenderParameters
 	float lightsIntensity_;
 	QColor lightsColor_;
 };
+
+}
+
+#endif

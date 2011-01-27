@@ -17,7 +17,10 @@
 
 #include "contentsmodel.h"
 
-KonstruktorContentsModel::KonstruktorContentsModel(QObject *parent)
+namespace Konstruktor
+{
+
+ContentsModel::ContentsModel(QObject *parent)
 	: QAbstractItemModel(parent)
 {
 	model_ = 0L;
@@ -26,25 +29,25 @@ KonstruktorContentsModel::KonstruktorContentsModel(QObject *parent)
 	connect(this, SIGNAL(dataChanged(const QModelIndex &, const QModelIndex &)), this, SLOT(dataChanged(const QModelIndex &, const QModelIndex &)));
 }
 
-KonstruktorContentsModel::~KonstruktorContentsModel()
+ContentsModel::~ContentsModel()
 {
 	
 }
 
-void KonstruktorContentsModel::setDocument(KonstruktorDocument *document)
+void ContentsModel::setDocument(Document *document)
 {
 	if (document == 0L) {
 		model_ = 0L;
 		checkTable_ = 0L;
 	} else {
 		model_ = document->getActiveModel();
-		checkTable_ = KonstruktorVisibilityExtension::query(model_);
+		checkTable_ = VisibilityExtension::query(model_);
 	}
 
 	reset();
 }
 
-int KonstruktorContentsModel::rowCount(const QModelIndex &parent) const
+int ContentsModel::rowCount(const QModelIndex &parent) const
 {
 	if (model_ && !parent.isValid())
 		return model_->elements().size();
@@ -52,7 +55,7 @@ int KonstruktorContentsModel::rowCount(const QModelIndex &parent) const
 		return 0;
 }
 
-QVariant KonstruktorContentsModel::headerData(int section, Qt::Orientation orientation, int role) const
+QVariant ContentsModel::headerData(int section, Qt::Orientation orientation, int role) const
 {
 	if (orientation == Qt::Horizontal) {
 		if (role == Qt::DisplayRole) {
@@ -76,7 +79,7 @@ QVariant KonstruktorContentsModel::headerData(int section, Qt::Orientation orien
 	return QVariant();
 }
 
-QVariant KonstruktorContentsModel::data(const QModelIndex &index, int role) const
+QVariant ContentsModel::data(const QModelIndex &index, int role) const
 {
 	ldraw::element_base *b = model_->elements()[index.row()];
 	
@@ -196,25 +199,25 @@ QVariant KonstruktorContentsModel::data(const QModelIndex &index, int role) cons
 	} else if (role == Qt::BackgroundRole) {
 		switch (b->get_type()) {
 			case ldraw::type_comment:
-				if (KonstruktorApplication::self()->config()->listCommentColorize())
-					return QBrush(KonstruktorApplication::self()->config()->listCommentColor());
+				if (Application::self()->config()->listCommentColorize())
+					return QBrush(Application::self()->config()->listCommentColor());
 				else
 					return QVariant();
 			case ldraw::type_state:
 			case ldraw::type_print:
-				if (KonstruktorApplication::self()->config()->listMetaColorize())
-					return QBrush(KonstruktorApplication::self()->config()->listMetaColor());
+				if (Application::self()->config()->listMetaColorize())
+					return QBrush(Application::self()->config()->listMetaColor());
 				else
 					return QVariant();
 			case ldraw::type_ref:
-				if (KonstruktorApplication::self()->config()->listRefColorize()) {
+				if (Application::self()->config()->listRefColorize()) {
 					const ldraw::element_ref *e = CAST_AS_CONST_REF(b);
 					if (!e->get_model())
-						return QBrush(KonstruktorApplication::self()->config()->listUnresolvedColor());
+						return QBrush(Application::self()->config()->listUnresolvedColor());
 					else if (e->get_model()->is_submodel_of(model_->parent()))
-						return QBrush(KonstruktorApplication::self()->config()->listSubmodelColor());
+						return QBrush(Application::self()->config()->listSubmodelColor());
 					else
-						return QBrush(KonstruktorApplication::self()->config()->listPartColor());
+						return QBrush(Application::self()->config()->listPartColor());
 				} else {
 					return QVariant();
 				}
@@ -222,8 +225,8 @@ QVariant KonstruktorContentsModel::data(const QModelIndex &index, int role) cons
 			case ldraw::type_triangle:
 			case ldraw::type_quadrilateral:
 			case ldraw::type_condline:
-				if (KonstruktorApplication::self()->config()->listPrimitiveColorize())
-					return QBrush(KonstruktorApplication::self()->config()->listPrimitiveColor());
+				if (Application::self()->config()->listPrimitiveColorize())
+					return QBrush(Application::self()->config()->listPrimitiveColor());
 				else
 					return QVariant();
 			default:
@@ -235,7 +238,7 @@ QVariant KonstruktorContentsModel::data(const QModelIndex &index, int role) cons
 	} else if (role == Qt::DecorationRole) {
 		if (index.column() == ColumnData && model_->elements()[index.row()]->capabilities() & ldraw::capability_color) {
 			const ldraw::color &c = dynamic_cast<const ldraw::element_colored_base *>(model_->elements()[index.row()])->get_color();
-			return KonstruktorColorManager::colorPixmap(c);
+			return ColorManager::colorPixmap(c);
 		}
 	} else if (role == Qt::CheckStateRole) {
 		if (index.column() == ColumnCheck) {
@@ -251,7 +254,7 @@ QVariant KonstruktorContentsModel::data(const QModelIndex &index, int role) cons
 	return QVariant();
 }
 
-bool KonstruktorContentsModel::setData(const QModelIndex &index, const QVariant &value, int role)
+bool ContentsModel::setData(const QModelIndex &index, const QVariant &value, int role)
 {
 	if (index.column() == ColumnCheck && role == Qt::CheckStateRole) {
 		if (model_->elements()[index.row()]->line_type() == 0)
@@ -267,7 +270,7 @@ bool KonstruktorContentsModel::setData(const QModelIndex &index, const QVariant 
 			emit hide(index);
 		}
 
-		emit dataChanged(index, KonstruktorContentsModel::index(index.row(), ColumnCount - 1));
+		emit dataChanged(index, ContentsModel::index(index.row(), ColumnCount - 1));
 		
 		return true;
 	}
@@ -275,7 +278,7 @@ bool KonstruktorContentsModel::setData(const QModelIndex &index, const QVariant 
 	return false;
 }
 
-QModelIndex KonstruktorContentsModel::index(int row, int column, const QModelIndex &parent) const
+QModelIndex ContentsModel::index(int row, int column, const QModelIndex &parent) const
 {
 	if (parent.isValid()) {
 		return QModelIndex();
@@ -287,7 +290,7 @@ QModelIndex KonstruktorContentsModel::index(int row, int column, const QModelInd
 	}
 }
 
-Qt::ItemFlags KonstruktorContentsModel::flags(const QModelIndex &index) const
+Qt::ItemFlags ContentsModel::flags(const QModelIndex &index) const
 {
 	Qt::ItemFlags flags = Qt::ItemIsEnabled;
 
@@ -300,7 +303,7 @@ Qt::ItemFlags KonstruktorContentsModel::flags(const QModelIndex &index) const
 	return flags;
 }
 
-void KonstruktorContentsModel::rowsChanged(const QPair<KonstruktorCommandBase::AffectedRow, QSet<int> > &/*rowList*/)
+void ContentsModel::rowsChanged(const QPair<CommandBase::AffectedRow, QSet<int> > &/*rowList*/)
 {
 	// FIXME
 	reset();
@@ -311,7 +314,7 @@ void KonstruktorContentsModel::rowsChanged(const QPair<KonstruktorCommandBase::A
 			if (row == -1)
 				row = rowCount();
 				
-			if (rowList[i].second == KonstruktorCommandBase::Inserted) {
+			if (rowList[i].second == CommandBase::Inserted) {
 				insertRow(row);
 			} else {
 				removeRow(row);
@@ -323,7 +326,7 @@ void KonstruktorContentsModel::rowsChanged(const QPair<KonstruktorCommandBase::A
 			if (row == -1)
 				row = rowCount();
 			
-			if (rowList[i].second == KonstruktorCommandBase::Inserted) {
+			if (rowList[i].second == CommandBase::Inserted) {
 				removeRow(row);
 			} else {
 				insertRow(row);
@@ -332,7 +335,7 @@ void KonstruktorContentsModel::rowsChanged(const QPair<KonstruktorCommandBase::A
 		}*/
 }
 
-void KonstruktorContentsModel::hideSelected(const QSet<int> &selection)
+void ContentsModel::hideSelected(const QSet<int> &selection)
 {
 	for (QSet<int>::ConstIterator it = selection.constBegin(); it != selection.constEnd(); ++it) {
 		if (model_->elements()[*it]->line_type() == 0)
@@ -346,17 +349,18 @@ void KonstruktorContentsModel::hideSelected(const QSet<int> &selection)
 	}
 }
 
-void KonstruktorContentsModel::unhideAll()
+void ContentsModel::unhideAll()
 {
 	checkTable_->clear();
 
 	emit dataChanged(index(0, ColumnIndex), index(rowCount() - 1, ColumnIndex));
 }
 
-void KonstruktorContentsModel::dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight)
+void ContentsModel::dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight)
 {
 	// If visibility column has changed
 	if (topLeft.column() == ColumnIndex || bottomRight.column() == ColumnIndex)
 		emit viewChanged();
 }
 
+}

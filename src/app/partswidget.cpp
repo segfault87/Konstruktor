@@ -13,7 +13,10 @@
 
 #include "partswidget.h"
 
-KonstruktorPartsWidget::KonstruktorPartsWidget(QWidget *parent)
+namespace Konstruktor
+{
+
+PartsWidget::PartsWidget(QWidget *parent)
 	: QWidget(parent)
 {
 	lastCat_ = -1;
@@ -23,7 +26,7 @@ KonstruktorPartsWidget::KonstruktorPartsWidget(QWidget *parent)
 	ui_ = new Ui::PartsWidget;
 	ui_->setupUi(this);
 	
-	model_ = new KonstruktorPartsModel(categories_, categorymap_, list_, this);
+	model_ = new PartsModel(categories_, categorymap_, list_, this);
 	sortModel_ = new QSortFilterProxyModel(model_);
 	sortModel_->setSourceModel(model_);
 
@@ -38,12 +41,12 @@ KonstruktorPartsWidget::KonstruktorPartsWidget(QWidget *parent)
 	connect(ui_->iconView, SIGNAL(itemClicked(QListWidgetItem *)), this, SLOT(iconSelected(QListWidgetItem *)));
 }
 
-KonstruktorPartsWidget::~KonstruktorPartsWidget()
+PartsWidget::~PartsWidget()
 {
 	delete ui_;
 }
 
-void KonstruktorPartsWidget::initialize(const QString &search, bool hideUnofficial)
+void PartsWidget::initialize(const QString &search, bool hideUnofficial)
 {
 	QString subq1;
 	QString subq2;
@@ -56,7 +59,7 @@ void KonstruktorPartsWidget::initialize(const QString &search, bool hideUnoffici
 	categorymap_.clear();
 	list_.clear();
 	
-	KonstruktorDBManager *db = KonstruktorApplication::self()->database();
+	DBManager *db = Application::self()->database();
 
 	QStringList cats = db->query("SELECT category, id, visibility FROM categories WHERE visibility < 2 ORDER BY category ASC");
 	int i = 0;
@@ -64,7 +67,7 @@ void KonstruktorPartsWidget::initialize(const QString &search, bool hideUnoffici
 		QString name = *it++;
 		int id = (*it++).toInt();
 		int visibility = (*it).toInt();
-		categories_.append(KonstruktorPartCategory(name, id, visibility, i));
+		categories_.append(PartCategory(name, id, visibility, i));
 		categorymap_[id] = &categories_[i];
 	}
 
@@ -84,7 +87,7 @@ void KonstruktorPartsWidget::initialize(const QString &search, bool hideUnoffici
 		maxy = (*it++).toFloat();
 		maxz = (*it++).toFloat();
 		
-		list_[(*it).toInt()].append(KonstruktorPartItem(categorymap_[(*it).toInt()], desc, fn, ldraw::metrics(ldraw::vector(minx, miny, minz), ldraw::vector(maxx, maxy, maxz))));
+		list_[(*it).toInt()].append(PartItem(categorymap_[(*it).toInt()], desc, fn, ldraw::metrics(ldraw::vector(minx, miny, minz), ldraw::vector(maxx, maxy, maxz))));
 	}
 
 	// Delete if there is no part in the category
@@ -96,7 +99,7 @@ void KonstruktorPartsWidget::initialize(const QString &search, bool hideUnoffici
 	model_->reset();
 }
 
-void KonstruktorPartsWidget::hideUnofficial(int checkState)
+void PartsWidget::hideUnofficial(int checkState)
 {
 	if (checkState == Qt::Checked)
 		hideUnofficial_ = true;
@@ -106,7 +109,7 @@ void KonstruktorPartsWidget::hideUnofficial(int checkState)
 	initialize(search_, hideUnofficial_);
 }
 
-void KonstruktorPartsWidget::selectionChanged(const QModelIndex &current, const QModelIndex &)
+void PartsWidget::selectionChanged(const QModelIndex &current, const QModelIndex &)
 {
 	if (!current.isValid())
 		return;
@@ -124,8 +127,8 @@ void KonstruktorPartsWidget::selectionChanged(const QModelIndex &current, const 
 		
 		ui_->iconView->clear();
 
-		QString saveLocation = KonstruktorApplication::self()->saveLocation("partimgs/");
-		for (QList<KonstruktorPartItem>::ConstIterator it = list_[categories_[cat].id()].constBegin(); it != list_[categories_[cat].id()].constEnd(); ++it) {
+		QString saveLocation = Application::self()->saveLocation("partimgs/");
+		for (QList<PartItem>::ConstIterator it = list_[categories_[cat].id()].constBegin(); it != list_[categories_[cat].id()].constEnd(); ++it) {
 			QListWidgetItem *obj = new QListWidgetItem(ui_->iconView);
 
 			QPixmap pixmap;
@@ -145,9 +148,11 @@ void KonstruktorPartsWidget::selectionChanged(const QModelIndex &current, const 
 		ui_->iconView->setCurrentItem(ui_->iconView->item(index.row()));
 }
 
-void KonstruktorPartsWidget::iconSelected(QListWidgetItem *item)
+void PartsWidget::iconSelected(QListWidgetItem *item)
 {
 	/*ui_->partView->selectionModel()->select(
 		sortModel_->mapToSource(model_->index(ui_->iconView->row(item), 0, model_->index(lastCat_, 0)),
 		QItemSelectionModel::SelectCurrent);*/
+}
+
 }

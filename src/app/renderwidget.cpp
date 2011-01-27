@@ -33,6 +33,9 @@
 #define GL_MULTISAMPLE  0x809D
 #endif
 
+namespace Konstruktor
+{
+
 static const QString viewportNames[VIEWPORT_TYPES] = {
 	i18n("Top"),
 	i18n("Bottom"),
@@ -43,7 +46,7 @@ static const QString viewportNames[VIEWPORT_TYPES] = {
 	i18n("3D")
 };
 
-KonstruktorRenderWidget::KonstruktorRenderWidget(KonstruktorMainWindow *mainwindow, KonstruktorDocument **document, ViewportMode viewport, QGLContext *context, QGLWidget *shareWidget, QWidget *parent)
+RenderWidget::RenderWidget(MainWindow *mainwindow, Document **document, ViewportMode viewport, QGLContext *context, QGLWidget *shareWidget, QWidget *parent)
 	: QGLWidget(context, parent, shareWidget), objectmetrics_(0L)
 {
 	viewportMode_ = Uninitialized;
@@ -52,8 +55,8 @@ KonstruktorRenderWidget::KonstruktorRenderWidget(KonstruktorMainWindow *mainwind
 	currentModel_ = 0L;
 	tvset_ = 0L;
 	
-	tsset_ = new KonstruktorSelection();
-	tisset_ = new KonstruktorIntermediateSelection(tsset_);
+	tsset_ = new Selection();
+	tisset_ = new IntermediateSelection(tsset_);
 	
 	activeDocument_ = document;
 	behavior_ = Idle;
@@ -65,7 +68,7 @@ KonstruktorRenderWidget::KonstruktorRenderWidget(KonstruktorMainWindow *mainwind
 
 	makeCurrent();
 	
-	params_ = new ldraw_renderer::parameters(*KonstruktorApplication::self()->renderer_params());
+	params_ = new ldraw_renderer::parameters(*Application::self()->renderer_params());
 	renderer_ = ldraw_renderer::renderer_opengl_factory(params_, ldraw_renderer::renderer_opengl_factory::mode_vbo).create_renderer();
 
 	reapplyConfigurations();
@@ -88,18 +91,18 @@ KonstruktorRenderWidget::KonstruktorRenderWidget(KonstruktorMainWindow *mainwind
 	setAcceptDrops(true);
 }
 
-KonstruktorRenderWidget::~KonstruktorRenderWidget()
+RenderWidget::~RenderWidget()
 {
 	delete renderer_;
 	delete params_;
 }
 
-KonstruktorRenderWidget::ViewportMode KonstruktorRenderWidget::viewportMode() const
+RenderWidget::ViewportMode RenderWidget::viewportMode() const
 {
 	return viewportMode_;
 }
 
-ldraw::vector KonstruktorRenderWidget::viewportCoordinate(const QPoint &dim) const
+ldraw::vector RenderWidget::viewportCoordinate(const QPoint &dim) const
 {
 	float xr = stretched_.left + ((stretched_.right  - stretched_.left) / width())  * dim.x();
 	float yr = stretched_.top  + ((stretched_.bottom - stretched_.top)  / height()) * dim.y();
@@ -122,7 +125,7 @@ ldraw::vector KonstruktorRenderWidget::viewportCoordinate(const QPoint &dim) con
 	}
 }
 
-QPoint KonstruktorRenderWidget::globalCoordinate(const ldraw::vector &vec) const
+QPoint RenderWidget::globalCoordinate(const ldraw::vector &vec) const
 {
 	float xc, yc;
 	
@@ -162,7 +165,7 @@ QPoint KonstruktorRenderWidget::globalCoordinate(const ldraw::vector &vec) const
 	);
 }
 
-int KonstruktorRenderWidget::depthAxis() const
+int RenderWidget::depthAxis() const
 {
 	switch (viewportMode_) {
 		case Top:
@@ -179,19 +182,19 @@ int KonstruktorRenderWidget::depthAxis() const
 	}
 }
 
-void KonstruktorRenderWidget::modelChanged(ldraw::model *)
+void RenderWidget::modelChanged(ldraw::model *)
 {
 	tsset_->resetSelection();
 }
 
-void KonstruktorRenderWidget::selectionChanged(const QSet<int> &set)
+void RenderWidget::selectionChanged(const QSet<int> &set)
 {
 	tsset_->setSelection(set);
 
 	update();
 }
 
-void KonstruktorRenderWidget::setViewport(ViewportMode mode)
+void RenderWidget::setViewport(ViewportMode mode)
 {
 	if(viewportMode_ != mode) {
 		viewportMode_ = mode;
@@ -206,9 +209,9 @@ void KonstruktorRenderWidget::setViewport(ViewportMode mode)
 	}
 }
 
-void KonstruktorRenderWidget::readConfig()
+void RenderWidget::readConfig()
 {
-	KonstruktorConfig *conf = KonstruktorApplication::self()->config();
+	Config *conf = Application::self()->config();
 	
 	gridResolution_ = conf->gridResolution();
 	gridRows_ = conf->gridRows();
@@ -221,36 +224,36 @@ void KonstruktorRenderWidget::readConfig()
 	highlightDragColor_ = conf->highlightDragColor();
 	
 	switch (conf->dragMode()) {
-		case KonstruktorConfig::EnumDragMode::Full:
+		case Config::EnumDragMode::Full:
 			dragMode_ = ldraw_renderer::parameters::model_full;
 			break;
-		case KonstruktorConfig::EnumDragMode::Edges:
+		case Config::EnumDragMode::Edges:
 			dragMode_ = ldraw_renderer::parameters::model_edges;
 			break;
-		case KonstruktorConfig::EnumDragMode::BoundingBoxes:
+		case Config::EnumDragMode::BoundingBoxes:
 			dragMode_ = ldraw_renderer::parameters::model_boundingboxes;
 	}
 	
 	switch (conf->renderMode()) {
-		case KonstruktorConfig::EnumRenderMode::Full:
+		case Config::EnumRenderMode::Full:
 			renderMode_ = ldraw_renderer::parameters::model_full;
 			break;
-		case KonstruktorConfig::EnumRenderMode::Edges:
+		case Config::EnumRenderMode::Edges:
 			renderMode_ = ldraw_renderer::parameters::model_edges;
 			break;
-		case KonstruktorConfig::EnumRenderMode::BoundingBoxes:
+		case Config::EnumRenderMode::BoundingBoxes:
 			renderMode_ = ldraw_renderer::parameters::model_boundingboxes;
 	}
 
 	reapplyConfigurations();
 }
 
-void KonstruktorRenderWidget::set3DViewport()
+void RenderWidget::set3DViewport()
 {
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 	
-	const KonstruktorViewport *viewport;
+	const Viewport *viewport;
 	
 	if (activeDocument_ && *activeDocument_)
 		viewport = &((*activeDocument_)->getViewport((int)viewportMode_));
@@ -281,9 +284,9 @@ void KonstruktorRenderWidget::set3DViewport()
 }
 
 // Map current cursor position to world coordinate
-void KonstruktorRenderWidget::updatePositionVector(const QPoint &pos)
+void RenderWidget::updatePositionVector(const QPoint &pos)
 {
-	const KonstruktorEditor *editor = parent_->editor();
+	const Editor *editor = parent_->editor();
 
 	float dx = pos.x() / (float)width_ * std::fabs(stretched_.right - stretched_.left);
 	float dy = pos.y() / (float)height_ * std::fabs(stretched_.bottom - stretched_.top);
@@ -312,7 +315,7 @@ void KonstruktorRenderWidget::updatePositionVector(const QPoint &pos)
 	}
 }
 
-ldraw::matrix KonstruktorRenderWidget::retranslate() const
+ldraw::matrix RenderWidget::retranslate() const
 {
 	ldraw::matrix matrix = objectmatrix_;
 	ldraw::vector ovec = matrix.get_translation_vector();
@@ -342,7 +345,7 @@ ldraw::matrix KonstruktorRenderWidget::retranslate() const
 
 
 // Set viewport
-void KonstruktorRenderWidget::rotate()
+void RenderWidget::rotate()
 {
 	const ldraw::metrics *metrics;
 	ldraw::vector vec;
@@ -374,7 +377,7 @@ void KonstruktorRenderWidget::rotate()
 	}
 }
 
-void KonstruktorRenderWidget::renderPointArray()
+void RenderWidget::renderPointArray()
 {
 	if (!currentModel_)
 		return;
@@ -416,7 +419,7 @@ void KonstruktorRenderWidget::renderPointArray()
 	}
 }
 
-void KonstruktorRenderWidget::renderGrid(float xg, float yg, int xc, int yc, float xo, float yo, float zo)
+void RenderWidget::renderGrid(float xg, float yg, int xc, int yc, float xo, float yo, float zo)
 {
 	glLineWidth(1.0f);
 	
@@ -478,19 +481,19 @@ void KonstruktorRenderWidget::renderGrid(float xg, float yg, int xc, int yc, flo
 	}
 }
 
-void KonstruktorRenderWidget::reapplyConfigurations()
+void RenderWidget::reapplyConfigurations()
 {
 	initializeGridVbo();
 }
 
-void KonstruktorRenderWidget::initializeGridVbo()
+void RenderWidget::initializeGridVbo()
 {
 	//ldraw_renderer::opengl_extension_vbo *vbo = ldraw_renderer::opengl_extension_vbo::self();
 
 
 }
 
-void KonstruktorRenderWidget::initializeGL()
+void RenderWidget::initializeGL()
 {
 	// libldr_renderer initialize proc
 	renderer_->setup();
@@ -498,11 +501,11 @@ void KonstruktorRenderWidget::initializeGL()
 	glDepthFunc(GL_LEQUAL);
 	
 	// Set default color and depth
-	qglClearColor(KonstruktorApplication::self()->config()->backgroundColor());
+	qglClearColor(Application::self()->config()->backgroundColor());
 	glClearDepth(1.0f);
 }
 
-void KonstruktorRenderWidget::paintGL()
+void RenderWidget::paintGL()
 {
 	makeCurrent();
 
@@ -518,12 +521,12 @@ void KonstruktorRenderWidget::paintGL()
 		ldraw::model *curmodel = (*activeDocument_)->getActiveModel();
 		if (curmodel != currentModel_) {
 			currentModel_ = curmodel;
-			tvset_ = KonstruktorVisibilityExtension::query(curmodel);
+			tvset_ = VisibilityExtension::query(curmodel);
 			tsset_->setModel(currentModel_);
 			
 		}
 
-		if (KonstruktorApplication::self()->config()->multisampling())
+		if (Application::self()->config()->multisampling())
 			glEnable(GL_MULTISAMPLE);
 		
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -608,14 +611,14 @@ void KonstruktorRenderWidget::paintGL()
 
 		glEnable(GL_DEPTH_TEST);
 		
-		if (KonstruktorApplication::self()->config()->drawGrids())
+		if (Application::self()->config()->drawGrids())
 			renderGrid(gridResolution_, gridResolution_, gridRows_, gridColumns_, gridX_, gridY_, gridZ_);
 	}
 
 	glPopAttrib();
 }
 
-void KonstruktorRenderWidget::resizeGL(int width, int height)
+void RenderWidget::resizeGL(int width, int height)
 {
 	glViewport(0, 0, width, height);
 	width_ = width;
@@ -623,7 +626,7 @@ void KonstruktorRenderWidget::resizeGL(int width, int height)
 	length_ = std::sqrt(pow((double)width_, 2.0) + pow((double)height_, 2.0));
 }
 
-void KonstruktorRenderWidget::paintEvent(QPaintEvent *event)
+void RenderWidget::paintEvent(QPaintEvent *event)
 {
 	QPainter p;
 	p.begin(this);
@@ -659,7 +662,7 @@ void KonstruktorRenderWidget::paintEvent(QPaintEvent *event)
 	doneCurrent();
 }
 
-void KonstruktorRenderWidget::mousePressEvent(QMouseEvent *event)
+void RenderWidget::mousePressEvent(QMouseEvent *event)
 {
 	// Cancel select
 	if (behavior_ != Idle && event->button() & Qt::RightButton) {
@@ -751,7 +754,7 @@ void KonstruktorRenderWidget::mousePressEvent(QMouseEvent *event)
 	}
 }
 
-void KonstruktorRenderWidget::mouseMoveEvent(QMouseEvent *event)
+void RenderWidget::mouseMoveEvent(QMouseEvent *event)
 {
 	if (!(*activeDocument_))
 		return;
@@ -761,7 +764,7 @@ void KonstruktorRenderWidget::mouseMoveEvent(QMouseEvent *event)
 		
 		update();
 	} else if (behavior_ == Panning) {
-		KonstruktorViewport &viewport = (*activeDocument_)->getViewport((int)viewportMode_);
+		Viewport &viewport = (*activeDocument_)->getViewport((int)viewportMode_);
 		QPoint p = event->pos() - lastPos_;
 		float dx = p.x() / (float)width_  * std::fabs(stretched_.right - stretched_.left);
 		float dy = p.y() / (float)height_ * std::fabs(stretched_.bottom - stretched_.top);
@@ -802,7 +805,7 @@ void KonstruktorRenderWidget::mouseMoveEvent(QMouseEvent *event)
 	}
 }
 
-void KonstruktorRenderWidget::mouseReleaseEvent(QMouseEvent *event)
+void RenderWidget::mouseReleaseEvent(QMouseEvent *event)
 {
 	if (!(*activeDocument_))
 		return;
@@ -879,11 +882,11 @@ void KonstruktorRenderWidget::mouseReleaseEvent(QMouseEvent *event)
 	}
 }
 
-void KonstruktorRenderWidget::wheelEvent(QWheelEvent *e)
+void RenderWidget::wheelEvent(QWheelEvent *e)
 {
 	if (!(*activeDocument_)) return;
 	
-	KonstruktorViewport &viewport = (*activeDocument_)->getViewport((int)viewportMode_);
+	Viewport &viewport = (*activeDocument_)->getViewport((int)viewportMode_);
 	float centerx = (viewport.left + viewport.right ) * 0.5f;
 	float centery = (viewport.top  + viewport.bottom) * 0.5f;
 	
@@ -904,7 +907,7 @@ void KonstruktorRenderWidget::wheelEvent(QWheelEvent *e)
 	update();
 }
 
-void KonstruktorRenderWidget::dragEnterEvent(QDragEnterEvent *event)
+void RenderWidget::dragEnterEvent(QDragEnterEvent *event)
 {
 	if (viewportMode_ == Free)
 		return;
@@ -914,7 +917,7 @@ void KonstruktorRenderWidget::dragEnterEvent(QDragEnterEvent *event)
 	if (data.isEmpty())
 		return;
 
-	KonstruktorRefObject refobj = KonstruktorRefObject::deserialize(data);
+	RefObject refobj = RefObject::deserialize(data);
 
 	event->accept();
 
@@ -933,7 +936,7 @@ void KonstruktorRenderWidget::dragEnterEvent(QDragEnterEvent *event)
 	update();
 }
 
-void KonstruktorRenderWidget::dragLeaveEvent(QDragLeaveEvent *event)
+void RenderWidget::dragLeaveEvent(QDragLeaveEvent *event)
 {
 	behavior_ = Idle;
 	params_->set_rendering_mode(renderMode_);
@@ -941,14 +944,14 @@ void KonstruktorRenderWidget::dragLeaveEvent(QDragLeaveEvent *event)
 	update();
 }
 
-void KonstruktorRenderWidget::dragMoveEvent(QDragMoveEvent *event)
+void RenderWidget::dragMoveEvent(QDragMoveEvent *event)
 {
 	updatePositionVector(event->pos() - lastPos_);
 
 	update();
 }
 
-void KonstruktorRenderWidget::dropEvent(QDropEvent *event)
+void RenderWidget::dropEvent(QDropEvent *event)
 {
 	behavior_ = Idle;
 	
@@ -962,7 +965,7 @@ void KonstruktorRenderWidget::dropEvent(QDropEvent *event)
 	if (data.isEmpty())
 		return;
 
-	KonstruktorRefObject refobj = KonstruktorRefObject::deserialize(data);
+	RefObject refobj = RefObject::deserialize(data);
 	
 	// Cyclic reference test
 	ldraw::model *sm = (*activeDocument_)->contents()->find_submodel(refobj.filename().toLocal8Bit().data());
@@ -979,4 +982,5 @@ void KonstruktorRenderWidget::dropEvent(QDropEvent *event)
 	update();
 }
 
-#include "renderwidget.moc"
+}
+

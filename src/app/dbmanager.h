@@ -13,13 +13,16 @@ class QString;
 class QStringList;
 class KProgressDialog;
 
-class KonstruktorDBManager : public QObject
+namespace Konstruktor
+{
+
+class DBManager : public QObject
 {
 	Q_OBJECT;
 	
   public:
-	KonstruktorDBManager(QObject *parent = 0L);
-	~KonstruktorDBManager();
+	DBManager(QObject *parent = 0L);
+	~DBManager();
 	
 	void initialize(const QString &path);
 	bool isInitialized() const { return isLoaded_; }
@@ -42,7 +45,7 @@ class DBUpdater : public QThread
 	Q_OBJECT;
 	
   public:
-	DBUpdater(KonstruktorDBManager *parent = 0L);
+	DBUpdater(DBManager *parent = 0L);
 	
 	void run();
 	
@@ -55,9 +58,11 @@ class DBUpdater : public QThread
 	void determineSize(const QString &str, float &xs, float &ys, float &zs);
 	float floatify(const QString &str);
 	
-	KonstruktorDBManager *parent_;
+	DBManager *parent_;
 };
 
 #endif
+
+}
 
 #endif

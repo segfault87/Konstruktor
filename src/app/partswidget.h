@@ -11,18 +11,23 @@
 #include "partitems.h"
 
 namespace Ui { class PartsWidget; }
+
 class QListWidgetItem;
 class QSortFilterProxyModel;
-class KonstruktorPartsModel;
 class QModelIndex;
 
-class KonstruktorPartsWidget : public QWidget
+namespace Konstruktor
+{
+
+class PartsModel;
+
+class PartsWidget : public QWidget
 {
 	Q_OBJECT;
 
   public:
-	KonstruktorPartsWidget(QWidget *parent = 0L);
-	virtual ~KonstruktorPartsWidget();
+	PartsWidget(QWidget *parent = 0L);
+	virtual ~PartsWidget();
 
   public slots:
 	void initialize(const QString &search = QString(), bool hideUnofficial = false);
@@ -34,18 +39,21 @@ class KonstruktorPartsWidget : public QWidget
 
   private:
 	Ui::PartsWidget *ui_;
-	KonstruktorPartsModel *model_;
+	PartsModel *model_;
 	QSortFilterProxyModel *sortModel_;
 
 	QString search_;
 	bool hideUnofficial_;
 	
-	QList<KonstruktorPartCategory> categories_;
-	QMap<int, KonstruktorPartCategory *> categorymap_;
-	QMap<int, QList<KonstruktorPartItem> > list_;
+	QList<PartCategory> categories_;
+	QMap<int, PartCategory *> categorymap_;
+	QMap<int, QList<PartItem> > list_;
 
 	int lastCat_;
 };
+
+}
+
 
 #endif
 

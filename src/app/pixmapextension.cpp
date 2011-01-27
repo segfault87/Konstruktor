@@ -5,24 +5,28 @@
 
 #include "pixmapextension.h"
 
-KonstruktorPixmapExtension::KonstruktorPixmapExtension(ldraw::model *m, void *arg)
+namespace Konstruktor
+{
+
+PixmapExtension::PixmapExtension(ldraw::model *m, void *arg)
 	: ldraw::extension(m, arg)
 {
-	pixmap_ = reinterpret_cast<KonstruktorPixmapRenderer *>(m_arg)->renderToPixmap(0L);
+	pixmap_ = reinterpret_cast<PixmapRenderer *>(m_arg)->renderToPixmap(0L);
 }
 
-KonstruktorPixmapExtension::~KonstruktorPixmapExtension()
+PixmapExtension::~PixmapExtension()
 {
 
 }
 
-const QPixmap& KonstruktorPixmapExtension::pixmap() const
+const QPixmap& PixmapExtension::pixmap() const
 {
 	return pixmap_;
 }
 
-void KonstruktorPixmapExtension::update()
+void PixmapExtension::update()
 {
-	pixmap_ = reinterpret_cast<KonstruktorPixmapRenderer *>(m_arg)->renderToPixmap(m_model, true);
+	pixmap_ = reinterpret_cast<PixmapRenderer *>(m_arg)->renderToPixmap(m_model, true);
 }
 
+}

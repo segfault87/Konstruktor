@@ -9,7 +9,10 @@
 
 #include "newmodeldialog.h"
 
-KonstruktorNewModelDialog::KonstruktorNewModelDialog(QWidget *parent) 
+namespace Konstruktor
+{
+
+NewModelDialog::NewModelDialog(QWidget *parent) 
 	: QDialog(parent)
 {
 	ui_ = new Ui::NewModelDialog;
@@ -25,22 +28,22 @@ KonstruktorNewModelDialog::KonstruktorNewModelDialog(QWidget *parent)
 	connect(ui_->editAuthor, SIGNAL(textChanged(const QString &)), this, SLOT(textChanged(const QString &)));
 }
 
-KonstruktorNewModelDialog::~KonstruktorNewModelDialog()
+NewModelDialog::~NewModelDialog()
 {
 	delete ui_;
 }
 
-QString KonstruktorNewModelDialog::textDesc() const
+QString NewModelDialog::textDesc() const
 {
 	return ui_->editDesc->text();
 }
 
-QString KonstruktorNewModelDialog::textAuthor() const
+QString NewModelDialog::textAuthor() const
 {
 	return ui_->editAuthor->text();
 }
 
-void KonstruktorNewModelDialog::textChanged(const QString &)
+void NewModelDialog::textChanged(const QString &)
 {
 	if (ui_->editDesc->text().isEmpty() ||
 		ui_->editAuthor->text().isEmpty())
@@ -49,4 +52,4 @@ void KonstruktorNewModelDialog::textChanged(const QString &)
 		ui_->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(true);
 }
 
-
+}

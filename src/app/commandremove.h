@@ -11,14 +11,17 @@
 
 #include "commandbase.h"
 
-class KonstruktorCommandRemove : public KonstruktorCommandBase
+namespace Konstruktor
+{
+
+class CommandRemove : public CommandBase
 {
   public:
-	KonstruktorCommandRemove(const QSet<int> &selection, ldraw::model *model);
-	~KonstruktorCommandRemove();
+	CommandRemove(const QSet<int> &selection, ldraw::model *model);
+	~CommandRemove();
 
 	bool needUpdateDimension() const;
-	QPair<KonstruktorCommandBase::AffectedRow, QSet<int> > affectedRows() const;
+	QPair<CommandBase::AffectedRow, QSet<int> > affectedRows() const;
 
 	void redo();
 	void undo();
@@ -26,6 +29,8 @@ class KonstruktorCommandRemove : public KonstruktorCommandBase
   private:
 	QList<int> itemsToRemove_;
 	QMap<int, std::string> objects_;
-};	
+};
+
+}
 
 #endif

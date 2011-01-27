@@ -26,7 +26,10 @@
 #include "editor.h"
 #include "utils.h"
 
-KonstruktorEditor::KonstruktorEditor(QObject *parent)
+namespace Konstruktor
+{
+
+Editor::Editor(QObject *parent)
 	: QUndoGroup(parent)
 {
 	gridMode_ = Grid10;
@@ -40,12 +43,12 @@ KonstruktorEditor::KonstruktorEditor(QObject *parent)
 	connect(this, SIGNAL(indexChanged(int)), this, SLOT(indexChanged(int)));
 }
 
-KonstruktorEditor::~KonstruktorEditor()
+Editor::~Editor()
 {
 
 }
 
-QAction* KonstruktorEditor::createRedoAction(KActionCollection *actionCollection, const QString &actionName)
+QAction* Editor::createRedoAction(KActionCollection *actionCollection, const QString &actionName)
 {
 	QAction *action = QUndoGroup::createRedoAction(actionCollection);
 
@@ -64,7 +67,7 @@ QAction* KonstruktorEditor::createRedoAction(KActionCollection *actionCollection
 	return action;
 }
 
-QAction* KonstruktorEditor::createUndoAction(KActionCollection *actionCollection, const QString &actionName)
+QAction* Editor::createUndoAction(KActionCollection *actionCollection, const QString &actionName)
 {
 	QAction *action = QUndoGroup::createUndoAction(actionCollection);
 
@@ -83,9 +86,9 @@ QAction* KonstruktorEditor::createUndoAction(KActionCollection *actionCollection
 	return action;
 }
 
-float KonstruktorEditor::snap(float v) const
+float Editor::snap(float v) const
 {
-	float mod = KonstruktorUtils::floatModulo(std::fabs(v), gridDensity());
+	float mod = Utils::floatModulo(std::fabs(v), gridDensity());
 	
 	if (v >= 0.0f)
 		return v - mod;
@@ -93,9 +96,9 @@ float KonstruktorEditor::snap(float v) const
 		return v + mod;
 }
 
-float KonstruktorEditor::snapYAxis(float v) const
+float Editor::snapYAxis(float v) const
 {
-	float mod = KonstruktorUtils::floatModulo(std::fabs(v), gridDensityYAxis());
+	float mod = Utils::floatModulo(std::fabs(v), gridDensityYAxis());
 	
 	if (v >= 0.0f)
 		return v - mod;
@@ -103,7 +106,7 @@ float KonstruktorEditor::snapYAxis(float v) const
 		return v + mod;
 }
 
-float KonstruktorEditor::gridDensity() const
+float Editor::gridDensity() const
 {
 	switch (gridMode_) {
 		case Grid20:
@@ -117,7 +120,7 @@ float KonstruktorEditor::gridDensity() const
 	}
 }
 
-float KonstruktorEditor::gridDensityYAxis() const
+float Editor::gridDensityYAxis() const
 {
 	switch (gridMode_) {
 		case Grid20:
@@ -131,7 +134,7 @@ float KonstruktorEditor::gridDensityYAxis() const
 	}
 }
 
-float KonstruktorEditor::gridDensityAngle() const
+float Editor::gridDensityAngle() const
 {
 	switch (gridMode_) {
 		case Grid20:
@@ -145,17 +148,17 @@ float KonstruktorEditor::gridDensityAngle() const
 	}
 }
 
-void KonstruktorEditor::selectionChanged(const QSet<int> &selection)
+void Editor::selectionChanged(const QSet<int> &selection)
 {
 	selection_ = &selection;
 }
 
-void KonstruktorEditor::modelChanged(ldraw::model *model)
+void Editor::modelChanged(ldraw::model *model)
 {
 	model_ = model;
 }
 
-void KonstruktorEditor::activeChanged(QUndoStack *stack)
+void Editor::activeChanged(QUndoStack *stack)
 {
 	activeStack_ = stack;
 
@@ -165,27 +168,27 @@ void KonstruktorEditor::activeChanged(QUndoStack *stack)
 		lastIndex_ = 0;
 }
 
-void KonstruktorEditor::stackAdded(QUndoStack *stack)
+void Editor::stackAdded(QUndoStack *stack)
 {
 	addStack(stack);
 }
 
-void KonstruktorEditor::setGridMode(GridMode mode)
+void Editor::setGridMode(GridMode mode)
 {
 	gridMode_ = mode;
 }
 
-void KonstruktorEditor::deleteSelected()
+void Editor::deleteSelected()
 {
 	if (!activeStack() || selection_->empty())
 		return;
 
-	activeStack()->push(new KonstruktorCommandRemove(*selection_, model_));
+	activeStack()->push(new CommandRemove(*selection_, model_));
 
 	emit modified();
 }
 
-void KonstruktorEditor::editColor()
+void Editor::editColor()
 {
 	if (!activeStack() || selection_->empty())
 		return;
@@ -193,17 +196,17 @@ void KonstruktorEditor::editColor()
 	KMenu menu(i18n("Select Color"));
 	menu.addTitle(i18n("Shortcuts"));
 
-	KonstruktorColorManager *cm = KonstruktorApplication::self()->colorManager();
+	ColorManager *cm = Application::self()->colorManager();
 
 	foreach (const ldraw::color &it, cm->colorList()) {
-		QAction *action = menu.addAction(QIcon(KonstruktorColorManager::colorPixmap(it)), it.get_entity()->name.c_str());
+		QAction *action = menu.addAction(QIcon(ColorManager::colorPixmap(it)), it.get_entity()->name.c_str());
 		action->setData(it.get_id());
 	}
 
 	menu.addTitle(i18n("Recently Used"));
 
-	foreach (const KonstruktorColorManager::RecentColorPair &it, cm->recentlyUsed()) {
-		QAction *action = menu.addAction(QIcon(KonstruktorColorManager::colorPixmap(it.first)), it.first.get_entity()->name.c_str());
+	foreach (const ColorManager::RecentColorPair &it, cm->recentlyUsed()) {
+		QAction *action = menu.addAction(QIcon(ColorManager::colorPixmap(it.first)), it.first.get_entity()->name.c_str());
 		action->setData(it.first.get_id());
 	}
 	
@@ -213,10 +216,10 @@ void KonstruktorEditor::editColor()
 	QAction *result = menu.exec(QCursor::pos());
 	if (result) {
 		if (result == customize) {
-			KonstruktorColorDialog *colordialog = new KonstruktorColorDialog(KonstruktorApplication::self()->rootWindow());
+			ColorDialog *colordialog = new ColorDialog(Application::self()->rootWindow());
 
 			if (colordialog->exec() == QDialog::Accepted) {
-				activeStack()->push(new KonstruktorCommandColor(colordialog->getSelected(), *selection_, model_));
+				activeStack()->push(new CommandColor(colordialog->getSelected(), *selection_, model_));
 				cm->hit(colordialog->getSelected());
 				
 				emit modified();
@@ -226,7 +229,7 @@ void KonstruktorEditor::editColor()
 		} else {
 			ldraw::color selected(result->data().toInt());
 			
-			activeStack()->push(new KonstruktorCommandColor(selected, *selection_, model_));
+			activeStack()->push(new CommandColor(selected, *selection_, model_));
 			cm->hit(selected);
 			
 			emit modified();
@@ -234,7 +237,7 @@ void KonstruktorEditor::editColor()
 	}
 }
 
-void KonstruktorEditor::move(const ldraw::vector &vector)
+void Editor::move(const ldraw::vector &vector)
 {
 	if (!activeStack() || selection_->empty())
 		return;
@@ -242,12 +245,12 @@ void KonstruktorEditor::move(const ldraw::vector &vector)
 	ldraw::matrix m;
 	m.set_translation_vector(vector);
 
-	activeStack()->push(new KonstruktorCommandTransform(true, m, *selection_, model_));
+	activeStack()->push(new CommandTransform(true, m, *selection_, model_));
 
 	emit modified();
 }
 
-void KonstruktorEditor::moveByXPositive()
+void Editor::moveByXPositive()
 {
 	if (!activeStack() || selection_->empty())
 		return;
@@ -255,12 +258,12 @@ void KonstruktorEditor::moveByXPositive()
 	ldraw::matrix m;
 	m.set_translation_vector(ldraw::vector(gridDensity(), 0.0f, 0.0f));
 
-	activeStack()->push(new KonstruktorCommandTransform(true, m, *selection_, model_));
+	activeStack()->push(new CommandTransform(true, m, *selection_, model_));
 
 	emit modified();
 }
 
-void KonstruktorEditor::moveByXNegative()
+void Editor::moveByXNegative()
 {
 	if (!activeStack() || selection_->empty())
 		return;
@@ -268,12 +271,12 @@ void KonstruktorEditor::moveByXNegative()
 	ldraw::matrix m;
 	m.set_translation_vector(ldraw::vector(-gridDensity(), 0.0f, 0.0f));
 
-	activeStack()->push(new KonstruktorCommandTransform(true, m, *selection_, model_));
+	activeStack()->push(new CommandTransform(true, m, *selection_, model_));
 
 	emit modified();
 }
 
-void KonstruktorEditor::moveByYPositive()
+void Editor::moveByYPositive()
 {
 	if (!activeStack() || selection_->empty())
 		return;
@@ -281,12 +284,12 @@ void KonstruktorEditor::moveByYPositive()
 	ldraw::matrix m;
 	m.set_translation_vector(ldraw::vector(0.0f, gridDensityYAxis(), 0.0f));
 
-	activeStack()->push(new KonstruktorCommandTransform(true, m, *selection_, model_));
+	activeStack()->push(new CommandTransform(true, m, *selection_, model_));
 
 	emit modified();
 }
 
-void KonstruktorEditor::moveByYNegative()
+void Editor::moveByYNegative()
 {
 	if (!activeStack() || selection_->empty())
 		return;
@@ -294,12 +297,12 @@ void KonstruktorEditor::moveByYNegative()
 	ldraw::matrix m;
 	m.set_translation_vector(ldraw::vector(0.0f, -gridDensityYAxis(), 0.0f));
 
-	activeStack()->push(new KonstruktorCommandTransform(true, m, *selection_, model_));
+	activeStack()->push(new CommandTransform(true, m, *selection_, model_));
 
 	emit modified();
 }
 
-void KonstruktorEditor::moveByZPositive()
+void Editor::moveByZPositive()
 {	
 	if (!activeStack() || selection_->empty())
 		return;
@@ -307,12 +310,12 @@ void KonstruktorEditor::moveByZPositive()
 	ldraw::matrix m;
 	m.set_translation_vector(ldraw::vector(0.0f, 0.0f, gridDensity()));
 
-	activeStack()->push(new KonstruktorCommandTransform(true, m, *selection_, model_));
+	activeStack()->push(new CommandTransform(true, m, *selection_, model_));
 
 	emit modified();
 }
 
-void KonstruktorEditor::moveByZNegative()
+void Editor::moveByZNegative()
 {
 	if (!activeStack() || selection_->empty())
 		return;
@@ -320,12 +323,12 @@ void KonstruktorEditor::moveByZNegative()
 	ldraw::matrix m;
 	m.set_translation_vector(ldraw::vector(0.0f, 0.0f, -gridDensity()));
 
-	activeStack()->push(new KonstruktorCommandTransform(true, m, *selection_, model_));
+	activeStack()->push(new CommandTransform(true, m, *selection_, model_));
 
 	emit modified();
 }
 
-void KonstruktorEditor::rotateByXClockwise()
+void Editor::rotateByXClockwise()
 {
 	if (!activeStack() || selection_->empty())
 		return;
@@ -337,12 +340,12 @@ void KonstruktorEditor::rotateByXClockwise()
 	m.value(2, 1) = std::sin(angle);
 	m.value(2, 2) = std::cos(angle);
 
-	activeStack()->push(new KonstruktorCommandTransform(false, m, *selection_, model_));
+	activeStack()->push(new CommandTransform(false, m, *selection_, model_));
 
 	emit modified();
 }
 
-void KonstruktorEditor::rotateByXCounterClockwise()
+void Editor::rotateByXCounterClockwise()
 {
 	if (!activeStack() || selection_->empty())
 		return;
@@ -354,12 +357,12 @@ void KonstruktorEditor::rotateByXCounterClockwise()
 	m.value(2, 1) = std::sin(angle);
 	m.value(2, 2) = std::cos(angle);
 
-	activeStack()->push(new KonstruktorCommandTransform(false, m, *selection_, model_));
+	activeStack()->push(new CommandTransform(false, m, *selection_, model_));
 
 	emit modified();
 }
 
-void KonstruktorEditor::rotateByYClockwise()
+void Editor::rotateByYClockwise()
 {
 	if (!activeStack() || selection_->empty())
 		return;
@@ -371,12 +374,12 @@ void KonstruktorEditor::rotateByYClockwise()
 	m.value(0, 2) = std::sin(angle);
 	m.value(2, 2) = std::cos(angle);
 
-	activeStack()->push(new KonstruktorCommandTransform(false, m, *selection_, model_));
+	activeStack()->push(new CommandTransform(false, m, *selection_, model_));
 
 	emit modified();
 }
 
-void KonstruktorEditor::rotateByYCounterClockwise()
+void Editor::rotateByYCounterClockwise()
 {
 	if (!activeStack() || selection_->empty())
 		return;
@@ -388,12 +391,12 @@ void KonstruktorEditor::rotateByYCounterClockwise()
 	m.value(0, 2) = std::sin(angle);
 	m.value(2, 2) = std::cos(angle);
 
-	activeStack()->push(new KonstruktorCommandTransform(false, m, *selection_, model_));
+	activeStack()->push(new CommandTransform(false, m, *selection_, model_));
 
 	emit modified();
 }
 
-void KonstruktorEditor::rotateByZClockwise()
+void Editor::rotateByZClockwise()
 {
 	if (!activeStack() || selection_->empty())
 		return;
@@ -405,12 +408,12 @@ void KonstruktorEditor::rotateByZClockwise()
 	m.value(1, 0) = std::sin(angle);
 	m.value(1, 1) = std::cos(angle);
 
-	activeStack()->push(new KonstruktorCommandTransform(false, m, *selection_, model_));
+	activeStack()->push(new CommandTransform(false, m, *selection_, model_));
 
 	emit modified();
 }
 	
-void KonstruktorEditor::rotateByZCounterClockwise()
+void Editor::rotateByZCounterClockwise()
 {
 	if (!activeStack() || selection_->empty())
 		return;
@@ -422,23 +425,23 @@ void KonstruktorEditor::rotateByZCounterClockwise()
 	m.value(1, 0) = std::sin(angle);
 	m.value(1, 1) = std::cos(angle);
 
-	activeStack()->push(new KonstruktorCommandTransform(false, m, *selection_, model_));
+	activeStack()->push(new CommandTransform(false, m, *selection_, model_));
 
 	emit modified();
 }
 
-void KonstruktorEditor::insert(const QString &filename, const ldraw::matrix &matrix, const ldraw::color &color)
+void Editor::insert(const QString &filename, const ldraw::matrix &matrix, const ldraw::color &color)
 {
 	if (selection_)
-		activeStack()->push(new KonstruktorCommandInsert(filename, matrix, color, *selection_, model_));
+		activeStack()->push(new CommandInsert(filename, matrix, color, *selection_, model_));
 	else
-		activeStack()->push(new KonstruktorCommandInsert(filename, matrix, color, QSet<int>(), model_));
+		activeStack()->push(new CommandInsert(filename, matrix, color, QSet<int>(), model_));
 
 	emit modified();
 }
 
 // after changes are made
-void KonstruktorEditor::indexChanged(int index)
+void Editor::indexChanged(int index)
 {
 	if (activeStack_ != activeStack() || index > activeStack()->count())
 		return;
@@ -458,7 +461,7 @@ void KonstruktorEditor::indexChanged(int index)
 	}
 
 	for (int i = s; i <= e; ++i) {
-		const KonstruktorCommandBase *cmd = dynamic_cast<const KonstruktorCommandBase *>(activeStack_->command(i - 1));
+		const CommandBase *cmd = dynamic_cast<const CommandBase *>(activeStack_->command(i - 1));
 		if (cmd->needRepaint()) {
 			emit needRepaint();
 			break;
@@ -466,23 +469,23 @@ void KonstruktorEditor::indexChanged(int index)
 	}
 	
 	for (int i = s; i <= e; ++i) {
-		const KonstruktorCommandBase *cmd = dynamic_cast<const KonstruktorCommandBase *>(activeStack_->command(i - 1));
+		const CommandBase *cmd = dynamic_cast<const CommandBase *>(activeStack_->command(i - 1));
 		if (cmd->needUpdateDimension()) {
-			const_cast<KonstruktorCommandBase *>(cmd)->model()->update_custom_data<ldraw::metrics>();
+			const_cast<CommandBase *>(cmd)->model()->update_custom_data<ldraw::metrics>();
 			break;
 		}
 	}
 
 	for (int i = s; i <= e; ++i) {
-		const KonstruktorCommandBase *cmd = dynamic_cast<const KonstruktorCommandBase *>(activeStack_->command(i - 1));
-		QPair<KonstruktorCommandBase::AffectedRow, QSet<int> > affected = cmd->affectedRows();
+		const CommandBase *cmd = dynamic_cast<const CommandBase *>(activeStack_->command(i - 1));
+		QPair<CommandBase::AffectedRow, QSet<int> > affected = cmd->affectedRows();
 		if (affected.second.size()) {
 			if (!redo) {
 				// flip
-				if (affected.first == KonstruktorCommandBase::Inserted)
-					affected.first = KonstruktorCommandBase::Removed;
+				if (affected.first == CommandBase::Inserted)
+					affected.first = CommandBase::Removed;
 				else
-					affected.first = KonstruktorCommandBase::Inserted;
+					affected.first = CommandBase::Inserted;
 			}
 			
 			emit rowsChanged(affected);
@@ -492,3 +495,4 @@ void KonstruktorEditor::indexChanged(int index)
 	lastIndex_ = index;
 }
 
+}

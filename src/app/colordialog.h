@@ -17,15 +17,18 @@ namespace Ui
 class QWidget;
 class QTreeWidgetItem;
 
-class KonstruktorColorManager;
+namespace Konstruktor
+{
 
-class KonstruktorColorDialog : public QDialog
+class ColorManager;
+
+class ColorDialog : public QDialog
 {
 	Q_OBJECT;
 	
   public:
-	KonstruktorColorDialog(QWidget *parent = 0L);
-	~KonstruktorColorDialog();
+	ColorDialog(QWidget *parent = 0L);
+	~ColorDialog();
 
 	ldraw::color getSelected() const;
 	
@@ -47,7 +50,7 @@ class KonstruktorColorDialog : public QDialog
 	void moveDown();
 
   private:
-	KonstruktorColorManager *manager_;
+	ColorManager *manager_;
 	Ui::ColorDialog *ui_;
 
 	QMap<int, int> colorMap_;
@@ -56,5 +59,7 @@ class KonstruktorColorDialog : public QDialog
 	bool changed_;
 	ldraw::color selectedColor_;
 };
+
+}
 
 #endif

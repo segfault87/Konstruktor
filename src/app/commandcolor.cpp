@@ -7,8 +7,11 @@
 
 #include "commandcolor.h"
 
-KonstruktorCommandColor::KonstruktorCommandColor(const ldraw::color &color, const QSet<int> &selection, ldraw::model *model)
-	: KonstruktorCommandBase(selection, model)
+namespace Konstruktor
+{
+
+CommandColor::CommandColor(const ldraw::color &color, const QSet<int> &selection, ldraw::model *model)
+	: CommandBase(selection, model)
 {
 	setText(i18n("Change Color to %1", color.get_entity()->name.c_str()));
 	
@@ -20,12 +23,12 @@ KonstruktorCommandColor::KonstruktorCommandColor(const ldraw::color &color, cons
 	}
 }
 
-KonstruktorCommandColor::~KonstruktorCommandColor()
+CommandColor::~CommandColor()
 {
 
 }
 
-void KonstruktorCommandColor::redo()
+void CommandColor::redo()
 {
 	for (QSet<int>::ConstIterator it = selection_.constBegin(); it != selection_.constEnd(); ++it) {
 		if (model_->elements()[*it]->capabilities() & ldraw::capability_color)
@@ -33,7 +36,7 @@ void KonstruktorCommandColor::redo()
 	}
 }
 
-void KonstruktorCommandColor::undo()
+void CommandColor::undo()
 {
 	for (QSet<int>::ConstIterator it = selection_.constBegin(); it != selection_.constEnd(); ++it) {
 		if (model_->elements()[*it]->capabilities() & ldraw::capability_color)
@@ -41,3 +44,4 @@ void KonstruktorCommandColor::undo()
 	}
 }
 
+}

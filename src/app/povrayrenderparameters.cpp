@@ -3,9 +3,12 @@
 
 #include "povrayrenderparameters.h"
 
+namespace Konstruktor
+{
+
 // TODO copy all props
 
-KonstruktorPOVRayRenderParameters::KonstruktorPOVRayRenderParameters()
+POVRayRenderParameters::POVRayRenderParameters()
 {
 	width_ = 1024;
 	height_ = 768;
@@ -34,20 +37,22 @@ KonstruktorPOVRayRenderParameters::KonstruktorPOVRayRenderParameters()
 	lightsColor_ = QColor(255, 255, 255);
 }
 
-KonstruktorPOVRayRenderParameters::KonstruktorPOVRayRenderParameters(const KonstruktorPOVRayRenderParameters &p)
+POVRayRenderParameters::POVRayRenderParameters(const POVRayRenderParameters &p)
 {
 	width_ = p.width();
 	height_ = p.height();
 	antialiasing_ = p.antialiasing();
 }
 
-KonstruktorPOVRayRenderParameters KonstruktorPOVRayRenderParameters::operator= (const KonstruktorPOVRayRenderParameters &p) const
+POVRayRenderParameters POVRayRenderParameters::operator= (const POVRayRenderParameters &p) const
 {
-	KonstruktorPOVRayRenderParameters n;
+	POVRayRenderParameters n;
 	
 	n.setWidth(p.width());
 	n.setHeight(p.height());
 	n.setAntialiasing(p.antialiasing());
 	
 	return n;
+}
+
 }

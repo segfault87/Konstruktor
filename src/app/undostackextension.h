@@ -8,13 +8,18 @@
 
 #include <libldr/extension.h>
 
-class KonstruktorUndoStackExtension : public ldraw::extension, public QUndoStack
+namespace Konstruktor
+{
+
+class UndoStackExtension : public ldraw::extension, public QUndoStack
 {
   public:
-	KonstruktorUndoStackExtension(ldraw::model *m, void *arg = 0L);
+	UndoStackExtension(ldraw::model *m, void *arg = 0L);
 
 	static const std::string identifier() { return "undostack"; }
 };	
+
+}
 
 #endif
 

@@ -1,6 +1,9 @@
 // Konstruktor - An interactive LDraw modeler for KDE
 // Copyright (c)2006-2011 Park "segfault" J. K. <mastermind@planetmono.org>
 
+#ifndef _POVRAYEXPORTER_H_
+#define _POVRAYEXPORTER_H_
+
 #include <set>
 #include <string>
 
@@ -14,12 +17,16 @@ namespace ldraw {
 }
 
 class QIODevice;
-class KonstruktorPOVRayRenderParameters;
 
-class KonstruktorPOVRayExporter : public QObject
+namespace Konstruktor
+{
+
+class POVRayRenderParameters;
+
+class POVRayExporter : public QObject
 {
   public:
-	KonstruktorPOVRayExporter(const ldraw::model *m, const KonstruktorPOVRayRenderParameters *p, QObject *parent = 0L);
+	POVRayExporter(const ldraw::model *m, const POVRayRenderParameters *p, QObject *parent = 0L);
 
 	void start();
 	const QByteArray& output() const { return output_; }
@@ -64,6 +71,9 @@ class KonstruktorPOVRayExporter : public QObject
 	QByteArray output_;
 	QTextStream stream_;
 	const ldraw::model *model_;
-	const KonstruktorPOVRayRenderParameters *params_;
+	const POVRayRenderParameters *params_;
 };
 
+}
+
+#endif

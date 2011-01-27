@@ -1,5 +1,6 @@
-File=konstruktor.kcfg
-ClassName=KonstruktorConfig
+File=config.kcfg
+Namespace=Konstruktor
+ClassName=Config
 Singleton=false
 CustomAdditions=false
 Mutators=true

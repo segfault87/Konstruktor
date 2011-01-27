@@ -9,29 +9,32 @@
 
 #include "scanlinewidget.h"
 
-KonstruktorScanlineWidget::KonstruktorScanlineWidget(const QImage &image, QWidget *parent)
+namespace Konstruktor
+{
+
+ScanlineWidget::ScanlineWidget(const QImage &image, QWidget *parent)
 	: QWidget(parent), image_(image)
 {
 	lastline_ = 0;
 }
 
-KonstruktorScanlineWidget::~KonstruktorScanlineWidget()
+ScanlineWidget::~ScanlineWidget()
 {
 
 }
 
-QSize KonstruktorScanlineWidget::sizeHint() const
+QSize ScanlineWidget::sizeHint() const
 {
 	return QSize(image_.width(), image_.height());
 }
 
-void KonstruktorScanlineWidget::updateLine(int line)
+void ScanlineWidget::updateLine(int line)
 {
 	update(0, lastline_, image_.width(), line - lastline_ + 1);
 	lastline_ = line;
 }
 
-void KonstruktorScanlineWidget::paintEvent(QPaintEvent *ev)
+void ScanlineWidget::paintEvent(QPaintEvent *ev)
 {
 	QPainter painter(this);
 	const QRect &rect = ev->rect();
@@ -39,20 +42,20 @@ void KonstruktorScanlineWidget::paintEvent(QPaintEvent *ev)
 	painter.drawImage(rect.x(), rect.y(), image_, rect.x(), rect.y(), rect.width(), rect.height());
 }
 
-KonstruktorScanlineWidgetContainer::KonstruktorScanlineWidgetContainer(const QImage &image, QWidget *parent)
+ScanlineWidgetContainer::ScanlineWidgetContainer(const QImage &image, QWidget *parent)
 	: QScrollArea(parent)
 {
-	scanlineWidget_ = new KonstruktorScanlineWidget(image, this);
+	scanlineWidget_ = new ScanlineWidget(image, this);
 
 	setWidget(scanlineWidget_);
 }
 
-KonstruktorScanlineWidgetContainer::~KonstruktorScanlineWidgetContainer()
+ScanlineWidgetContainer::~ScanlineWidgetContainer()
 {
 
 }
 
-QSize KonstruktorScanlineWidgetContainer::sizeHint() const
+QSize ScanlineWidgetContainer::sizeHint() const
 {
 	int xsb = 0, ysb = 0;
 
@@ -65,8 +68,9 @@ QSize KonstruktorScanlineWidgetContainer::sizeHint() const
 	return QSize(1024 + xsb, 768 + ysb);
 }
 
-KonstruktorScanlineWidget* KonstruktorScanlineWidgetContainer::scanlineWidget()
+ScanlineWidget* ScanlineWidgetContainer::scanlineWidget()
 {
 	return scanlineWidget_;
 }
 
+}

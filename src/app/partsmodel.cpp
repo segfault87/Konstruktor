@@ -12,17 +12,20 @@
 
 #include "partsmodel.h"
 
-KonstruktorPartsModel::KonstruktorPartsModel(QList<KonstruktorPartCategory> &categories, QMap<int, KonstruktorPartCategory *> &categorymap, QMap<int, QList<KonstruktorPartItem> > &list, QObject *parent)
+namespace Konstruktor
+{
+
+PartsModel::PartsModel(QList<PartCategory> &categories, QMap<int, PartCategory *> &categorymap, QMap<int, QList<PartItem> > &list, QObject *parent)
 	: QAbstractItemModel(parent), categories_(categories), categorymap_(categorymap), list_(list)
 {
 }
 
-KonstruktorPartsModel::~KonstruktorPartsModel()
+PartsModel::~PartsModel()
 {
 	
 }
 
-int KonstruktorPartsModel::rowCount(const QModelIndex &parent) const
+int PartsModel::rowCount(const QModelIndex &parent) const
 {
 	if (parent.column() > 0)
 		return 0;
@@ -30,41 +33,41 @@ int KonstruktorPartsModel::rowCount(const QModelIndex &parent) const
 	if (!parent.isValid())
 		return categories_.size();
 	
-	KonstruktorPartItemBase *i = static_cast<KonstruktorPartItemBase *>(parent.internalPointer());
+	PartItemBase *i = static_cast<PartItemBase *>(parent.internalPointer());
 
-	if (i->type() == KonstruktorPartItemBase::TypeCategory) {
-		KonstruktorPartCategory *c = dynamic_cast<KonstruktorPartCategory *>(i);
+	if (i->type() == PartItemBase::TypeCategory) {
+		PartCategory *c = dynamic_cast<PartCategory *>(i);
 		return list_[c->id()].size();
 	} else {
 		return 0;
 	}
 }
 
-int KonstruktorPartsModel::favoriteRow() const
+int PartsModel::favoriteRow() const
 {
 	return categories_.size();
 }
 
-QVariant KonstruktorPartsModel::data(const QModelIndex &index, int role) const
+QVariant PartsModel::data(const QModelIndex &index, int role) const
 {
 	if (!index.isValid() || !index.internalPointer())
 		return QVariant();
 	
-	switch (static_cast<KonstruktorPartItemBase *>(index.internalPointer())->type()) {
-		case KonstruktorPartItemBase::TypeCategory:
+	switch (static_cast<PartItemBase *>(index.internalPointer())->type()) {
+		case PartItemBase::TypeCategory:
 			return dataCategory(index, role);
-		case KonstruktorPartItemBase::TypePartItem:
+		case PartItemBase::TypePartItem:
 			return dataPart(index, role);
-		case KonstruktorPartItemBase::TypeFavorite:
+		case PartItemBase::TypeFavorite:
 			return dataFavorite(index, role);
 		default:
 			return QVariant();
 	}
 }
 
-QVariant KonstruktorPartsModel::dataCategory(const QModelIndex &index, int role) const
+QVariant PartsModel::dataCategory(const QModelIndex &index, int role) const
 {
-	KonstruktorPartCategory *cat = static_cast<KonstruktorPartCategory *>(index.internalPointer());
+	PartCategory *cat = static_cast<PartCategory *>(index.internalPointer());
 	
 	if (role == Qt::DisplayRole) {
 		return i18n("%1 (%2)", cat->name(), rowCount(index));
@@ -81,9 +84,9 @@ QVariant KonstruktorPartsModel::dataCategory(const QModelIndex &index, int role)
 	return QVariant();
 }
 
-QVariant KonstruktorPartsModel::dataPart(const QModelIndex &index, int role) const
+QVariant PartsModel::dataPart(const QModelIndex &index, int role) const
 {
-	KonstruktorPartItem *obj = static_cast<KonstruktorPartItem *>(index.internalPointer());
+	PartItem *obj = static_cast<PartItem *>(index.internalPointer());
 	
 	if (role == Qt::DisplayRole) {
 		return i18n("%1", obj->description());
@@ -92,7 +95,7 @@ QVariant KonstruktorPartsModel::dataPart(const QModelIndex &index, int role) con
 	return QVariant();
 }
 
-QVariant KonstruktorPartsModel::dataFavorite(const QModelIndex &index, int role) const
+QVariant PartsModel::dataFavorite(const QModelIndex &index, int role) const
 {
 	if (!index.parent().isValid()) {
 		if (role == Qt::DisplayRole) {
@@ -110,7 +113,7 @@ QVariant KonstruktorPartsModel::dataFavorite(const QModelIndex &index, int role)
 	return QVariant();
 }
 
-QVariant KonstruktorPartsModel::headerData(int, Qt::Orientation orientation, int role) const
+QVariant PartsModel::headerData(int, Qt::Orientation orientation, int role) const
 {
 	if (orientation == Qt::Horizontal && role == Qt::DisplayRole)
 		return i18n("Parts");
@@ -118,7 +121,7 @@ QVariant KonstruktorPartsModel::headerData(int, Qt::Orientation orientation, int
 		return QVariant();
 }
 
-QModelIndex KonstruktorPartsModel::index(int row, int column, const QModelIndex &parent) const
+QModelIndex PartsModel::index(int row, int column, const QModelIndex &parent) const
 {
 	if (!hasIndex(row, column, parent))
 		return QModelIndex();
@@ -126,9 +129,9 @@ QModelIndex KonstruktorPartsModel::index(int row, int column, const QModelIndex 
 	void *ptr = 0L;
 	
 	if (parent.isValid()) {
-		KonstruktorPartItemBase *s = static_cast<KonstruktorPartItemBase *>(parent.internalPointer());
-		if (s->type() == KonstruktorPartItemBase::TypeCategory) {
-			ptr = (void *)&list_[dynamic_cast<KonstruktorPartCategory *>(s)->id()][row];
+		PartItemBase *s = static_cast<PartItemBase *>(parent.internalPointer());
+		if (s->type() == PartItemBase::TypeCategory) {
+			ptr = (void *)&list_[dynamic_cast<PartCategory *>(s)->id()][row];
 		}
 	} else {
 		if (row == favoriteRow())
@@ -140,45 +143,45 @@ QModelIndex KonstruktorPartsModel::index(int row, int column, const QModelIndex 
 	return createIndex(row, column, ptr);
 }
 
-QModelIndex KonstruktorPartsModel::parent(const QModelIndex &index) const
+QModelIndex PartsModel::parent(const QModelIndex &index) const
 {
 	if (!index.isValid())
 		return QModelIndex();
 
-	KonstruktorPartItemBase *s = static_cast<KonstruktorPartItemBase *>(index.internalPointer());
-	if (s->type() == KonstruktorPartItemBase::TypeCategory) {
+	PartItemBase *s = static_cast<PartItemBase *>(index.internalPointer());
+	if (s->type() == PartItemBase::TypeCategory) {
 		return QModelIndex();
-	} else if (s->type() == KonstruktorPartItemBase::TypePartItem) {
-		KonstruktorPartItem *c = dynamic_cast<KonstruktorPartItem *>(s);
+	} else if (s->type() == PartItemBase::TypePartItem) {
+		PartItem *c = dynamic_cast<PartItem *>(s);
 		return createIndex(c->parent()->index(), 0, (void *)c->parent());
 	}
 	
 	return QModelIndex();
 }
 
-Qt::ItemFlags KonstruktorPartsModel::flags(const QModelIndex &index) const
+Qt::ItemFlags PartsModel::flags(const QModelIndex &index) const
 {
 	if (!index.isValid())
 		return 0;
 
 	Qt::ItemFlags flags = Qt::ItemIsEnabled | Qt::ItemIsSelectable;
 	
-	KonstruktorPartItemBase *s = static_cast<KonstruktorPartItemBase *>(index.internalPointer());
-	if (s->type() == KonstruktorPartItemBase::TypePartItem)
+	PartItemBase *s = static_cast<PartItemBase *>(index.internalPointer());
+	if (s->type() == PartItemBase::TypePartItem)
 		flags |= Qt::ItemIsDragEnabled;
 	
 	return flags;
 	
 }
 
-QStringList KonstruktorPartsModel::mimeTypes() const
+QStringList PartsModel::mimeTypes() const
 {
 	QStringList types;
 	types << "application/konstruktor-refobject";
 	return types;
 }
 
-QMimeData* KonstruktorPartsModel::mimeData(const QModelIndexList &indexes) const
+QMimeData* PartsModel::mimeData(const QModelIndexList &indexes) const
 {
 	if (indexes.size() != 1)
 		return 0L;
@@ -187,13 +190,15 @@ QMimeData* KonstruktorPartsModel::mimeData(const QModelIndexList &indexes) const
 	if (!index.isValid() || !index.internalPointer())
 		return 0L;
 
-	KonstruktorPartItemBase *item = static_cast<KonstruktorPartItemBase *>(index.internalPointer());
-	if (item->type() != KonstruktorPartItemBase::TypePartItem)
+	PartItemBase *item = static_cast<PartItemBase *>(index.internalPointer());
+	if (item->type() != PartItemBase::TypePartItem)
 		return 0L;
 	
 	QMimeData *mimeData = new QMimeData();
-	QByteArray encodedData = dynamic_cast<KonstruktorPartItem *>(item)->serialize();
+	QByteArray encodedData = dynamic_cast<PartItem *>(item)->serialize();
 
 	mimeData->setData("application/konstruktor-refobject", encodedData);
 	return mimeData;
+}
+
 }

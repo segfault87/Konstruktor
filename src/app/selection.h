@@ -16,13 +16,16 @@
 
 #include <renderer/renderer_opengl.h>
 
-class KonstruktorVisibilityExtension;
+namespace Konstruktor
+{
 
-class KonstruktorSelection : public ldraw_renderer::render_filter
+class VisibilityExtension;
+
+class Selection : public ldraw_renderer::render_filter
 {
   public:
-	KonstruktorSelection();
-	~KonstruktorSelection();
+	Selection();
+	~Selection();
 
 	void setSelection(const QSet<int> &set);
 	void setModel(const ldraw::model *m);
@@ -43,16 +46,16 @@ class KonstruktorSelection : public ldraw_renderer::render_filter
   private:
 	const QSet<int> *tsset_;
 	const ldraw::model *model_;
-	const KonstruktorVisibilityExtension *visibility_;
+	const VisibilityExtension *visibility_;
 	
 	bool inversed_;
 };
 
-class KonstruktorIntermediateSelection : public ldraw_renderer::render_filter
+class IntermediateSelection : public ldraw_renderer::render_filter
 {
   public:
-	KonstruktorIntermediateSelection(KonstruktorSelection *currentSelection);
-	~KonstruktorIntermediateSelection();
+	IntermediateSelection(Selection *currentSelection);
+	~IntermediateSelection();
 
 	void setList(const std::list<std::pair<int, GLuint> > &list);
 	void clear();
@@ -64,8 +67,10 @@ class KonstruktorIntermediateSelection : public ldraw_renderer::render_filter
 
   private:
 	std::set<int> tsset_;
-	KonstruktorSelection *currentSelection_;
+	Selection *currentSelection_;
 	int selectionMethod_;
 };
+
+}
 
 #endif

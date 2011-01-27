@@ -8,8 +8,8 @@
 
 #include "application.h"
 
-static const char description[] = "An interactive LDraw model designer for KDE 4";
-static const char version[] = "0.5.0-beta1";
+static const char description[] = "An interactive LDraw model designer";
+static const char version[] = "0.9.0-beta1";
 
 int main(int argc, char *argv[])
 {
@@ -30,7 +30,7 @@ int main(int argc, char *argv[])
 	
 	KApplication app;
 	
-	KonstruktorApplication mainapp;
+	Konstruktor::Application mainapp;
 	
 	return app.exec();
 }

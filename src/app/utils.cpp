@@ -1,6 +1,9 @@
 #include "utils.h"
 
-float KonstruktorUtils::floatModulo(float dividend, float divisor)
+namespace Konstruktor
+{
+
+float Utils::floatModulo(float dividend, float divisor)
 {
 	if (dividend > 0.0f) {
 		while (dividend >= divisor)
@@ -13,4 +16,6 @@ float KonstruktorUtils::floatModulo(float dividend, float divisor)
 	} else {
 		return 0.0f;
 	}
+}
+
 }

@@ -16,7 +16,7 @@ int main(int argc, char *argv[])
 {
 	const KAboutData about(
 		"konstruktor", "konstruktor",
-		ki18n("Part database updater for Konstruktor"), "0.6.0",
+		ki18n("Part database updater for Konstruktor"), "0.9.0-beta1",
 		ki18n("Updates the part database. Must be called internally by Konstruktor."),
 		KAboutData::License_GPL_V3,
 		ki18n("(c)2006-2011, Park \"segfault\" Joon-Kyu"));
@@ -32,7 +32,7 @@ int main(int argc, char *argv[])
 
 	int status;
 	try {
-		KonstruktorDBUpdater updater;
+		Konstruktor::DBUpdater updater;
 		
 		status = updater.start();
 	} catch (const std::runtime_error &e) {

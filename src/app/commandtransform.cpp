@@ -9,8 +9,11 @@
 
 #include "commandtransform.h"
 
-KonstruktorCommandTransform::KonstruktorCommandTransform(bool inverse, const ldraw::matrix &matrix, const QSet<int> &selection, ldraw::model *model)
-	: KonstruktorCommandBase(selection, model)
+namespace Konstruktor
+{
+
+CommandTransform::CommandTransform(bool inverse, const ldraw::matrix &matrix, const QSet<int> &selection, ldraw::model *model)
+	: CommandBase(selection, model)
 {
 	setText(i18n("Transform"));
 
@@ -23,17 +26,17 @@ KonstruktorCommandTransform::KonstruktorCommandTransform(bool inverse, const ldr
 	}
 }
 
-KonstruktorCommandTransform::~KonstruktorCommandTransform()
+CommandTransform::~CommandTransform()
 {
 
 }
 
-bool KonstruktorCommandTransform::needUpdateDimension() const
+bool CommandTransform::needUpdateDimension() const
 {
 	return true;
 }
 
-void KonstruktorCommandTransform::redo()
+void CommandTransform::redo()
 {
 	for (QSet<int>::ConstIterator it = selection_.constBegin(); it != selection_.constEnd(); ++it) {
 		if (model_->elements()[*it]->get_type() == ldraw::type_ref) {
@@ -65,7 +68,7 @@ void KonstruktorCommandTransform::redo()
 	}
 }
 
-void KonstruktorCommandTransform::undo()
+void CommandTransform::undo()
 {
 	for (QSet<int>::ConstIterator it = selection_.constBegin(); it != selection_.constEnd(); ++it) {
 		if (model_->elements()[*it]->get_type() == ldraw::type_ref)
@@ -73,3 +76,4 @@ void KonstruktorCommandTransform::undo()
 	}
 }
 
+}

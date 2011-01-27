@@ -25,21 +25,24 @@
 
 #define INCLUDED_IN_CURRENT_DOCUMENT(m) (m->is_submodel_of(modelBase_) || m == modelBase_->main_model())
 
+namespace Konstruktor
+{
+
 // Creates an empty document
-KonstruktorDocument::KonstruktorDocument(const QString &name, const QString &desc, const QString &author, QGLWidget *glBase, QObject *parent)
+Document::Document(const QString &name, const QString &desc, const QString &author, QGLWidget *glBase, QObject *parent)
 	: QObject(parent)
 {
 	activeUndoStack_ = 0L;
 	canSave_ = false;
 	
-	renderer_ = new KonstruktorPixmapRenderer(256, 256, glBase);
+	renderer_ = new PixmapRenderer(256, 256, glBase);
 	
 	modelBase_ = new ldraw::model_multipart;
 	modelBase_->main_model()->set_name(std::string(name.toLocal8Bit().data()));
 	modelBase_->main_model()->set_author(std::string(author.toLocal8Bit().data()));
 	modelBase_->main_model()->set_desc(std::string(desc.toLocal8Bit().data()));
 	modelBase_->main_model()->update_custom_data<ldraw::metrics>();
-	modelBase_->main_model()->init_custom_data<KonstruktorUndoStackExtension>(this);
+	modelBase_->main_model()->init_custom_data<UndoStackExtension>(this);
 	
 	setActiveModel(modelBase_->main_model());
 	
@@ -47,43 +50,43 @@ KonstruktorDocument::KonstruktorDocument(const QString &name, const QString &des
 	
 	recalibrateScreenDimension();
 
-	model_ = new KonstruktorSubmodelModel(this, this);
+	model_ = new SubmodelModel(this, this);
 }
 
 // Load an existing model from a file
-KonstruktorDocument::KonstruktorDocument(const QString &path, const KUrl &url, QGLWidget *glBase, QObject *parent)
+Document::Document(const QString &path, const KUrl &url, QGLWidget *glBase, QObject *parent)
 	: QObject(parent)
 {
 	activeUndoStack_ = 0L;
 	location_ = url;
 	canSave_ = false;
 	
-	renderer_ = new KonstruktorPixmapRenderer(256, 256, glBase);
+	renderer_ = new PixmapRenderer(256, 256, glBase);
 	
 	ldraw::reader r;
 	modelBase_ = r.load_from_file(path.toLocal8Bit().data());
-	KonstruktorApplication::self()->library()->link(modelBase_);
+	Application::self()->library()->link(modelBase_);
 	
 	ldraw::model *mainModel = modelBase_->main_model();
 	ldraw::utils::validate_bowtie_quads(mainModel);
 
 	mainModel->update_custom_data<ldraw::metrics>();
 
-	mainModel->init_custom_data<KonstruktorUndoStackExtension>(this);
+	mainModel->init_custom_data<UndoStackExtension>(this);
 	for (ldraw::model_multipart::submodel_iterator it = contents()->submodel_list().begin(); it != contents()->submodel_list().end(); ++it)
-		(*it).second->init_custom_data<KonstruktorUndoStackExtension>(this);
+		(*it).second->init_custom_data<UndoStackExtension>(this);
 
 	setActiveModel(mainModel);
 	
 	updatePixmap();
 	recalibrateScreenDimension();
 
-	model_ = new KonstruktorSubmodelModel(this, this);
+	model_ = new SubmodelModel(this, this);
 }
 
-KonstruktorDocument::~KonstruktorDocument()
+Document::~Document()
 {
-	KonstruktorApplication::self()->library()->unlink(modelBase_);
+	Application::self()->library()->unlink(modelBase_);
 
 	if (modelBase_)
 		delete modelBase_;
@@ -91,14 +94,14 @@ KonstruktorDocument::~KonstruktorDocument()
 	delete renderer_;
 }
 
-void KonstruktorDocument::sendSignals()
+void Document::sendSignals()
 {
-	emit undoStackAdded(modelBase_->main_model()->custom_data<KonstruktorUndoStackExtension>());
+	emit undoStackAdded(modelBase_->main_model()->custom_data<UndoStackExtension>());
 	for (ldraw::model_multipart::submodel_iterator it = contents()->submodel_list().begin(); it != contents()->submodel_list().end(); ++it)
-		emit undoStackAdded((*it).second->custom_data<KonstruktorUndoStackExtension>());
+		emit undoStackAdded((*it).second->custom_data<UndoStackExtension>());
 }
 
-QByteArray KonstruktorDocument::save(bool forceMultipart) const
+QByteArray Document::save(bool forceMultipart) const
 {
 	std::ostringstream stream;
 	ldraw::writer writer(stream);
@@ -111,20 +114,20 @@ QByteArray KonstruktorDocument::save(bool forceMultipart) const
 	return QByteArray(stream.str().c_str());
 }
 
-bool KonstruktorDocument::setActiveModel(ldraw::model *m)
+bool Document::setActiveModel(ldraw::model *m)
 {
 	if (!INCLUDED_IN_CURRENT_DOCUMENT(m))
 	  return false;
 
 	activeModel_ = m;
-	activeUndoStack_ = activeModel_->custom_data<KonstruktorUndoStackExtension>();
+	activeUndoStack_ = activeModel_->custom_data<UndoStackExtension>();
 	
 	emit undoStackChanged(activeUndoStack_);
 
 	return true;
 }
 
-bool KonstruktorDocument::setActiveModel(const std::string &key)
+bool Document::setActiveModel(const std::string &key)
 {
 	ldraw::model *m = modelBase_->find_submodel(key);
 	
@@ -134,12 +137,12 @@ bool KonstruktorDocument::setActiveModel(const std::string &key)
 	return setActiveModel(m);
 }
 
-void KonstruktorDocument::setSaveable(bool s)
+void Document::setSaveable(bool s)
 {
 	canSave_ = s;
 }
 
-ldraw::model* KonstruktorDocument::newSubmodel(const std::string &name, const std::string &desc, const std::string &author)
+ldraw::model* Document::newSubmodel(const std::string &name, const std::string &desc, const std::string &author)
 {
 	ldraw::model *m = new ldraw::model(desc, name, author, contents());
 
@@ -147,8 +150,8 @@ ldraw::model* KonstruktorDocument::newSubmodel(const std::string &name, const st
 		return 0L;
 	
 	m->init_custom_data<ldraw::metrics>();
-	m->update_custom_data<KonstruktorPixmapExtension>(renderer_);
-	KonstruktorUndoStackExtension *ext = m->init_custom_data<KonstruktorUndoStackExtension>(this);
+	m->update_custom_data<PixmapExtension>(renderer_);
+	UndoStackExtension *ext = m->init_custom_data<UndoStackExtension>(this);
 	emit undoStackAdded(ext);
 
 	model_->resetItems();
@@ -156,40 +159,40 @@ ldraw::model* KonstruktorDocument::newSubmodel(const std::string &name, const st
 	return m;
 }
 
-void KonstruktorDocument::updatePixmap()
+void Document::updatePixmap()
 {
-	modelBase_->main_model()->update_custom_data<KonstruktorPixmapExtension>(renderer_);
+	modelBase_->main_model()->update_custom_data<PixmapExtension>(renderer_);
 	for (ldraw::model_multipart::submodel_iterator it = contents()->submodel_list().begin(); it != contents()->submodel_list().end(); ++it)
-		(*it).second->update_custom_data<KonstruktorPixmapExtension>(renderer_);
+		(*it).second->update_custom_data<PixmapExtension>(renderer_);
 }
 
-bool KonstruktorDocument::updatePixmap(ldraw::model *model)
+bool Document::updatePixmap(ldraw::model *model)
 {
 	if (!INCLUDED_IN_CURRENT_DOCUMENT(model))
 		return false;
 	
-	model->update_custom_data<KonstruktorPixmapExtension>(renderer_);
+	model->update_custom_data<PixmapExtension>(renderer_);
 
 	return true;
 }
 
-QUndoStack* KonstruktorDocument::activeUndoStack()
+QUndoStack* Document::activeUndoStack()
 {
 	return activeUndoStack_;
 }
 
-QList<QUndoStack *> KonstruktorDocument::undoStacks()
+QList<QUndoStack *> Document::undoStacks()
 {
 	QList<QUndoStack *> undoStacks;
 
-	undoStacks << modelBase_->main_model()->custom_data<KonstruktorUndoStackExtension>();
+	undoStacks << modelBase_->main_model()->custom_data<UndoStackExtension>();
 	for (ldraw::model_multipart::submodel_iterator it = contents()->submodel_list().begin(); it != contents()->submodel_list().end(); ++it)
-		undoStacks << (*it).second->custom_data<KonstruktorUndoStackExtension>();
+		undoStacks << (*it).second->custom_data<UndoStackExtension>();
 
 	return undoStacks;
 }
 
-void KonstruktorDocument::recalibrateScreenDimension()
+void Document::recalibrateScreenDimension()
 {
 	if (activeModel_->elements().size() == 0) {
 		for (int i = 0; i < 7; i++)
@@ -326,8 +329,9 @@ void KonstruktorDocument::recalibrateScreenDimension()
 	}
 }
 
-void KonstruktorDocument::resetPerspective()
+void Document::resetPerspective()
 {
 	rotation_ = ldraw_renderer::mouse_rotation();
 }
 
+}

@@ -9,21 +9,24 @@
 
 #define DB_REVISION_NUMBER 3
 
-class KonstruktorDBManager;
-class KonstruktorPixmapRenderer;
-class KonstruktorConfig;
-
 namespace ldraw
 {
     class part_library;
     class reader;
 }
 
-class KonstruktorDBUpdater : public QObject
+namespace Konstruktor
+{
+
+class DBManager;
+class PixmapRenderer;
+class Config;
+
+class DBUpdater : public QObject
 {
   public:
-	KonstruktorDBUpdater(QObject *parent = 0L);
-	~KonstruktorDBUpdater();
+	DBUpdater(QObject *parent = 0L);
+	~DBUpdater();
 
 	void dropOutdatedTables();
 	void constructTables();
@@ -42,15 +45,17 @@ class KonstruktorDBUpdater : public QObject
 	void deletePartImages();
 
 	QMutex globalMutex_;
-	KonstruktorDBManager *manager_;
-	KonstruktorPixmapRenderer *renderer_;
-	KonstruktorConfig *config_;
+	DBManager *manager_;
+	PixmapRenderer *renderer_;
+	Config *config_;
 	ldraw::part_library *library_;
 	ldraw::reader *reader_;
 
 	bool status_;
 	bool forceRescan_;
 };
+
+}
 
 #endif
 

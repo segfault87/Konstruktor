@@ -20,7 +20,10 @@
 
 #include "povrayrenderwidget.h"
 
-KonstruktorPOVRayRenderWidget::KonstruktorPOVRayRenderWidget(const KonstruktorPOVRayRenderParameters &params, const ldraw::model *model, QWidget *parent)
+namespace Konstruktor
+{
+
+POVRayRenderWidget::POVRayRenderWidget(const POVRayRenderParameters &params, const ldraw::model *model, QWidget *parent)
 	: KDialog(parent)
 {
 	process_ = 0L;
@@ -50,7 +53,7 @@ KonstruktorPOVRayRenderWidget::KonstruktorPOVRayRenderWidget(const KonstruktorPO
 		close();
 	}
 	
-	exporter_ = new KonstruktorPOVRayExporter(model, &params, this);
+	exporter_ = new POVRayExporter(model, &params, this);
 	exporter_->start();
 	
 	tempFile_->write(exporter_->output());
@@ -71,9 +74,9 @@ KonstruktorPOVRayRenderWidget::KonstruktorPOVRayRenderWidget(const KonstruktorPO
 	QWidget *mainWidget = new QWidget;
 	QVBoxLayout *vboxLayout = new QVBoxLayout(mainWidget);
 
-	scrollArea_ = new KonstruktorScanlineWidgetContainer(image_, this);
+	scrollArea_ = new ScanlineWidgetContainer(image_, this);
 
-	KonstruktorScanlineWidget *scanlineWidget = scrollArea_->scanlineWidget();
+	ScanlineWidget *scanlineWidget = scrollArea_->scanlineWidget();
 	
 	status_ = new QLabel(i18n("Idle"), this);
 	status_->setAlignment(Qt::AlignHCenter);
@@ -90,7 +93,7 @@ KonstruktorPOVRayRenderWidget::KonstruktorPOVRayRenderWidget(const KonstruktorPO
 	setMainWidget(mainWidget);
 }
 
-KonstruktorPOVRayRenderWidget::~KonstruktorPOVRayRenderWidget()
+POVRayRenderWidget::~POVRayRenderWidget()
 {
 	if (process_)
 		cancelRender();
@@ -99,7 +102,7 @@ KonstruktorPOVRayRenderWidget::~KonstruktorPOVRayRenderWidget()
 	delete tempFile_;
 }
 
-void KonstruktorPOVRayRenderWidget::start()
+void POVRayRenderWidget::start()
 {
 	enableButton(KDialog::Close, false);
 	enableButton(KDialog::User1, true);
@@ -110,7 +113,7 @@ void KonstruktorPOVRayRenderWidget::start()
 	process_ = new KProcess(this);
 
 	process_->setOutputChannelMode(KProcess::SeparateChannels);
-	*process_ << KonstruktorApplication::self()->config()->povRayExecutablePath();
+	*process_ << Application::self()->config()->povRayExecutablePath();
 	*process_ << QString("+I")+tempFile_->fileName() << "+O-" << "+FT" << "-D" << QString("-w%1").arg(width_) << QString("-h%1").arg(height_) << "+UA";
 	if (antialiasing_)
 		*process_ << "+a0.3";
@@ -124,7 +127,7 @@ void KonstruktorPOVRayRenderWidget::start()
 	status_->setText(i18n("Rendering..."));
 }
 
-void KonstruktorPOVRayRenderWidget::cancelRender()
+void POVRayRenderWidget::cancelRender()
 {
 	if (process_) {
 		terminated_ = true;
@@ -132,7 +135,7 @@ void KonstruktorPOVRayRenderWidget::cancelRender()
 	}
 }
 
-void KonstruktorPOVRayRenderWidget::saveImage()
+void POVRayRenderWidget::saveImage()
 {
 	QString filename = KFileDialog::getSaveFileName(KUrl(), i18n("*.png|Portable Network Graphics"), this, i18n("Save Image File"));
 
@@ -145,7 +148,7 @@ void KonstruktorPOVRayRenderWidget::saveImage()
 	image_.save(filename, "PNG");
 }
 
-void KonstruktorPOVRayRenderWidget::povrayMessage()
+void POVRayRenderWidget::povrayMessage()
 {
 	process_->setReadChannel(KProcess::StandardError);
 
@@ -160,7 +163,7 @@ void KonstruktorPOVRayRenderWidget::povrayMessage()
 }
 
 /* Parse Targa stream and display */
-void KonstruktorPOVRayRenderWidget::povrayImage()
+void POVRayRenderWidget::povrayImage()
 {
 	process_->setReadChannel(KProcess::StandardOutput);
 
@@ -254,7 +257,7 @@ void KonstruktorPOVRayRenderWidget::povrayImage()
 		emit percent(progress_);
 }
 
-void KonstruktorPOVRayRenderWidget::povrayFinished(int exitCode, QProcess::ExitStatus exitStatus)
+void POVRayRenderWidget::povrayFinished(int exitCode, QProcess::ExitStatus exitStatus)
 {
 	enableButton(KDialog::Close, true);
 	enableButton(KDialog::User1, false);
@@ -273,9 +276,10 @@ void KonstruktorPOVRayRenderWidget::povrayFinished(int exitCode, QProcess::ExitS
 	process_ = 0L;
 }
 
-void KonstruktorPOVRayRenderWidget::setPixel(int x, int y, uint c)
+void POVRayRenderWidget::setPixel(int x, int y, uint c)
 {
 	if (x >= 0 && x < image_.width() && y >= 0 && y < image_.height())
 		image_.setPixel(x, y, c);
 }
 
+}

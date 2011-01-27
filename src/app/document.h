@@ -21,21 +21,25 @@
 
 #include "viewport.h"
 
-extern const ldraw::matrix isometricProjectionMatrix;
-
 class QGLWidget;
 class QUndoStack;
-class KonstruktorPixmapRenderer;
-class KonstruktorSubmodelModel;
 
-class KonstruktorDocument : public QObject
+namespace Konstruktor
+{
+
+extern const ldraw::matrix isometricProjectionMatrix;
+
+class PixmapRenderer;
+class SubmodelModel;
+
+class Document : public QObject
 {
 	Q_OBJECT;
 	
   public:
-	KonstruktorDocument(const QString &name, const QString &desc, const QString &author, QGLWidget *glBase, QObject *parent = 0L);
-	KonstruktorDocument(const QString &path, const KUrl &url, QGLWidget *glBase, QObject *parent = 0L);
-	~KonstruktorDocument();
+	Document(const QString &name, const QString &desc, const QString &author, QGLWidget *glBase, QObject *parent = 0L);
+	Document(const QString &path, const KUrl &url, QGLWidget *glBase, QObject *parent = 0L);
+	~Document();
 
 	void sendSignals();
 	
@@ -52,7 +56,7 @@ class KonstruktorDocument : public QObject
 	void setLocation(const KUrl &u) { location_ = u; }
 	void setSaveable(bool s);
 
-	KonstruktorSubmodelModel* model() { return model_; }
+	SubmodelModel* model() { return model_; }
 	
 	// Manipulation
 	ldraw::model* newSubmodel(const std::string &name, const std::string &desc, const std::string &author);
@@ -66,7 +70,7 @@ class KonstruktorDocument : public QObject
 	QList<QUndoStack *> undoStacks();
 
 	// Viewport-related stuff
-	KonstruktorViewport& getViewport(int i) { return viewport_[i]; }
+	Viewport& getViewport(int i) { return viewport_[i]; }
 	ldraw_renderer::mouse_rotation& getMouseRotation() { return rotation_;}
 	const ldraw::vector& getCenter() const { return center_; }
 	const ldraw::vector& getLength() const { return length_; }
@@ -84,7 +88,7 @@ class KonstruktorDocument : public QObject
 	ldraw::model *activeModel_;
 	QUndoStack *activeUndoStack_;
 	
-	KonstruktorViewport viewport_[7];
+	Viewport viewport_[7];
 	ldraw_renderer::mouse_rotation rotation_;
 	ldraw::vector center_, length_;
 	
@@ -92,10 +96,12 @@ class KonstruktorDocument : public QObject
 	
 	bool canSave_;
 	
-	KonstruktorPixmapRenderer *renderer_;
-	KonstruktorSubmodelModel *model_;
+	PixmapRenderer *renderer_;
+	SubmodelModel *model_;
 	
-	//friend class KonstruktorPixmapUpdater;
+	//friend class PixmapUpdater;
 };
+
+}
 
 #endif

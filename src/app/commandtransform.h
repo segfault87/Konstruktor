@@ -10,11 +10,14 @@
 
 #include "commandbase.h"
 
-class KonstruktorCommandTransform : public KonstruktorCommandBase
+namespace Konstruktor
+{
+
+class CommandTransform : public CommandBase
 {
   public:
-	KonstruktorCommandTransform(bool inverse, const ldraw::matrix &matrix, const QSet<int> &selection, ldraw::model *model);
-	~KonstruktorCommandTransform();
+	CommandTransform(bool inverse, const ldraw::matrix &matrix, const QSet<int> &selection, ldraw::model *model);
+	~CommandTransform();
 
 	bool needUpdateDimension() const;
 	
@@ -26,5 +29,7 @@ class KonstruktorCommandTransform : public KonstruktorCommandBase
 	ldraw::matrix matrix_;
 	std::map<int, ldraw::matrix> oldmatrices_;
 };
+
+}
 
 #endif

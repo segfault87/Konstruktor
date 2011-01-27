@@ -11,8 +11,11 @@
 
 #include "commandinsert.h"
 
-KonstruktorCommandInsert::KonstruktorCommandInsert(const QString &filename, const ldraw::matrix &matrix, const ldraw::color &color, const QSet<int> &selection, ldraw::model *model)
-	: KonstruktorCommandBase(selection, model)
+namespace Konstruktor
+{
+
+CommandInsert::CommandInsert(const QString &filename, const ldraw::matrix &matrix, const ldraw::color &color, const QSet<int> &selection, ldraw::model *model)
+	: CommandBase(selection, model)
 {
 	filename_ = filename;
 	matrix_ = matrix;
@@ -29,17 +32,17 @@ KonstruktorCommandInsert::KonstruktorCommandInsert(const QString &filename, cons
 	setText(i18n("Insert %1", filename));
 }
 
-KonstruktorCommandInsert::~KonstruktorCommandInsert()
+CommandInsert::~CommandInsert()
 {
 
 }
 
-bool KonstruktorCommandInsert::needUpdateDimension() const
+bool CommandInsert::needUpdateDimension() const
 {
 	return true;
 }
 
-QPair<KonstruktorCommandBase::AffectedRow, QSet<int> > KonstruktorCommandInsert::affectedRows() const
+QPair<CommandBase::AffectedRow, QSet<int> > CommandInsert::affectedRows() const
 {
 	QSet<int> set;
 
@@ -48,20 +51,21 @@ QPair<KonstruktorCommandBase::AffectedRow, QSet<int> > KonstruktorCommandInsert:
 	else
 		set.insert(model_->elements().size() - 1);
 
-	return QPair<KonstruktorCommandBase::AffectedRow, QSet<int> >(Inserted, set);
+	return QPair<CommandBase::AffectedRow, QSet<int> >(Inserted, set);
 }
 
-void KonstruktorCommandInsert::redo()
+void CommandInsert::redo()
 {
 	ldraw::element_ref *ref = new ldraw::element_ref(color_, matrix_, filename_.toLocal8Bit().data());
 	model_->insert_element(ref, offset_);
 
 	if (!ref->get_model())
-		KonstruktorApplication::self()->library()->link_element(ref);
+		Application::self()->library()->link_element(ref);
 }
 
-void KonstruktorCommandInsert::undo()
+void CommandInsert::undo()
 {
 	model_->delete_element(offset_);
 }
 
+}

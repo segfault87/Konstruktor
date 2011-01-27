@@ -6,7 +6,10 @@
 
 #include "selection.h"
 
-KonstruktorSelection::KonstruktorSelection()
+namespace Konstruktor
+{
+
+Selection::Selection()
 {
 	tsset_ = 0L;
 	model_ = 0L;
@@ -14,45 +17,45 @@ KonstruktorSelection::KonstruktorSelection()
 	inversed_ = false;
 }
 
-KonstruktorSelection::~KonstruktorSelection()
+Selection::~Selection()
 {
 
 }
 
 
-void KonstruktorSelection::setSelection(const QSet<int> &set)
+void Selection::setSelection(const QSet<int> &set)
 {
 	tsset_ = &set;
 }
 
-void KonstruktorSelection::setModel(const ldraw::model *m)
+void Selection::setModel(const ldraw::model *m)
 {
 	model_ = m;
 	tsset_ = 0L;
-	visibility_ = m->const_custom_data<KonstruktorVisibilityExtension>();
+	visibility_ = m->const_custom_data<VisibilityExtension>();
 }
 
-void KonstruktorSelection::resetSelection()
+void Selection::resetSelection()
 {
 	tsset_ = 0L;
 }
 
-void KonstruktorSelection::setInversed(bool i)
+void Selection::setInversed(bool i)
 {
 	inversed_ = i;
 }
 
-const QSet<int>* KonstruktorSelection::getSelection() const
+const QSet<int>* Selection::getSelection() const
 {
 	return tsset_;
 }
 
-bool KonstruktorSelection::hasSelection() const
+bool Selection::hasSelection() const
 {
 	return tsset_ != 0L;
 }
 
-const ldraw::element_ref* KonstruktorSelection::getLastRef() const
+const ldraw::element_ref* Selection::getLastRef() const
 {
 	if (tsset_) {
 		if (tsset_->count() == 1) {
@@ -75,7 +78,7 @@ const ldraw::element_ref* KonstruktorSelection::getLastRef() const
 	return 0L;
 }
 
-ldraw::matrix KonstruktorSelection::getLastMatrix() const
+ldraw::matrix Selection::getLastMatrix() const
 {
 	const ldraw::element_ref *ref = getLastRef();
 
@@ -85,7 +88,7 @@ ldraw::matrix KonstruktorSelection::getLastMatrix() const
 		return ldraw::matrix();
 }
 
-ldraw::color KonstruktorSelection::getLastColor() const
+ldraw::color Selection::getLastColor() const
 {
 	const ldraw::element_ref *ref = getLastRef();
 
@@ -95,7 +98,7 @@ ldraw::color KonstruktorSelection::getLastColor() const
 		return ldraw::color(0);
 }
 
-bool KonstruktorSelection::query(const ldraw::model *, int index, int) const
+bool Selection::query(const ldraw::model *, int index, int) const
 {
 	if (!tsset_)
 		return false;
@@ -111,18 +114,18 @@ bool KonstruktorSelection::query(const ldraw::model *, int index, int) const
 		return tsset_->contains(index) && visibility;
 }
 
-KonstruktorIntermediateSelection::KonstruktorIntermediateSelection(KonstruktorSelection *currentSelection)
+IntermediateSelection::IntermediateSelection(Selection *currentSelection)
 	: currentSelection_(currentSelection)
 {
-	selectionMethod_ = KonstruktorRenderWidget::Normal;
+	selectionMethod_ = RenderWidget::Normal;
 }
 
-KonstruktorIntermediateSelection::~KonstruktorIntermediateSelection()
+IntermediateSelection::~IntermediateSelection()
 {
 
 }
 
-void KonstruktorIntermediateSelection::setList(const std::list<std::pair<int, GLuint> > &list)
+void IntermediateSelection::setList(const std::list<std::pair<int, GLuint> > &list)
 {
 	tsset_.clear();
 	
@@ -130,25 +133,27 @@ void KonstruktorIntermediateSelection::setList(const std::list<std::pair<int, GL
 		tsset_.insert((*it).first);
 }
 
-void KonstruktorIntermediateSelection::clear()
+void IntermediateSelection::clear()
 {
 	tsset_.clear();
 }
 
-void KonstruktorIntermediateSelection::setSelectionMethod(int method)
+void IntermediateSelection::setSelectionMethod(int method)
 {
 	selectionMethod_ = method;
 }
 
-bool KonstruktorIntermediateSelection::hasSelection() const
+bool IntermediateSelection::hasSelection() const
 {
 	return tsset_.size() > 0;
 }
 
-bool KonstruktorIntermediateSelection::query(const ldraw::model *, int index, int) const
+bool IntermediateSelection::query(const ldraw::model *, int index, int) const
 {
-	if ((selectionMethod_ == KonstruktorRenderWidget::Subtraction || selectionMethod_ == KonstruktorRenderWidget::Intersection) && currentSelection_->hasSelection())
+	if ((selectionMethod_ == RenderWidget::Subtraction || selectionMethod_ == RenderWidget::Intersection) && currentSelection_->hasSelection())
 		return !(tsset_.find(index) != tsset_.end() && currentSelection_->getSelection()->contains(index));
 	else
 		return !(tsset_.find(index) != tsset_.end());
+}
+
 }

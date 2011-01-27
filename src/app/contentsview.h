@@ -18,13 +18,16 @@ namespace ldraw
     class model;
 };
 
-class KonstruktorContentsView : public QTreeView
+namespace Konstruktor
+{
+
+class ContentsView : public QTreeView
 {
 	Q_OBJECT;
 	
   public:
-	KonstruktorContentsView(QWidget *parent = 0L);
-	virtual ~KonstruktorContentsView();
+	ContentsView(QWidget *parent = 0L);
+	virtual ~ContentsView();
 
 	const QSet<int>& selected() const { return selectedIndices_; }
 	int uniqueSelection() const;
@@ -38,8 +41,8 @@ class KonstruktorContentsView : public QTreeView
 	void hideSelected();
 	void unhideAll();
 	void modelChanged(ldraw::model *model);
-	void updateSelection(const std::list<int> &selection, KonstruktorRenderWidget::SelectionMethod method);
-	void rowsChanged(const QPair<KonstruktorCommandBase::AffectedRow, QSet<int> > &rows);
+	void updateSelection(const std::list<int> &selection, RenderWidget::SelectionMethod method);
+	void rowsChanged(const QPair<CommandBase::AffectedRow, QSet<int> > &rows);
 
   private slots:
 	void selectionChanged(const QItemSelection &selected, const QItemSelection &unselected);
@@ -49,5 +52,7 @@ class KonstruktorContentsView : public QTreeView
 	std::set<int> *hiddenIndices_;
 	ldraw::model *model_;
 };
+
+}
 
 #endif

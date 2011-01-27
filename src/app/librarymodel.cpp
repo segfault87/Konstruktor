@@ -3,5 +3,13 @@
 
 #include "librarymodel.h"
 
-KonstruktorLibraryModel::KonstruktorLibraryModel(QObject *parent)
+namespace Konstruktor
+{
+
+LibraryModel::LibraryModel(QObject *parent)
 	: QAbstractItemModel(parent)
+{
+
+}
+
+}

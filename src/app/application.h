@@ -26,33 +26,36 @@ namespace ldraw_renderer
 class KProgressDialog;
 class KProcess;
 
-class KonstruktorColorManager;
-class KonstruktorDBManager;
-class KonstruktorMainWindow;
+namespace Konstruktor
+{
+
+class ColorManager;
+class DBManager;
+class MainWindow;
 
 // Main application entrypoint
-class KonstruktorApplication : public QObject
+class Application : public QObject
 {
 	Q_OBJECT;
 	
   public:
-	KonstruktorApplication(QObject *parent = 0L);
-	~KonstruktorApplication();
+	Application(QObject *parent = 0L);
+	~Application();
 	
 	bool initialize();
 	void startDBUpdater();
 	void startup();
 	
-	static KonstruktorApplication* self() { return instance_; }
+	static Application* self() { return instance_; }
 	
 	void testPovRay(bool overrideconfig = false);
 	
 	QString saveLocation(const QString &directory);
 	ldraw::part_library* library() { return library_; }
 	ldraw_renderer::parameters* renderer_params() { return params_; }
-	KonstruktorConfig* config() { return config_; }
-	KonstruktorDBManager* database() { return db_; }
-	KonstruktorColorManager* colorManager() { return colorManager_; }
+	Config* config() { return config_; }
+	DBManager* database() { return db_; }
+	ColorManager* colorManager() { return colorManager_; }
 	QWidget* rootWindow();
 	bool hasPovRay() const { return hasPovRay_; }
 
@@ -62,20 +65,23 @@ class KonstruktorApplication : public QObject
   private slots:
 	void dbUpdateStatus();
 	void dbUpdateFinished(int, QProcess::ExitStatus);
+	void dbUpdateError(QProcess::ProcessError);
 		
   private:
-	static KonstruktorApplication *instance_;
+	static Application *instance_;
 
-	KonstruktorMainWindow *window_;
+	MainWindow *window_;
 	KProgressDialog *dbDialog_;
 	KProcess *dbUpdater_;
-	KonstruktorConfig *config_;
+	Config *config_;
 	ldraw::part_library *library_;
 	ldraw_renderer::parameters *params_;
-	KonstruktorDBManager *db_;
-	KonstruktorColorManager *colorManager_;
+	DBManager *db_;
+	ColorManager *colorManager_;
 	QMutex globalDirsMutex_;
 	bool hasPovRay_;
 };
+
+}
 
 #endif

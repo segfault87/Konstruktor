@@ -26,18 +26,21 @@
 
 #include "application.h"
 
-KonstruktorApplication* KonstruktorApplication::instance_ = 0L;
+namespace Konstruktor
+{
 
-KonstruktorApplication::KonstruktorApplication(QObject *parent)
+Application* Application::instance_ = 0L;
+
+Application::Application(QObject *parent)
 	: QObject(parent)
 {
 	instance_ = this;
 	
 	ldraw::color::init();
 
-	config_ = new KonstruktorConfig;
-	db_ = new KonstruktorDBManager(this);
-	colorManager_ = new KonstruktorColorManager;
+	config_ = new Config;
+	db_ = new DBManager(this);
+	colorManager_ = new ColorManager;
 
 	dbDialog_ = 0L;
 
@@ -45,7 +48,7 @@ KonstruktorApplication::KonstruktorApplication(QObject *parent)
 		kapp->exit();
 }
 
-KonstruktorApplication::~KonstruktorApplication()
+Application::~Application()
 {
 	instance_ = 0L;
 	
@@ -56,7 +59,7 @@ KonstruktorApplication::~KonstruktorApplication()
 	delete config_;
 }
 
-bool KonstruktorApplication::initialize()
+bool Application::initialize()
 {
 	int attempt = 0;
 	bool retry;
@@ -117,26 +120,27 @@ bool KonstruktorApplication::initialize()
 	return true;
 }
 
-void KonstruktorApplication::startDBUpdater()
+void Application::startDBUpdater()
 {
 	dbUpdater_ = new KProcess(this);
 	dbUpdater_->setOutputChannelMode(KProcess::OnlyStdoutChannel);
 	*dbUpdater_ << "konstruktor_db_updater" << library_->ldrawpath().c_str();
 
 	connect(dbUpdater_, SIGNAL(readyReadStandardOutput()), this, SLOT(dbUpdateStatus()));
+	connect(dbUpdater_, SIGNAL(error(QProcess::ProcessError)), this, SLOT(dbUpdateError(QProcess::ProcessError)));
 	connect(dbUpdater_, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(dbUpdateFinished(int, QProcess::ExitStatus)));
 
 	dbUpdater_->start();
 }
 
-void KonstruktorApplication::startup()
+void Application::startup()
 {
-	window_ = new KonstruktorMainWindow();
+	window_ = new MainWindow();
 	
 	window_->show();
 }
 
-QString KonstruktorApplication::saveLocation(const QString &directory)
+QString Application::saveLocation(const QString &directory)
 {
 	globalDirsMutex_.lock();
 	QString result = KGlobal::dirs()->saveLocation("data", QString("konstruktor/") + directory, true);
@@ -145,12 +149,12 @@ QString KonstruktorApplication::saveLocation(const QString &directory)
 	return result;
 }
 
-QWidget* KonstruktorApplication::rootWindow()
+QWidget* Application::rootWindow()
 {
 	return static_cast<QWidget *>(window_);
 }
 
-void KonstruktorApplication::testPovRay(bool overrideconfig)
+void Application::testPovRay(bool overrideconfig)
 {
 	if (!config_->povRayExecutablePath().isEmpty()) {
 		QStringList args;
@@ -179,24 +183,24 @@ void KonstruktorApplication::testPovRay(bool overrideconfig)
 	}			
 }
 
-void KonstruktorApplication::configUpdated()
+void Application::configUpdated()
 {
 	switch (config_->studMode()) {
-		case KonstruktorConfig::EnumStudMode::Normal:
+		case Config::EnumStudMode::Normal:
 			params_->set_stud_rendering_mode(ldraw_renderer::parameters::stud_regular);
 			break;
-		case KonstruktorConfig::EnumStudMode::Line:
+		case Config::EnumStudMode::Line:
 			params_->set_stud_rendering_mode(ldraw_renderer::parameters::stud_line);
 			break;
-		case KonstruktorConfig::EnumStudMode::Square:
+		case Config::EnumStudMode::Square:
 			params_->set_stud_rendering_mode(ldraw_renderer::parameters::stud_square);
 	}
 }
 
-void KonstruktorApplication::dbUpdateStatus()
+void Application::dbUpdateStatus()
 {
 	if (!dbDialog_) {
-		dbDialog_ = new KProgressDialog(0L, i18n("Scanning"), i18n("<qt><p align=center>Konstruktor is now creating database from LDraw part library in your system. Please wait...<br/>%1</p></qt>", QString()));
+		dbDialog_ = new KProgressDialog(0L, i18n("Scanning"), i18n("<qt><p align=center> is now creating database from LDraw part library in your system. Please wait...<br/>%1</p></qt>", QString()));
 		dbDialog_->setAutoClose(true);
 		dbDialog_->showCancelButton(false);
 		dbDialog_->show();
@@ -212,10 +216,10 @@ void KonstruktorApplication::dbUpdateStatus()
 
 	dbDialog_->progressBar()->setMaximum(max);
 	dbDialog_->progressBar()->setValue(cur);
-	dbDialog_->setLabelText(i18n("<qt><p align=center>Konstruktor is now creating database from LDraw part library in your system. Please wait...<br/>%1</p></qt>", lastLine.section(' ', 2)));
+	dbDialog_->setLabelText(i18n("<qt><p align=center> is now creating database from LDraw part library in your system. Please wait...<br/>%1</p></qt>", lastLine.section(' ', 2)));
 }
 
-void KonstruktorApplication::dbUpdateFinished(int exitCode, QProcess::ExitStatus exitStatus)
+void Application::dbUpdateFinished(int exitCode, QProcess::ExitStatus exitStatus)
 {
 	if (dbDialog_) {
 		delete dbDialog_;
@@ -233,3 +237,23 @@ void KonstruktorApplication::dbUpdateFinished(int exitCode, QProcess::ExitStatus
 	}
 }
 
+void Application::dbUpdateError(QProcess::ProcessError error)
+{
+	QString errorMsg;
+
+	switch (error) {
+		case QProcess::FailedToStart:
+			errorMsg = i18n("Failed to start part database updater. Your installation might be broken.");
+			break;
+		case QProcess::Crashed:
+			errorMsg = i18n("Part database updater is stopped unexpectedly.");
+			break;
+		default:
+			errorMsg = i18n("Unknown error occurred while scanning parts.");
+	}
+
+	KMessageBox::sorry(0L, errorMsg);
+	kapp->exit();
+}
+
+}

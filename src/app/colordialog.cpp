@@ -11,10 +11,13 @@
 
 #include "colordialog.h"
 
-KonstruktorColorDialog::KonstruktorColorDialog(QWidget *parent)
+namespace Konstruktor
+{
+
+ColorDialog::ColorDialog(QWidget *parent)
 	: QDialog(parent)
 {
-	manager_ = KonstruktorApplication::self()->colorManager();
+	manager_ = Application::self()->colorManager();
 	changed_ = false;
 	
 	ui_ = new Ui::ColorDialog();
@@ -58,17 +61,17 @@ KonstruktorColorDialog::KonstruktorColorDialog(QWidget *parent)
 	initList();
 }
 
-KonstruktorColorDialog::~KonstruktorColorDialog()
+ColorDialog::~ColorDialog()
 {
 	delete ui_;
 }
 
-ldraw::color KonstruktorColorDialog::getSelected() const
+ldraw::color ColorDialog::getSelected() const
 {
 	return selectedColor_;
 }
 
-void KonstruktorColorDialog::initList()
+void ColorDialog::initList()
 {
 	QTreeWidgetItem *rootItem;
 	QList<QTreeWidgetItem *> elist;
@@ -102,20 +105,20 @@ void KonstruktorColorDialog::initList()
 	resetFavoritesMap();
 }
 
-QTreeWidgetItem* KonstruktorColorDialog::newItem(QTreeWidgetItem *parent, const ldraw::color_entity *ce)
+QTreeWidgetItem* ColorDialog::newItem(QTreeWidgetItem *parent, const ldraw::color_entity *ce)
 {
 	QTreeWidgetItem *item = new QTreeWidgetItem(parent);
 
 	item->setData(0, Qt::DisplayRole, QString::number(ce->id));
 	item->setData(1, Qt::DisplayRole, QString::fromStdString(ce->name));
 	item->setData(2, Qt::DisplayRole, materialDescription(*ce));
-	item->setData(1, Qt::DecorationRole, KonstruktorColorManager::colorPixmap(ldraw::color(ce->id)));
+	item->setData(1, Qt::DecorationRole, ColorManager::colorPixmap(ldraw::color(ce->id)));
 	item->setData(0, Qt::UserRole, QVariant(ce->id));
 
 	return item;
 }
 
-QString KonstruktorColorDialog::materialDescription(const ldraw::color_entity &c) const
+QString ColorDialog::materialDescription(const ldraw::color_entity &c) const
 {
 	switch (c.material) {
 		case ldraw::material_normal:
@@ -141,7 +144,7 @@ QString KonstruktorColorDialog::materialDescription(const ldraw::color_entity &c
 	}
 }
 
-void KonstruktorColorDialog::resetFavoritesMap()
+void ColorDialog::resetFavoritesMap()
 {
 	favoritesMap_.clear();
 
@@ -155,7 +158,7 @@ void KonstruktorColorDialog::resetFavoritesMap()
 	}
 }
 
-void KonstruktorColorDialog::moveCurrentItem(int offset)
+void ColorDialog::moveCurrentItem(int offset)
 {
 	QTreeWidgetItem *item = ui_->listFavorites->currentItem();
 	QTreeWidgetItem *root = ui_->listFavorites->invisibleRootItem();
@@ -194,7 +197,7 @@ void KonstruktorColorDialog::moveCurrentItem(int offset)
 	changed_ = true;
 }
 
-void KonstruktorColorDialog::apply()
+void ColorDialog::apply()
 {
 	QTreeWidgetItem *selected = ui_->listColors->currentItem();
 
@@ -209,7 +212,7 @@ void KonstruktorColorDialog::apply()
 	accept();
 }
 
-void KonstruktorColorDialog::commitChanges()
+void ColorDialog::commitChanges()
 {
 	QList<ldraw::color> colorList;
 	
@@ -220,7 +223,7 @@ void KonstruktorColorDialog::commitChanges()
 	manager_->setColorList(colorList);
 }
 
-void KonstruktorColorDialog::colorItemChanged(QTreeWidgetItem *current, QTreeWidgetItem *previous)
+void ColorDialog::colorItemChanged(QTreeWidgetItem *current, QTreeWidgetItem *previous)
 {
 	Q_UNUSED(previous);
 
@@ -239,7 +242,7 @@ void KonstruktorColorDialog::colorItemChanged(QTreeWidgetItem *current, QTreeWid
 		ui_->listFavorites->setCurrentItem(0L);
 }
 
-void KonstruktorColorDialog::favoritesItemChanged(QTreeWidgetItem *current, QTreeWidgetItem *previous)
+void ColorDialog::favoritesItemChanged(QTreeWidgetItem *current, QTreeWidgetItem *previous)
 {
 	Q_UNUSED(previous);
 
@@ -268,7 +271,7 @@ void KonstruktorColorDialog::favoritesItemChanged(QTreeWidgetItem *current, QTre
 
 }
 
-void KonstruktorColorDialog::addToFavorites()
+void ColorDialog::addToFavorites()
 {
 	QTreeWidgetItem *item = ui_->listColors->currentItem();
 
@@ -287,7 +290,7 @@ void KonstruktorColorDialog::addToFavorites()
 	changed_ = true;
 }
 
-void KonstruktorColorDialog::removeFromFavorites()
+void ColorDialog::removeFromFavorites()
 {
 	QTreeWidgetItem *item = ui_->listFavorites->currentItem();
 
@@ -301,15 +304,16 @@ void KonstruktorColorDialog::removeFromFavorites()
 	changed_ = true;
 }
 
-void KonstruktorColorDialog::moveUp()
+void ColorDialog::moveUp()
 {
 	moveCurrentItem(-1);
 }
 
-void KonstruktorColorDialog::moveDown()
+void ColorDialog::moveDown()
 {
 	moveCurrentItem(1);
 }
 
+}
 
 

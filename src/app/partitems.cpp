@@ -3,7 +3,10 @@
 
 #include "partitems.h"
 
-KonstruktorPartCategory::KonstruktorPartCategory(const QString &name, int id, int visibility, int idx)
+namespace Konstruktor
+{
+
+PartCategory::PartCategory(const QString &name, int id, int visibility, int idx)
 {
 	name_ = name;
 	id_ = id;
@@ -12,10 +15,11 @@ KonstruktorPartCategory::KonstruktorPartCategory(const QString &name, int id, in
 }
 
 
-KonstruktorPartItem::KonstruktorPartItem(KonstruktorPartCategory *parent, const QString &desc, const QString &filename, const ldraw::metrics &metrics)
-	: KonstruktorRefObject(filename, metrics)
+PartItem::PartItem(PartCategory *parent, const QString &desc, const QString &filename, const ldraw::metrics &metrics)
+	: RefObject(filename, metrics)
 {
 	parent_ = parent;
 	desc_ = desc;
 }
 
+}

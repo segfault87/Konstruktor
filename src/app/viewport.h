@@ -4,7 +4,10 @@
 #ifndef _VIEWPORT_H_
 #define _VIEWPORT_H_
 
-struct KonstruktorViewport
+namespace Konstruktor
+{
+
+struct Viewport
 {
 	float left;
 	float top;
@@ -13,6 +16,8 @@ struct KonstruktorViewport
 	float aspectRatio;
 };
 
-extern const KonstruktorViewport defaultViewport;
+extern const Viewport defaultViewport;
+
+}
 
 #endif

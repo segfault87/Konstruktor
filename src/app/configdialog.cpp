@@ -7,11 +7,14 @@
 
 #include "configdialog.h"
 
-KonstruktorConfigDialog::KonstruktorConfigDialog(QWidget *parent)
-	: KConfigDialog(parent, "Settings", KonstruktorApplication::self()->config())
+namespace Konstruktor
 {
-	uiDisplayForm_ = new Ui::KonstruktorConfigDisplayForm;
-	uiRenderForm_ = new Ui::KonstruktorConfigRenderForm;
+
+ConfigDialog::ConfigDialog(QWidget *parent)
+	: KConfigDialog(parent, "Settings", Application::self()->config())
+{
+	uiDisplayForm_ = new Ui::ConfigDisplayForm;
+	uiRenderForm_ = new Ui::ConfigRenderForm;
 
 	QWidget *wDisplay = new QWidget;
 	QWidget *wRender = new QWidget;
@@ -19,12 +22,14 @@ KonstruktorConfigDialog::KonstruktorConfigDialog(QWidget *parent)
 	uiDisplayForm_->setupUi(wDisplay);
 	uiRenderForm_->setupUi(wRender);
 
-	addPage(wDisplay, KonstruktorApplication::self()->config(), i18n("Display"), "system-run", i18n("Configure..."));
-	addPage(wRender, KonstruktorApplication::self()->config(), i18n("Render"), "view-preview", i18n("Configure Renderer"));
+	addPage(wDisplay, Application::self()->config(), i18n("Display"), "system-run", i18n("Configure..."));
+	addPage(wRender, Application::self()->config(), i18n("Render"), "view-preview", i18n("Configure Renderer"));
 }
 
-KonstruktorConfigDialog::~KonstruktorConfigDialog()
+ConfigDialog::~ConfigDialog()
 {
 	delete uiDisplayForm_;
 	delete uiRenderForm_;
+}
+
 }

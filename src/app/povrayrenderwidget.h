@@ -1,6 +1,9 @@
 // Konstruktor - An interactive LDraw modeler for KDE
 // Copyright (c)2006-2011 Park "segfault" J. K. <mastermind@planetmono.org>
 
+#ifndef _POVRAYRENDERWIDGET_H_
+#define _POVRAYRENDERWIDGET_H_
+
 #include <QProcess>
 
 #include <kdialog.h>
@@ -13,17 +16,20 @@ class QProgressBar;
 class KTemporaryFile;
 class KProcess;
 
-class KonstruktorPOVRayRenderParameters;
-class KonstruktorPOVRayExporter;
-class KonstruktorScanlineWidgetContainer;
+namespace Konstruktor
+{
 
-class KonstruktorPOVRayRenderWidget : public KDialog
+class POVRayRenderParameters;
+class POVRayExporter;
+class ScanlineWidgetContainer;
+
+class POVRayRenderWidget : public KDialog
 {
 	Q_OBJECT;
 	
   public:
-	KonstruktorPOVRayRenderWidget(const KonstruktorPOVRayRenderParameters &params, const ldraw::model *model, QWidget *parent = 0L);
-	~KonstruktorPOVRayRenderWidget();
+	POVRayRenderWidget(const POVRayRenderParameters &params, const ldraw::model *model, QWidget *parent = 0L);
+	~POVRayRenderWidget();
 	
 	QString povrayOutput() const { return povrayOutput_; }
 	const QImage& image() const { return image_; }
@@ -46,11 +52,11 @@ class KonstruktorPOVRayRenderWidget : public KDialog
   private:
 	void setPixel(int x, int y, uint c);
 
-	KonstruktorScanlineWidgetContainer *scrollArea_;
+	ScanlineWidgetContainer *scrollArea_;
 	QLabel *status_;
 	QProgressBar *progressBar_;
 	
-	KonstruktorPOVRayExporter *exporter_;
+	POVRayExporter *exporter_;
 	
 	KTemporaryFile *tempFile_;
 	KProcess *process_;
@@ -75,3 +81,7 @@ class KonstruktorPOVRayRenderWidget : public KDialog
 	int line_;
 	int column_;
 };
+
+}
+
+#endif

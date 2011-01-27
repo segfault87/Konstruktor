@@ -12,11 +12,14 @@
 class QGLContext;
 class QGLWidget;
 
-class KonstruktorPixmapRenderer
+namespace Konstruktor
+{
+
+class PixmapRenderer
 {
   public:
-	KonstruktorPixmapRenderer(int width, int height, QGLWidget *shareWidget = 0L);
-	~KonstruktorPixmapRenderer();
+	PixmapRenderer(int width, int height, QGLWidget *shareWidget = 0L);
+	~PixmapRenderer();
 	
 	void setNewSize(int width, int height);
 	
@@ -32,5 +35,7 @@ class KonstruktorPixmapRenderer
 	QGLPixelBuffer *buffer_;
 	QGLWidget *shareWidget_;
 };
+
+}
 
 #endif

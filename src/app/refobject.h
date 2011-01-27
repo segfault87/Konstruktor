@@ -17,12 +17,15 @@ namespace ldraw
 	class metrics;
 }
 
-class KonstruktorRefObject
+namespace Konstruktor
+{
+
+class RefObject
 {
   public:
-	KonstruktorRefObject();
-	KonstruktorRefObject(const KonstruktorRefObject &rhs);
-	KonstruktorRefObject(const QString &filename, const ldraw::metrics &metrics);
+	RefObject();
+	RefObject(const RefObject &rhs);
+	RefObject(const QString &filename, const ldraw::metrics &metrics);
 
 	const QString& filename() const;
 	const ldraw::metrics& metrics() const;
@@ -30,16 +33,18 @@ class KonstruktorRefObject
 	void setFilename(const QString &filename);
 	void setMetrics(const ldraw::metrics &metrics);
 
-	KonstruktorRefObject& operator= (const KonstruktorRefObject &rhs);
+	RefObject& operator= (const RefObject &rhs);
 
 	QByteArray serialize() const;
-	static KonstruktorRefObject deserialize(QByteArray &data);
+	static RefObject deserialize(QByteArray &data);
 
   private:
 	QString filename_;
 	ldraw::metrics metrics_;
 };
 
-Q_DECLARE_METATYPE(KonstruktorRefObject);
+}
+
+Q_DECLARE_METATYPE(Konstruktor::RefObject);
 
 #endif

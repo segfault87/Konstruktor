@@ -7,7 +7,10 @@
 
 #include "partsiconwidget.h"
 
-KonstruktorPartsIconWidget::KonstruktorPartsIconWidget(QWidget *parent)
+namespace Konstruktor
+{
+
+PartsIconWidget::PartsIconWidget(QWidget *parent)
 	: QListWidget(parent)
 {
 	setViewMode(QListWidget::IconMode);
@@ -16,28 +19,30 @@ KonstruktorPartsIconWidget::KonstruktorPartsIconWidget(QWidget *parent)
 	setDragEnabled(true);
 }
 
-KonstruktorPartsIconWidget::~KonstruktorPartsIconWidget()
+PartsIconWidget::~PartsIconWidget()
 {
 
 }
 
-QStringList KonstruktorPartsIconWidget::mimeTypes() const
+QStringList PartsIconWidget::mimeTypes() const
 {	
 	QStringList types;
 	types << "application/konstruktor-refobject";
 	return types;
 }
 
-QMimeData* KonstruktorPartsIconWidget::mimeData(const QList<QListWidgetItem *> items) const
+QMimeData* PartsIconWidget::mimeData(const QList<QListWidgetItem *> items) const
 {
 	if (items.size() != 1)
 		return 0L;
 
-	KonstruktorPartItem item = items[0]->data(Qt::UserRole).value<KonstruktorPartItem>();
+	PartItem item = items[0]->data(Qt::UserRole).value<PartItem>();
 	
 	QMimeData *mimeData = new QMimeData();
 	QByteArray encodedData = item.serialize();
 
 	mimeData->setData("application/konstruktor-refobject", encodedData);
 	return mimeData;
+}
+
 }

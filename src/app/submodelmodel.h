@@ -17,13 +17,16 @@ namespace ldraw
 	class model;
 }
 
-class KonstruktorDocument;
+namespace Konstruktor
+{
 
-class KonstruktorSubmodelModel : public QAbstractItemModel
+class Document;
+
+class SubmodelModel : public QAbstractItemModel
 {
   public:
-	KonstruktorSubmodelModel(KonstruktorDocument *document, QObject *parent = 0L);
-	virtual ~KonstruktorSubmodelModel();
+	SubmodelModel(Document *document, QObject *parent = 0L);
+	virtual ~SubmodelModel();
 
 	QPair<std::string, ldraw::model *> modelIndexOf(const QModelIndex &index);
 
@@ -46,9 +49,11 @@ class KonstruktorSubmodelModel : public QAbstractItemModel
 	QMimeData* mimeData(const QModelIndexList &indexes) const;
 	
   private:
-	KonstruktorDocument *document_;
+	Document *document_;
 	QVector<QPair<std::string, ldraw::model *> > submodelList_;
-	QList<KonstruktorRefObject> refobjects_;
+	QList<RefObject> refobjects_;
 };
+
+}
 
 #endif

@@ -1,6 +1,6 @@
 <ui version="4.0" >
- <class>KonstruktorConfigRenderForm</class>
- <widget class="QWidget" name="KonstruktorConfigRenderForm" >
+ <class>ConfigRenderForm</class>
+ <widget class="QWidget" name="ConfigRenderForm" >
   <property name="geometry" >
    <rect>
     <x>0</x>

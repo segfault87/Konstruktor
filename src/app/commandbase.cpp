@@ -5,29 +5,34 @@
 
 #include "commandbase.h"
 
-KonstruktorCommandBase::KonstruktorCommandBase(const QSet<int> &selection, ldraw::model *model)
+namespace Konstruktor
+{
+
+CommandBase::CommandBase(const QSet<int> &selection, ldraw::model *model)
 	: QUndoCommand(0L)
 {
 	selection_ = selection;
 	model_ = model;
 }
 
-KonstruktorCommandBase::~KonstruktorCommandBase()
+CommandBase::~CommandBase()
 {
 	
 }
 
-bool KonstruktorCommandBase::needUpdateDimension() const
+bool CommandBase::needUpdateDimension() const
 {
 	return false;
 }
 
-bool KonstruktorCommandBase::needRepaint() const
+bool CommandBase::needRepaint() const
 {
 	return true;
 }
 
-QPair<KonstruktorCommandBase::AffectedRow, QSet<int> > KonstruktorCommandBase::affectedRows() const
+QPair<CommandBase::AffectedRow, QSet<int> > CommandBase::affectedRows() const
 {
-	return QPair<KonstruktorCommandBase::AffectedRow, QSet<int> >(Inserted, QSet<int>());
+	return QPair<CommandBase::AffectedRow, QSet<int> >(Inserted, QSet<int>());
+}
+
 }

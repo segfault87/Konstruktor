@@ -7,42 +7,45 @@
 
 #include "refobject.h"
 
-KonstruktorRefObject::KonstruktorRefObject()
+namespace Konstruktor
+{
+
+RefObject::RefObject()
 	: metrics_(0L)
 {
 }
 
-KonstruktorRefObject::KonstruktorRefObject(const KonstruktorRefObject &rhs)
+RefObject::RefObject(const RefObject &rhs)
 	: filename_(rhs.filename()), metrics_(rhs.metrics())
 {
 }
 
-KonstruktorRefObject::KonstruktorRefObject(const QString &filename, const ldraw::metrics &metrics)
+RefObject::RefObject(const QString &filename, const ldraw::metrics &metrics)
 	: filename_(filename), metrics_(metrics)
 {
 }
 
-const QString& KonstruktorRefObject::filename() const
+const QString& RefObject::filename() const
 {
 	return filename_;
 }
 	
-const ldraw::metrics& KonstruktorRefObject::metrics() const
+const ldraw::metrics& RefObject::metrics() const
 {
 	return metrics_;
 }
 
-void KonstruktorRefObject::setFilename(const QString &filename)
+void RefObject::setFilename(const QString &filename)
 {
 	filename_ = filename;
 }
 
-void KonstruktorRefObject::setMetrics(const ldraw::metrics &metrics)
+void RefObject::setMetrics(const ldraw::metrics &metrics)
 {
 	metrics_ = metrics;
 }
 
-KonstruktorRefObject& KonstruktorRefObject::operator= (const KonstruktorRefObject &rhs)
+RefObject& RefObject::operator= (const RefObject &rhs)
 {
 	filename_ = rhs.filename();
 	metrics_ = rhs.metrics();
@@ -50,7 +53,7 @@ KonstruktorRefObject& KonstruktorRefObject::operator= (const KonstruktorRefObjec
 	return *this;
 }
 
-QByteArray KonstruktorRefObject::serialize() const
+QByteArray RefObject::serialize() const
 {
 	QByteArray encodedData;
 
@@ -62,9 +65,9 @@ QByteArray KonstruktorRefObject::serialize() const
 	return encodedData;
 }
 
-KonstruktorRefObject KonstruktorRefObject::deserialize(QByteArray &data)
+RefObject RefObject::deserialize(QByteArray &data)
 {
-	KonstruktorRefObject obj;
+	RefObject obj;
 	QString filename;
 	ldraw::vector min, max;
 
@@ -78,4 +81,6 @@ KonstruktorRefObject KonstruktorRefObject::deserialize(QByteArray &data)
 	obj.setFilename(filename);
 	
 	return obj;
+}
+
 }

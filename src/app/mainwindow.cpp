@@ -46,7 +46,10 @@
 
 #include "mainwindow.h"
 
-KonstruktorMainWindow::KonstruktorMainWindow(QWidget *parent)
+namespace Konstruktor
+{
+
+MainWindow::MainWindow(QWidget *parent)
 	: KXmlGuiWindow(parent)
 {
 	activeDocument_ = 0L;
@@ -72,7 +75,7 @@ KonstruktorMainWindow::KonstruktorMainWindow(QWidget *parent)
 	statusBar()->showMessage(i18n("Ready..."));
 }
 
-KonstruktorMainWindow::~KonstruktorMainWindow()
+MainWindow::~MainWindow()
 {
 	// Save recent file entries
 	actionOpenRecent_->saveEntries(KGlobal::config()->group("Recent Files"));
@@ -86,7 +89,7 @@ KonstruktorMainWindow::~KonstruktorMainWindow()
 }
 
 // returns currently using viewport modes in bit array format
-unsigned int KonstruktorMainWindow::viewportModes() const
+unsigned int MainWindow::viewportModes() const
 {
 	int modes = 0;
 
@@ -96,19 +99,19 @@ unsigned int KonstruktorMainWindow::viewportModes() const
 	return modes;
 }
 
-void KonstruktorMainWindow::modelModified(const QSet<int> &)
+void MainWindow::modelModified(const QSet<int> &)
 {
 	updateViewports();
 }
 
-void KonstruktorMainWindow::updateViewports()
+void MainWindow::updateViewports()
 {
 	for (int i = 0; i < 4; ++i) {
 		renderWidget_[i]->update();
 	}
 }
 
-void KonstruktorMainWindow::changeCaption()
+void MainWindow::changeCaption()
 {
 	if (activeDocument_) {
 		ldraw::model *main_model = activeDocument_->contents()->main_model();
@@ -118,7 +121,7 @@ void KonstruktorMainWindow::changeCaption()
 	}
 }
 
-void KonstruktorMainWindow::activate(bool b)
+void MainWindow::activate(bool b)
 {
 	enabled_ = b;
 	contentList_->setEnabled(b);
@@ -129,19 +132,19 @@ void KonstruktorMainWindow::activate(bool b)
 	for (QList<QAction *>::iterator it = stateChangeableActions_.begin(); it != stateChangeableActions_.end(); ++it)
 		(*it)->setEnabled(b);
 
-	actionRender_->setEnabled(KonstruktorApplication::self()->hasPovRay());
-	actionRenderSteps_->setEnabled(KonstruktorApplication::self()->hasPovRay());
+	actionRender_->setEnabled(Application::self()->hasPovRay());
+	actionRenderSteps_->setEnabled(Application::self()->hasPovRay());
 }
 
-void KonstruktorMainWindow::newFile()
+void MainWindow::newFile()
 {
-	KonstruktorNewModelDialog *dialog = new KonstruktorNewModelDialog(this);
+	NewModelDialog *dialog = new NewModelDialog(this);
 
 	dialog->exec();
 
 	if (dialog->result() == QDialog::Accepted) {
 		QString filename = QString("unnamed%1.ldr").arg(newcnt_);
-		KonstruktorDocument *document = new KonstruktorDocument(filename, dialog->textDesc(), dialog->textAuthor(), renderWidget_[0]);
+		Document *document = new Document(filename, dialog->textDesc(), dialog->textAuthor(), renderWidget_[0]);
 
 		// Initialize connection
 		connect(document, SIGNAL(undoStackAdded(QUndoStack *)), editorGroup_, SLOT(stackAdded(QUndoStack *)));
@@ -150,7 +153,7 @@ void KonstruktorMainWindow::newFile()
 		document->sendSignals();
 
 		// append into tab bar
-		documents_.append(QPair<QString, KonstruktorDocument *>(QString(), document));
+		documents_.append(QPair<QString, Document *>(QString(), document));
 		int tabidx = tabbar_->addTab(filename);
 		tabbar_->setTabIcon(tabidx, KIcon("text-plain"));
 		tabbar_->setCurrentIndex(tabidx);
@@ -165,7 +168,7 @@ void KonstruktorMainWindow::newFile()
 	delete dialog;
 }
 
-void KonstruktorMainWindow::openFile()
+void MainWindow::openFile()
 {
 	QStringList mimes;
 	mimes << "application/x-ldraw";
@@ -186,7 +189,7 @@ void KonstruktorMainWindow::openFile()
 }
 
 
-void KonstruktorMainWindow::openFile(const KUrl &url)
+void MainWindow::openFile(const KUrl &url)
 {
 	KUrl aurl = url;
 	if ((url.protocol().isEmpty() || url.isLocalFile()) && url.isRelative()) {
@@ -204,7 +207,7 @@ void KonstruktorMainWindow::openFile(const KUrl &url)
 		}
 	}
 	
-	KonstruktorDocument *document = 0L;
+	Document *document = 0L;
 	try {
 		QString tmploc;
 		
@@ -213,7 +216,7 @@ void KonstruktorMainWindow::openFile(const KUrl &url)
 			return;
 		}
 		
-		document = new KonstruktorDocument(tmploc, aurl, renderWidget_[0]);
+		document = new Document(tmploc, aurl, renderWidget_[0]);
 
 		// Initialize connection
 		connect(document, SIGNAL(undoStackAdded(QUndoStack *)), editorGroup_, SLOT(stackAdded(QUndoStack *)));
@@ -223,7 +226,7 @@ void KonstruktorMainWindow::openFile(const KUrl &url)
 
 		// append into document list, tab bar
 		openedUrls_.insert(strUrl);
-		documents_.append(QPair<QString, KonstruktorDocument *>(strUrl, document));
+		documents_.append(QPair<QString, Document *>(strUrl, document));
 		int tabidx = tabbar_->addTab(url.fileName());
 		tabbar_->setTabIcon(tabidx, KIcon("text-plain"));
 		tabbar_->setCurrentIndex(tabidx);
@@ -241,7 +244,7 @@ void KonstruktorMainWindow::openFile(const KUrl &url)
 	statusBar()->showMessage(i18n("Document '%1' opened.", aurl.fileName()));
 }
 
-void KonstruktorMainWindow::closeFile()
+void MainWindow::closeFile()
 {
 	if (!activeDocument_)
 		return;
@@ -257,7 +260,7 @@ void KonstruktorMainWindow::closeFile()
 		}
 	}
 
-	KonstruktorDocument *t = activeDocument_;
+	Document *t = activeDocument_;
 	int ci = tabbar_->currentIndex();
 	openedUrls_.remove(t->location().prettyUrl());
 	documents_.remove(ci);
@@ -271,7 +274,7 @@ void KonstruktorMainWindow::closeFile()
 	delete t;
 }
 
-void KonstruktorMainWindow::saveFile()
+void MainWindow::saveFile()
 {
 	if (!activeDocument_)
 		return;
@@ -279,7 +282,7 @@ void KonstruktorMainWindow::saveFile()
 	doSave(activeDocument_, false);
 }
 
-void KonstruktorMainWindow::saveFileAs()
+void MainWindow::saveFileAs()
 {
 	if (!activeDocument_)
 		return;
@@ -287,9 +290,9 @@ void KonstruktorMainWindow::saveFileAs()
 	doSave(activeDocument_, true);
 }
 
-void KonstruktorMainWindow::newSubmodel()
+void MainWindow::newSubmodel()
 {
-	KonstruktorNewSubmodelDialog *dialog = new KonstruktorNewSubmodelDialog(this);
+	NewSubmodelDialog *dialog = new NewSubmodelDialog(this);
 
   retry:
 	dialog->exec();
@@ -307,17 +310,17 @@ void KonstruktorMainWindow::newSubmodel()
 	delete dialog;
 }
 
-void KonstruktorMainWindow::deleteSubmodel()
+void MainWindow::deleteSubmodel()
 {
 	
 }
 
-void KonstruktorMainWindow::modelProperties()
+void MainWindow::modelProperties()
 {
 
 }
 
-void KonstruktorMainWindow::quit()
+void MainWindow::quit()
 {
 	// FIXME did i miss something?
 
@@ -326,7 +329,7 @@ void KonstruktorMainWindow::quit()
 	}
 }
 
-void KonstruktorMainWindow::resetZoom()
+void MainWindow::resetZoom()
 {
 	if (!activeDocument_)
 		return;
@@ -336,7 +339,7 @@ void KonstruktorMainWindow::resetZoom()
 	emit viewChanged();
 }
 
-void KonstruktorMainWindow::resetDisplay()
+void MainWindow::resetDisplay()
 {
 	if (!activeDocument_)
 		return;
@@ -344,34 +347,34 @@ void KonstruktorMainWindow::resetDisplay()
 	activeDocument_->resetPerspective();
 
 	for (int i = 0; i < 4; ++i) {
-		if (renderWidget_[i]->viewportMode() == KonstruktorRenderWidget::Free) {
+		if (renderWidget_[i]->viewportMode() == RenderWidget::Free) {
 			renderWidget_[i]->update();
 			return;
 		}
 	}
 }
 
-void KonstruktorMainWindow::render()
+void MainWindow::render()
 {
 	if (!activeDocument_)
 		return;
 
-	KonstruktorPOVRayRenderParameters param;
+	POVRayRenderParameters param;
 	
-	KonstruktorPOVRayRenderWidget dialog(param, activeDocument_->getActiveModel(), this);
+	POVRayRenderWidget dialog(param, activeDocument_->getActiveModel(), this);
 	dialog.show();
 	dialog.start();
 	dialog.exec();
 }
 
-void KonstruktorMainWindow::showConfigDialog()
+void MainWindow::showConfigDialog()
 {
-	KonstruktorConfigDialog dialog(this);
+	ConfigDialog dialog(this);
 	dialog.exec();
 }
 
 
-void KonstruktorMainWindow::closeEvent(QCloseEvent *event)
+void MainWindow::closeEvent(QCloseEvent *event)
 {
 	if (confirmQuit()) {
 		event->accept();
@@ -380,7 +383,7 @@ void KonstruktorMainWindow::closeEvent(QCloseEvent *event)
 	}
 }
 
-void KonstruktorMainWindow::activeDocumentChanged(int index)
+void MainWindow::activeDocumentChanged(int index)
 {
 	if (!enabled_)
 		activate(true);
@@ -423,7 +426,7 @@ void KonstruktorMainWindow::activeDocumentChanged(int index)
 	emit viewChanged();
 }
 
-void KonstruktorMainWindow::activeModelChanged(const std::string &name)
+void MainWindow::activeModelChanged(const std::string &name)
 {
 	if (name.empty()) {
 		activeDocument_->setActiveModel(activeDocument_->contents()->main_model());
@@ -445,12 +448,12 @@ void KonstruktorMainWindow::activeModelChanged(const std::string &name)
 	emit viewChanged();
 }
 
-void KonstruktorMainWindow::submodelViewDoubleClicked(const QModelIndex &index)
+void MainWindow::submodelViewDoubleClicked(const QModelIndex &index)
 {
 	activeModelChanged(activeDocument_->model()->modelIndexOf(index).first);
 }
 
-void KonstruktorMainWindow::selectionChanged(const QSet<int> &cset)
+void MainWindow::selectionChanged(const QSet<int> &cset)
 {
 	bool selection;
 	
@@ -463,13 +466,13 @@ void KonstruktorMainWindow::selectionChanged(const QSet<int> &cset)
 		(*it)->setEnabled(selection);
 }
 
-void KonstruktorMainWindow::gridModeChanged(QAction *action)
+void MainWindow::gridModeChanged(QAction *action)
 {
-	editorGroup_->setGridMode((KonstruktorEditor::GridMode)action->data().toInt());
+	editorGroup_->setGridMode((Editor::GridMode)action->data().toInt());
 	action->setChecked(true);
 }
 
-void KonstruktorMainWindow::modelModified()
+void MainWindow::modelModified()
 {
 	if (activeDocument_) {
 		if (!activeDocument_->canSave()) {
@@ -480,16 +483,16 @@ void KonstruktorMainWindow::modelModified()
 	}
 }
 
-void KonstruktorMainWindow::initObjects()
+void MainWindow::initObjects()
 {
 	// model for content lists
-	contentsModel_ = new KonstruktorContentsModel(this);
+	contentsModel_ = new ContentsModel(this);
 
 	// editor group
-	editorGroup_ = new KonstruktorEditor(this);
+	editorGroup_ = new Editor(this);
 }
 
-void KonstruktorMainWindow::initGui()
+void MainWindow::initGui()
 {
 	QWidget *sc = new QWidget(this);
 
@@ -515,7 +518,7 @@ void KonstruktorMainWindow::initGui()
 	dockParts->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
 	
 	// content lists
-	contentList_ = new KonstruktorContentsView(dockList);
+	contentList_ = new ContentsView(dockList);
 	contentList_->setModel(contentsModel_);
 	dockList->setWidget(contentList_);
 	addDockWidget(Qt::TopDockWidgetArea, dockList);
@@ -526,12 +529,12 @@ void KonstruktorMainWindow::initGui()
 	contentList_->setColumnWidth(3, 150);
 
 	// submodel lists
-	submodelList_ = new KonstruktorSubmodelWidget(dockSubmodels);
+	submodelList_ = new SubmodelWidget(dockSubmodels);
 	dockSubmodels->setWidget(submodelList_);
 	addDockWidget(Qt::LeftDockWidgetArea, dockSubmodels);
 
 	// parts widget
-	partsWidget_ = new KonstruktorPartsWidget(dockParts);
+	partsWidget_ = new PartsWidget(dockParts);
 	dockParts->setWidget(partsWidget_);
 	addDockWidget(Qt::LeftDockWidgetArea, dockParts);
 
@@ -542,13 +545,13 @@ void KonstruktorMainWindow::initGui()
 	
 	QGLFormat format = QGLFormat::defaultFormat();
 	format.setAlpha(true);
-	if (KonstruktorApplication::self()->config()->multisampling())
+	if (Application::self()->config()->multisampling())
 		format.setSampleBuffers(true);
 
-	renderWidget_[0] = new KonstruktorRenderWidget(this, &activeDocument_, KonstruktorRenderWidget::Top, new QGLContext(format), 0L, srh1);
-	renderWidget_[1] = new KonstruktorRenderWidget(this, &activeDocument_, KonstruktorRenderWidget::Left, new QGLContext(format), renderWidget_[0], srh1);
-	renderWidget_[2] = new KonstruktorRenderWidget(this, &activeDocument_, KonstruktorRenderWidget::Front, new QGLContext(format), renderWidget_[0], srh2);
-	renderWidget_[3] = new KonstruktorRenderWidget(this, &activeDocument_, KonstruktorRenderWidget::Free, new QGLContext(format), renderWidget_[0], srh2);
+	renderWidget_[0] = new RenderWidget(this, &activeDocument_, RenderWidget::Top, new QGLContext(format), 0L, srh1);
+	renderWidget_[1] = new RenderWidget(this, &activeDocument_, RenderWidget::Left, new QGLContext(format), renderWidget_[0], srh1);
+	renderWidget_[2] = new RenderWidget(this, &activeDocument_, RenderWidget::Front, new QGLContext(format), renderWidget_[0], srh2);
+	renderWidget_[3] = new RenderWidget(this, &activeDocument_, RenderWidget::Free, new QGLContext(format), renderWidget_[0], srh2);
 
 	tabbar_ = new KTabBar(sc);
 	tabbar_->setShape(QTabBar::RoundedSouth);
@@ -565,7 +568,7 @@ void KonstruktorMainWindow::initGui()
 	tabifyDockWidget(dockSubmodels, dockParts);
 }
 
-void KonstruktorMainWindow::initActions()
+void MainWindow::initActions()
 {
 	KActionCollection *ac = actionCollection();
 	
@@ -611,26 +614,27 @@ void KonstruktorMainWindow::initActions()
 	actionColor_ = ac->addAction("select_color");
 	actionColor_->setText(i18n("Select Color"));
 	actionColor_->setIcon(KIcon("fill-color"));
+	actionColor_->setShortcut(KShortcut("Ctrl+L"));
 	connect(actionColor_, SIGNAL(triggered()), editorGroup_, SLOT(editColor()));
 
 	actionGridSparse_ = ac->addAction("grid_sparse");
 	actionGridSparse_->setText(i18n("Sparse Grid"));
-	actionGridSparse_->setData(KonstruktorEditor::Grid20);
+	actionGridSparse_->setData(Editor::Grid20);
 	actionGridSparse_->setCheckable(true);
 
 	actionGridNormal_ = ac->addAction("grid_normal");
 	actionGridNormal_->setText(i18n("Normal Grid"));
-	actionGridNormal_->setData(KonstruktorEditor::Grid10);
+	actionGridNormal_->setData(Editor::Grid10);
 	actionGridNormal_->setCheckable(true);
 
 	actionGridDense_ = ac->addAction("grid_dense");
 	actionGridDense_->setText(i18n("Dense Grid"));
-	actionGridDense_->setData(KonstruktorEditor::Grid5);
+	actionGridDense_->setData(Editor::Grid5);
 	actionGridDense_->setCheckable(true);
 
 	actionGridNone_ = ac->addAction("grid_none");
 	actionGridNone_->setText(i18n("Minimal Grid"));
-	actionGridNone_->setData(KonstruktorEditor::Grid1);
+	actionGridNone_->setData(Editor::Grid1);
 	actionGridNone_->setCheckable(true);
 
 	QActionGroup *gridActions = new QActionGroup(this);
@@ -776,7 +780,7 @@ void KonstruktorMainWindow::initActions()
 	selectionDependentActions_.append(actionRotateByZCounterClockwise_);
 }
 
-void KonstruktorMainWindow::initConnections()
+void MainWindow::initConnections()
 {
 	connect(tabbar_, SIGNAL(currentChanged(int)), this, SLOT(activeDocumentChanged(int)));
 	connect(contentsModel_, SIGNAL(viewChanged()), this, SLOT(updateViewports()));
@@ -791,21 +795,21 @@ void KonstruktorMainWindow::initConnections()
 	connect(editorGroup_, SIGNAL(selectionIndexModified(const QSet<int> &)), this, SLOT(modelModified(const QSet<int> &)));
 	connect(editorGroup_, SIGNAL(needRepaint()), this, SLOT(updateViewports()));
 	connect(editorGroup_, SIGNAL(modified()), this, SLOT(modelModified()));
-	connect(editorGroup_, SIGNAL(rowsChanged(const QPair<KonstruktorCommandBase::AffectedRow, QSet<int> > &)), contentsModel_, SLOT(rowsChanged(const QPair<KonstruktorCommandBase::AffectedRow, QSet<int> > &)));
-	connect(editorGroup_, SIGNAL(rowsChanged(const QPair<KonstruktorCommandBase::AffectedRow, QSet<int> > &)), contentList_, SLOT(rowsChanged(const QPair<KonstruktorCommandBase::AffectedRow, QSet<int> > &)));
+	connect(editorGroup_, SIGNAL(rowsChanged(const QPair<CommandBase::AffectedRow, QSet<int> > &)), contentsModel_, SLOT(rowsChanged(const QPair<CommandBase::AffectedRow, QSet<int> > &)));
+	connect(editorGroup_, SIGNAL(rowsChanged(const QPair<CommandBase::AffectedRow, QSet<int> > &)), contentList_, SLOT(rowsChanged(const QPair<CommandBase::AffectedRow, QSet<int> > &)));
 
 	for (int i = 0; i < 4; ++i) {
 		connect(this, SIGNAL(activeModelChanged(ldraw::model *)), renderWidget_[i], SLOT(modelChanged(ldraw::model *)));
 		connect(contentList_, SIGNAL(selectionChanged(const QSet<int> &)), renderWidget_[i], SLOT(selectionChanged(const QSet<int> &)));
-		connect(renderWidget_[i], SIGNAL(madeSelection(const std::list<int> &, KonstruktorRenderWidget::SelectionMethod)), contentList_, SLOT(updateSelection(const std::list<int> &, KonstruktorRenderWidget::SelectionMethod)));
+		connect(renderWidget_[i], SIGNAL(madeSelection(const std::list<int> &, RenderWidget::SelectionMethod)), contentList_, SLOT(updateSelection(const std::list<int> &, RenderWidget::SelectionMethod)));
 		connect(renderWidget_[i], SIGNAL(translateObject(const ldraw::vector &)), editorGroup_, SLOT(move(const ldraw::vector &)));
 		connect(renderWidget_[i], SIGNAL(objectDropped(const QString &, const ldraw::matrix &, const ldraw::color &)), editorGroup_, SLOT(insert(const QString &, const ldraw::matrix &, const ldraw::color &)));
 	}
 }
 
-bool KonstruktorMainWindow::confirmQuit()
+bool MainWindow::confirmQuit()
 {
-	QVector<QPair<QString, KonstruktorDocument *> >::iterator it;
+	QVector<QPair<QString, Document *> >::iterator it;
 	for (it = documents_.begin(); it != documents_.end(); ++it) {
 		if ((*it).second->canSave()) {
 			switch (KMessageBox::warningYesNoCancel(this, i18n("The document \"%1\" has been modified. Do you want to save it?", (*it).second->location().fileName()), QString(), KStandardGuiItem::save(), KStandardGuiItem::discard())) {
@@ -824,7 +828,7 @@ bool KonstruktorMainWindow::confirmQuit()
 	return true;
 }
 
-bool KonstruktorMainWindow::doSave(KonstruktorDocument *document, bool newname)
+bool MainWindow::doSave(Document *document, bool newname)
 {
 	if (!document)
 		return false;
@@ -918,7 +922,7 @@ bool KonstruktorMainWindow::doSave(KonstruktorDocument *document, bool newname)
 		document->setLocation(url);	
 	} else {
 		int i = 0;
-		for (QVector<QPair<QString, KonstruktorDocument *> >::ConstIterator it = documents_.constBegin(); it != documents_.constEnd(); ++it) {
+		for (QVector<QPair<QString, Document *> >::ConstIterator it = documents_.constBegin(); it != documents_.constEnd(); ++it) {
 			if ((*it).second == document) {
 				tabbar_->setTabIcon(i, KIcon("text-plain"));
 				break;
@@ -934,4 +938,6 @@ bool KonstruktorMainWindow::doSave(KonstruktorDocument *document, bool newname)
 	statusBar()->showMessage(i18n("Document '%1' saved.", url.fileName()));
 
 	return true;
+}
+
 }

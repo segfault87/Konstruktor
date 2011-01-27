@@ -7,7 +7,10 @@
 
 #include "contentsview.h"
 
-KonstruktorContentsView::KonstruktorContentsView(QWidget *parent)
+namespace Konstruktor
+{
+
+ContentsView::ContentsView(QWidget *parent)
 	: QTreeView(parent)
 {
 	setRootIsDecorated(false);
@@ -17,12 +20,12 @@ KonstruktorContentsView::KonstruktorContentsView(QWidget *parent)
 	hiddenIndices_ = 0L;
 }
 
-KonstruktorContentsView::~KonstruktorContentsView()
+ContentsView::~ContentsView()
 {
 	
 }
 
-int KonstruktorContentsView::uniqueSelection() const
+int ContentsView::uniqueSelection() const
 {
 	if (selectedIndices_.size() == 1)
 		return *selectedIndices_.begin();
@@ -30,7 +33,7 @@ int KonstruktorContentsView::uniqueSelection() const
 	return -1;
 }
 
-void KonstruktorContentsView::hide(const QModelIndex &index)
+void ContentsView::hide(const QModelIndex &index)
 {
 	if (selectedIndices_.contains(index.row())) {
 		hiddenIndices_->insert(index.row());
@@ -42,7 +45,7 @@ void KonstruktorContentsView::hide(const QModelIndex &index)
 	clearSelection();
 }
 
-void KonstruktorContentsView::unhide(const QModelIndex &index)
+void ContentsView::unhide(const QModelIndex &index)
 {
 	if (hiddenIndices_->find(index.row()) != hiddenIndices_->end()) {
 		hiddenIndices_->erase(index.row());
@@ -56,7 +59,7 @@ void KonstruktorContentsView::unhide(const QModelIndex &index)
 	update();
 }
 
-void KonstruktorContentsView::selectionChanged(const QItemSelection &selected, const QItemSelection &deselected)
+void ContentsView::selectionChanged(const QItemSelection &selected, const QItemSelection &deselected)
 {
 	repaint();
 	
@@ -94,9 +97,9 @@ void KonstruktorContentsView::selectionChanged(const QItemSelection &selected, c
 		emit selectionChanged(selectedIndices_);
 }
 
-void KonstruktorContentsView::hideSelected()
+void ContentsView::hideSelected()
 {
-	dynamic_cast<KonstruktorContentsModel *>(model())->hideSelected(selectedIndices_);
+	dynamic_cast<ContentsModel *>(model())->hideSelected(selectedIndices_);
 
 	for (QSet<int>::ConstIterator it = selectedIndices_.constBegin(); it != selectedIndices_.constEnd(); ++it)
 		hiddenIndices_->insert(*it);
@@ -107,9 +110,9 @@ void KonstruktorContentsView::hideSelected()
 	clearSelection();
 }
 
-void KonstruktorContentsView::unhideAll()
+void ContentsView::unhideAll()
 {
-	dynamic_cast<KonstruktorContentsModel *>(model())->unhideAll();
+	dynamic_cast<ContentsModel *>(model())->unhideAll();
 
 	selectedIndices_.clear();
 	hiddenIndices_->clear();
@@ -120,7 +123,7 @@ void KonstruktorContentsView::unhideAll()
 	emit selectionChanged(selectedIndices_);
 }
 
-void KonstruktorContentsView::modelChanged(ldraw::model *m)
+void ContentsView::modelChanged(ldraw::model *m)
 {
 	model_ = m;
 	
@@ -129,16 +132,16 @@ void KonstruktorContentsView::modelChanged(ldraw::model *m)
 	if (!model_)
 		return;
 	
-	hiddenIndices_ = &KonstruktorVisibilityExtension::query(model_)->set();
+	hiddenIndices_ = &VisibilityExtension::query(model_)->set();
 }
 
-void KonstruktorContentsView::updateSelection(const std::list<int> &selection, KonstruktorRenderWidget::SelectionMethod method)
+void ContentsView::updateSelection(const std::list<int> &selection, RenderWidget::SelectionMethod method)
 {
 	const int maxcol = model()->columnCount() - 1;
 	
 	QItemSelection s;
 
-	if (method == KonstruktorRenderWidget::Intersection) {
+	if (method == RenderWidget::Intersection) {
 		const QItemSelection &cis = selectionModel()->selection();
 		
 		for (std::list<int>::const_iterator it = selection.begin(); it != selection.end(); ++it) {
@@ -152,15 +155,15 @@ void KonstruktorContentsView::updateSelection(const std::list<int> &selection, K
 
 	QItemSelectionModel::SelectionFlag flag = QItemSelectionModel::ClearAndSelect;
 	
-	if (method == KonstruktorRenderWidget::Addition)
+	if (method == RenderWidget::Addition)
 		flag = QItemSelectionModel::Select;
-	else if (method == KonstruktorRenderWidget::Subtraction)
+	else if (method == RenderWidget::Subtraction)
 		flag = QItemSelectionModel::Deselect;
 	
 	selectionModel()->select(s, flag);
 }
 
-void KonstruktorContentsView::rowsChanged(const QPair<KonstruktorCommandBase::AffectedRow, QSet<int> > &rows)
+void ContentsView::rowsChanged(const QPair<CommandBase::AffectedRow, QSet<int> > &rows)
 {
 	// TODO preserve visibility
 	
@@ -170,7 +173,7 @@ void KonstruktorContentsView::rowsChanged(const QPair<KonstruktorCommandBase::Af
 	selectedIndices_.clear();
 	hiddenIndices_->clear();
 
-	if (rows.first == KonstruktorCommandBase::Removed)
+	if (rows.first == CommandBase::Removed)
 		clearSelection();
 	else {
 		QItemSelection s;
@@ -179,4 +182,6 @@ void KonstruktorContentsView::rowsChanged(const QPair<KonstruktorCommandBase::Af
 
 		selectionModel()->select(s, QItemSelectionModel::ClearAndSelect);
 	}
+}
+
 }

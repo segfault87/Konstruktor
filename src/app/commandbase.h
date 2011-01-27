@@ -12,17 +12,20 @@ namespace ldraw
     class model;
 }
 
-class KonstruktorCommandBase : public QUndoCommand
+namespace Konstruktor
+{
+
+class CommandBase : public QUndoCommand
 {
   public:
 	enum AffectedRow { Inserted, Removed };
 	
-	KonstruktorCommandBase(const QSet<int> &selection, ldraw::model *model);
-	virtual ~KonstruktorCommandBase();
+	CommandBase(const QSet<int> &selection, ldraw::model *model);
+	virtual ~CommandBase();
 
 	virtual bool needUpdateDimension() const;
 	virtual bool needRepaint() const;
-	virtual QPair<KonstruktorCommandBase::AffectedRow, QSet<int> > affectedRows() const;
+	virtual QPair<CommandBase::AffectedRow, QSet<int> > affectedRows() const;
 
 	const QSet<int>& selection() const { return selection_; }
 	ldraw::model* model() { return model_; }
@@ -31,5 +34,7 @@ class KonstruktorCommandBase : public QUndoCommand
 	QSet<int> selection_;
 	ldraw::model *model_;
 };
+
+}
 
 #endif

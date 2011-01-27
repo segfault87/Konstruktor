@@ -31,10 +31,13 @@ class QAction;
 class QActionGroup;
 class QGLContext;
 
-class KonstruktorMainWindow;
-class KonstruktorVisibilityExtension;
+namespace Konstruktor
+{
 
-class KonstruktorRenderWidget : public QGLWidget
+class MainWindow;
+class VisibilityExtension;
+
+class RenderWidget : public QGLWidget
 {
 	Q_OBJECT;
 	
@@ -43,8 +46,8 @@ class KonstruktorRenderWidget : public QGLWidget
 	enum Behavior { Idle, Placing, Moving, Dragging, Rotating, Panning };
 	enum SelectionMethod { Normal, Addition, Subtraction, Intersection };
 	
-	KonstruktorRenderWidget(KonstruktorMainWindow *mainwindow, KonstruktorDocument **document, ViewportMode viewport, QGLContext *context, QGLWidget *shareWidget, QWidget *parent = 0L);
-	~KonstruktorRenderWidget();
+	RenderWidget(MainWindow *mainwindow, Document **document, ViewportMode viewport, QGLContext *context, QGLWidget *shareWidget, QWidget *parent = 0L);
+	~RenderWidget();
 
 	ViewportMode viewportMode() const;
 	ldraw::vector viewportCoordinate(const QPoint &dim) const;
@@ -53,7 +56,7 @@ class KonstruktorRenderWidget : public QGLWidget
 
   signals:
 	void objectDropped(const QString &filename, const ldraw::matrix &matrix, const ldraw::color &color);
-	void madeSelection(const std::list<int> &selection, KonstruktorRenderWidget::SelectionMethod method = Normal);
+	void madeSelection(const std::list<int> &selection, RenderWidget::SelectionMethod method = Normal);
 	void translateObject(const ldraw::vector &vector);
 						 
   public slots:
@@ -90,14 +93,14 @@ class KonstruktorRenderWidget : public QGLWidget
 	void dropEvent(QDropEvent *event);
 	
   private:
-	KonstruktorDocument **activeDocument_;
+	Document **activeDocument_;
 	ldraw::model *currentModel_;
 	
 	ldraw_renderer::renderer_opengl *renderer_;
 	ldraw_renderer::parameters *params_;
-	KonstruktorVisibilityExtension *tvset_;
-	KonstruktorSelection *tsset_;
-	KonstruktorIntermediateSelection *tisset_;
+	VisibilityExtension *tvset_;
+	Selection *tsset_;
+	IntermediateSelection *tisset_;
 
 	float projectionMatrix_[16];
 	ViewportMode viewportMode_;
@@ -118,7 +121,7 @@ class KonstruktorRenderWidget : public QGLWidget
 	ldraw::metrics objectmetrics_;
 	ldraw::matrix objectmatrix_;
 	ldraw::color objectcolor_;
-	KonstruktorViewport stretched_;
+	Viewport stretched_;
 
 	QAction *viewportActions_[VIEWPORT_TYPES];
 	QActionGroup *viewportActionGroup_;
@@ -131,7 +134,9 @@ class KonstruktorRenderWidget : public QGLWidget
 	QColor highlightColor_;
 	QColor highlightDragColor_;
 
-	KonstruktorMainWindow *parent_;
+	MainWindow *parent_;
 };
+
+}
 
 #endif

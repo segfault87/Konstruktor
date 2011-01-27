@@ -18,7 +18,10 @@
 
 #include "pixmaprenderer.h"
 
-KonstruktorPixmapRenderer::KonstruktorPixmapRenderer(int width, int height, QGLWidget *shareWidget)
+namespace Konstruktor
+{
+
+PixmapRenderer::PixmapRenderer(int width, int height, QGLWidget *shareWidget)
 	: width_(width), height_(height), shareWidget_(shareWidget)
 {
 	QGLFormat fmt = QGLFormat::defaultFormat();
@@ -34,7 +37,7 @@ KonstruktorPixmapRenderer::KonstruktorPixmapRenderer(int width, int height, QGLW
 	
 	// Initialize GL
 #ifndef KONSTRUKTOR_DB_UPDATER
-	params_ = new ldraw_renderer::parameters(*KonstruktorApplication::self()->renderer_params());
+	params_ = new ldraw_renderer::parameters(*Application::self()->renderer_params());
 #else
 	params_ = new ldraw_renderer::parameters();
 	params_->set_stud_rendering_mode(ldraw_renderer::parameters::stud_regular);
@@ -54,7 +57,7 @@ KonstruktorPixmapRenderer::KonstruktorPixmapRenderer(int width, int height, QGLW
 	buffer_->doneCurrent();
 }
 
-KonstruktorPixmapRenderer::~KonstruktorPixmapRenderer()
+PixmapRenderer::~PixmapRenderer()
 {
 	delete renderer_;
 	delete params_;
@@ -62,7 +65,7 @@ KonstruktorPixmapRenderer::~KonstruktorPixmapRenderer()
 	delete buffer_;
 }
 
-void KonstruktorPixmapRenderer::setNewSize(int width, int height)
+void PixmapRenderer::setNewSize(int width, int height)
 {
 	width_ = width;
 	height_ = height;
@@ -75,7 +78,7 @@ void KonstruktorPixmapRenderer::setNewSize(int width, int height)
 	buffer_->doneCurrent();
 }
 
-QPixmap KonstruktorPixmapRenderer::renderToPixmap(ldraw::model *m, bool crop)
+QPixmap PixmapRenderer::renderToPixmap(ldraw::model *m, bool crop)
 {
 	buffer_->makeCurrent();
 	
@@ -83,7 +86,7 @@ QPixmap KonstruktorPixmapRenderer::renderToPixmap(ldraw::model *m, bool crop)
 	
 	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
 
-	KonstruktorViewport dvp;
+	Viewport dvp;
 	if (m) {
 		// Setup viewport
 		// TODO reuse code
@@ -100,7 +103,7 @@ QPixmap KonstruktorPixmapRenderer::renderToPixmap(ldraw::model *m, bool crop)
 		const ldraw::vector &min = metric->min();
 		const ldraw::vector &max = metric->max();
 		
-		KonstruktorViewport vp;
+		Viewport vp;
 		vp.left   = 1e30;
 		vp.right  = -1e30;
 		vp.top    = 1e30;
@@ -197,4 +200,6 @@ QPixmap KonstruktorPixmapRenderer::renderToPixmap(ldraw::model *m, bool crop)
 		
 		return np;
 	}
+}
+
 }

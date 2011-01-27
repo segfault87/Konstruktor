@@ -8,19 +8,24 @@
 
 namespace Ui 
 {
-class KonstruktorConfigDisplayForm;
-class KonstruktorConfigRenderForm;
+class ConfigDisplayForm;
+class ConfigRenderForm;
 }
 
-class KonstruktorConfigDialog : public KConfigDialog
+namespace Konstruktor
+{
+
+class ConfigDialog : public KConfigDialog
 {
   public:
-	KonstruktorConfigDialog(QWidget *parent = 0L);
-	virtual ~KonstruktorConfigDialog();
+	ConfigDialog(QWidget *parent = 0L);
+	virtual ~ConfigDialog();
 
   private:
-	Ui::KonstruktorConfigDisplayForm *uiDisplayForm_;
-	Ui::KonstruktorConfigRenderForm *uiRenderForm_;
+	Ui::ConfigDisplayForm *uiDisplayForm_;
+	Ui::ConfigRenderForm *uiRenderForm_;
 };
+
+}
 
 #endif

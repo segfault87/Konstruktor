@@ -3,9 +3,14 @@
 
 #include "undostackextension.h"
 
-KonstruktorUndoStackExtension::KonstruktorUndoStackExtension(ldraw::model *m, void *arg)
+namespace Konstruktor
+{
+
+UndoStackExtension::UndoStackExtension(ldraw::model *m, void *arg)
 	: ldraw::extension(m, arg), QUndoStack(reinterpret_cast<QObject *>(arg))
 {
+	
+}
 
 }
 
