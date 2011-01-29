@@ -36,6 +36,8 @@
 namespace Konstruktor
 {
 
+#define EXIT_IF_NO_DOCUMENT if (!(*activeDocument_)) return
+
 static const QString viewportNames[VIEWPORT_TYPES] = {
 	i18n("Top"),
 	i18n("Bottom"),
@@ -628,6 +630,8 @@ void RenderWidget::resizeGL(int width, int height)
 
 void RenderWidget::paintEvent(QPaintEvent *event)
 {
+	Q_UNUSED(event);
+	
 	QPainter p;
 	p.begin(this);
 
@@ -724,9 +728,9 @@ void RenderWidget::mousePressEvent(QMouseEvent *event)
 			lastPos_ = event->pos();
 
 			translation_ = ldraw::vector(0.0f, 0.0f, 0.0f);
-
-			const QSet<int> *sel = tsset_->getSelection();
+			
 			// TODO implement temporal exclusion for visibility extension
+			//const QSet<int> *sel = tsset_->getSelection();
 			//if (params_->get_rendering_mode() == ldraw_renderer::parameters::model_boundingboxes) {
 			//	for (QSet<int>::ConstIterator it = sel->constBegin(); it != sel->constEnd(); ++it)
 			//		tvset_->insert(*it);
@@ -756,8 +760,7 @@ void RenderWidget::mousePressEvent(QMouseEvent *event)
 
 void RenderWidget::mouseMoveEvent(QMouseEvent *event)
 {
-	if (!(*activeDocument_))
-		return;
+	EXIT_IF_NO_DOCUMENT;
 	
 	if (behavior_ == Rotating) {
 		(*activeDocument_)->getMouseRotation().move_event(event->pos().x(), event->pos().y(), width_, height_);
@@ -807,8 +810,7 @@ void RenderWidget::mouseMoveEvent(QMouseEvent *event)
 
 void RenderWidget::mouseReleaseEvent(QMouseEvent *event)
 {
-	if (!(*activeDocument_))
-		return;
+	EXIT_IF_NO_DOCUMENT;
 	
 	if ((behavior_ == Rotating && event->button() & Qt::RightButton) || (behavior_ == Panning && event->button() & Qt::MidButton)) {
 		behavior_ = Idle;
@@ -884,7 +886,7 @@ void RenderWidget::mouseReleaseEvent(QMouseEvent *event)
 
 void RenderWidget::wheelEvent(QWheelEvent *e)
 {
-	if (!(*activeDocument_)) return;
+	EXIT_IF_NO_DOCUMENT;
 	
 	Viewport &viewport = (*activeDocument_)->getViewport((int)viewportMode_);
 	float centerx = (viewport.left + viewport.right ) * 0.5f;
@@ -909,6 +911,8 @@ void RenderWidget::wheelEvent(QWheelEvent *e)
 
 void RenderWidget::dragEnterEvent(QDragEnterEvent *event)
 {
+	EXIT_IF_NO_DOCUMENT;
+	
 	if (viewportMode_ == Free)
 		return;
 
@@ -938,6 +942,10 @@ void RenderWidget::dragEnterEvent(QDragEnterEvent *event)
 
 void RenderWidget::dragLeaveEvent(QDragLeaveEvent *event)
 {
+	Q_UNUSED(event);
+	
+	EXIT_IF_NO_DOCUMENT;
+	
 	behavior_ = Idle;
 	params_->set_rendering_mode(renderMode_);
 
@@ -946,6 +954,8 @@ void RenderWidget::dragLeaveEvent(QDragLeaveEvent *event)
 
 void RenderWidget::dragMoveEvent(QDragMoveEvent *event)
 {
+	EXIT_IF_NO_DOCUMENT;
+	
 	updatePositionVector(event->pos() - lastPos_);
 
 	update();
@@ -953,6 +963,8 @@ void RenderWidget::dragMoveEvent(QDragMoveEvent *event)
 
 void RenderWidget::dropEvent(QDropEvent *event)
 {
+	EXIT_IF_NO_DOCUMENT;
+	
 	behavior_ = Idle;
 	
 	event->ignore();

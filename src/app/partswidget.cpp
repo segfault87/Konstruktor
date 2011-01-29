@@ -53,6 +53,8 @@ PartsWidget::~PartsWidget()
 
 void PartsWidget::initialize(const QString &search, bool hideUnofficial)
 {
+	/* FIXME optimize */
+	
 	QString subq1;
 	QString subq2;
 	if (hideUnofficial)
@@ -78,8 +80,6 @@ void PartsWidget::initialize(const QString &search, bool hideUnofficial)
 
 	QString query = QString("SELECT p.desc, p.filename, p.minx, p.miny, p.minz, p.maxx, p.maxy, p.maxz, pc.catid FROM parts AS p, part_categories AS pc WHERE %1 %2 pc.partid = p.id ORDER BY p.desc ASC").arg(subq1, subq2);
 
-	printf("%s\n", query.toLocal8Bit().data());
-	
 	QStringList parts = db->query(query);
 	for (QStringList::Iterator it = parts.begin(); it != parts.end(); ++it) {
 		QString desc = *it++;
