@@ -15,6 +15,7 @@ namespace Ui { class PartsWidget; }
 class QListWidgetItem;
 class QSortFilterProxyModel;
 class QModelIndex;
+class QTimer;
 
 namespace Konstruktor
 {
@@ -35,6 +36,8 @@ class PartsWidget : public QWidget
 
   private slots:
 	void selectionChanged(const QModelIndex &current, const QModelIndex &previous);
+	void searchTextChanged(const QString &ref);
+	void search();
 	void iconSelected(QListWidgetItem *item);
 
   private:
@@ -50,6 +53,8 @@ class PartsWidget : public QWidget
 	QMap<int, QList<PartItem> > list_;
 
 	int lastCat_;
+
+	QTimer *searchDelay_;
 };
 
 }

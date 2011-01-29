@@ -4,6 +4,7 @@
 #include <QList>
 #include <QPixmapCache>
 #include <QSortFilterProxyModel>
+#include <QTimer>
 
 #include "dbmanager.h"
 #include "application.h"
@@ -20,6 +21,8 @@ PartsWidget::PartsWidget(QWidget *parent)
 	: QWidget(parent)
 {
 	lastCat_ = -1;
+	searchDelay_ = new QTimer(this);
+	searchDelay_->setSingleShot(true);
 	
 	hideUnofficial_ = false;
 	
@@ -36,6 +39,8 @@ PartsWidget::PartsWidget(QWidget *parent)
 	ui_->partView->setSortingEnabled(true);
 	ui_->partView->sortByColumn(0, Qt::AscendingOrder);
 
+	connect(searchDelay_, SIGNAL(timeout()), this, SLOT(search()));
+	connect(ui_->searchEdit, SIGNAL(textEdited(const QString &)), this, SLOT(searchTextChanged(const QString &)));
 	connect(ui_->hideUnofficial, SIGNAL(stateChanged(int)), this, SLOT(hideUnofficial(int)));
 	connect(ui_->partView->selectionModel(), SIGNAL(currentChanged(const QModelIndex &, const QModelIndex &)), this, SLOT(selectionChanged(const QModelIndex &, const QModelIndex &)));
 	connect(ui_->iconView, SIGNAL(itemClicked(QListWidgetItem *)), this, SLOT(iconSelected(QListWidgetItem *)));
@@ -53,7 +58,7 @@ void PartsWidget::initialize(const QString &search, bool hideUnofficial)
 	if (hideUnofficial)
 		subq1 = QString("p.unofficial = 0 AND");
 	if (!search.isEmpty())
-		subq2 = QString("(p.desc LIKE '%%1%' OR p.partid LIKE '%%1%) AND").arg(search);
+		subq2 = QString("(id IN (SELECT partid AS id FROM part_keywords WHERE keyword LIKE '%%1%') OR p.desc LIKE '%%1%' OR p.partid LIKE '%%1%') AND").arg(search);
 	
 	categories_.clear();
 	categorymap_.clear();
@@ -71,7 +76,11 @@ void PartsWidget::initialize(const QString &search, bool hideUnofficial)
 		categorymap_[id] = &categories_[i];
 	}
 
-	QStringList parts = db->query(QString("SELECT p.desc, p.filename, p.minx, p.miny, p.minz, p.maxx, p.maxy, p.maxz, pc.catid FROM parts AS p, part_categories AS pc WHERE %1 %2 pc.partid = p.id ORDER BY p.desc ASC").arg(subq1, subq2));
+	QString query = QString("SELECT p.desc, p.filename, p.minx, p.miny, p.minz, p.maxx, p.maxy, p.maxz, pc.catid FROM parts AS p, part_categories AS pc WHERE %1 %2 pc.partid = p.id ORDER BY p.desc ASC").arg(subq1, subq2);
+
+	printf("%s\n", query.toLocal8Bit().data());
+	
+	QStringList parts = db->query(query);
 	for (QStringList::Iterator it = parts.begin(); it != parts.end(); ++it) {
 		QString desc = *it++;
 		QString fn = *it++;
@@ -146,6 +155,21 @@ void PartsWidget::selectionChanged(const QModelIndex &current, const QModelIndex
 
 	if (index.parent().isValid())
 		ui_->iconView->setCurrentItem(ui_->iconView->item(index.row()));
+}
+
+void PartsWidget::searchTextChanged(const QString &ref)
+{
+	Q_UNUSED(ref);
+	
+	if (searchDelay_->isActive())
+		searchDelay_->stop();
+
+	searchDelay_->start(1000);
+}
+
+void PartsWidget::search()
+{
+	initialize(ui_->searchEdit->text(), hideUnofficial_);
 }
 
 void PartsWidget::iconSelected(QListWidgetItem *item)

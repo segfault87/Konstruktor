@@ -69,8 +69,6 @@ void CommandPaste::redo()
 	QList<ldraw::element_base *> list = list_.elements();
 
 	foreach (ldraw::element_base *elem, list) {
-		printf("offset %d\n", o);
-		
 		model_->insert_element(elem, o);
 
 		if (elem->get_type() == ldraw::type_ref) {
