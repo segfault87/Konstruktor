@@ -135,7 +135,7 @@ int SubmodelModel::rowCount(const QModelIndex &parent) const
 QStringList SubmodelModel::mimeTypes() const
 {
 	QStringList types;
-	types << "application/konstruktor-refobject";
+	types << RefObject::mimeType;
 	return types;
 }
 
@@ -150,12 +150,8 @@ QMimeData* SubmodelModel::mimeData(const QModelIndexList &indexes) const
 		return 0L;
 
 	RefObject *item = static_cast<RefObject *>(index.internalPointer());
-	
-	QMimeData *mimeData = new QMimeData();
-	QByteArray encodedData = item->serialize();
 
-	mimeData->setData("application/konstruktor-refobject", encodedData);
-	return mimeData;
+	return item->mimeData();
 }
 
 }

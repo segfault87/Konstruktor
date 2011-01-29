@@ -19,13 +19,14 @@ class CommandBase : public QUndoCommand
 {
   public:
 	enum AffectedRow { Inserted, Removed };
+	typedef QPair<CommandBase::AffectedRow, QSet<int> > AffectedRowInfo;
 	
 	CommandBase(const QSet<int> &selection, ldraw::model *model);
 	virtual ~CommandBase();
 
 	virtual bool needUpdateDimension() const;
 	virtual bool needRepaint() const;
-	virtual QPair<CommandBase::AffectedRow, QSet<int> > affectedRows() const;
+	virtual AffectedRowInfo affectedRows() const;
 
 	const QSet<int>& selection() const { return selection_; }
 	ldraw::model* model() { return model_; }

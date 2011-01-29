@@ -82,7 +82,7 @@ bool Application::initialize()
 				if (!config_->path().isEmpty()) {
 					try {
 						library_ = new ldraw::part_library;
-					} catch(...) {
+					} catch (...) {
 						return false;
 					}
 					

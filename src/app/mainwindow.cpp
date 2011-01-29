@@ -2,6 +2,7 @@
 // Copyright (c)2006-2011 Park "segfault" J. K. <mastermind@planetmono.org>
 
 #include <QActionGroup>
+#include <QClipboard>
 #include <QCloseEvent>
 #include <QDialog>
 #include <QDockWidget>
@@ -37,6 +38,7 @@
 #include "application.h"
 #include "newmodeldialog.h"
 #include "newsubmodeldialog.h"
+#include "objectlist.h"
 #include "partswidget.h"
 #include "povrayrenderparameters.h"
 #include "povrayrenderwidget.h"
@@ -102,6 +104,21 @@ unsigned int MainWindow::viewportModes() const
 void MainWindow::modelModified(const QSet<int> &)
 {
 	updateViewports();
+}
+
+void MainWindow::clipboardChanged()
+{
+	if (!activeDocument_)
+		return;
+
+	const QMimeData *mimeData = kapp->clipboard()->mimeData(QClipboard::Clipboard);
+
+	if (!mimeData)
+		actionPaste_->setEnabled(false);
+	else if (!mimeData->hasFormat(ObjectList::mimeType))
+		actionPaste_->setEnabled(false);
+	else
+		actionPaste_->setEnabled(true);
 }
 
 void MainWindow::updateViewports()
@@ -589,6 +606,11 @@ void MainWindow::initActions()
 	actionUndo_ = editorGroup_->createUndoAction(ac);
 	actionRedo_ = editorGroup_->createRedoAction(ac);
 
+	actionCut_ = KStandardAction::cut(editorGroup_, SLOT(cut()), ac);
+	actionCopy_ = KStandardAction::copy(editorGroup_, SLOT(copy()), ac);
+	actionPaste_ = KStandardAction::paste(editorGroup_, SLOT(paste()), ac);
+	actionPaste_->setEnabled(false);
+
 	actionSelectAll_ = ac->addAction("select_all");
 	actionSelectAll_->setText(i18n("Select All"));
 	actionSelectAll_->setIcon(KIcon("edit-select-all"));
@@ -762,7 +784,9 @@ void MainWindow::initActions()
 	stateChangeableActions_.append(actionNewSubmodel_);
 	stateChangeableActions_.append(actionDeleteSubmodel_);
 	stateChangeableActions_.append(actionModelProperties_);
-	
+
+	selectionDependentActions_.append(actionCut_);
+	selectionDependentActions_.append(actionCopy_);
 	selectionDependentActions_.append(actionHide_);
 	selectionDependentActions_.append(actionColor_);
 	selectionDependentActions_.append(actionDelete_);
@@ -797,6 +821,7 @@ void MainWindow::initConnections()
 	connect(editorGroup_, SIGNAL(modified()), this, SLOT(modelModified()));
 	connect(editorGroup_, SIGNAL(rowsChanged(const QPair<CommandBase::AffectedRow, QSet<int> > &)), contentsModel_, SLOT(rowsChanged(const QPair<CommandBase::AffectedRow, QSet<int> > &)));
 	connect(editorGroup_, SIGNAL(rowsChanged(const QPair<CommandBase::AffectedRow, QSet<int> > &)), contentList_, SLOT(rowsChanged(const QPair<CommandBase::AffectedRow, QSet<int> > &)));
+	connect(kapp->clipboard(), SIGNAL(dataChanged()), this, SLOT(clipboardChanged()));
 
 	for (int i = 0; i < 4; ++i) {
 		connect(this, SIGNAL(activeModelChanged(ldraw::model *)), renderWidget_[i], SLOT(modelChanged(ldraw::model *)));

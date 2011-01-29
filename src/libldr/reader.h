@@ -26,7 +26,7 @@ class LIBLDR_EXPORT reader
 	
 	model_multipart* load_from_file(const std::string &name) const;
 	static model_multipart* load_from_stream(std::istream &stream, std::string name = "");
-	static element_base* parse_line(const std::string &command, model *m);
+	static element_base* parse_line(const std::string &command, model *m = 0L);
 	
 	const std::string& basepath() const { return m_basepath; }
 	void set_basepath(const std::string &path) { m_basepath = path; }

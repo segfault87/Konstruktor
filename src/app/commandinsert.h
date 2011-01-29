@@ -19,7 +19,7 @@ class CommandInsert : public CommandBase
 	~CommandInsert();
 
 	bool needUpdateDimension() const;
-	QPair<CommandBase::AffectedRow, QSet<int> > affectedRows() const;
+	AffectedRowInfo affectedRows() const;
 
 	void redo();
 	void undo();

@@ -70,9 +70,6 @@ void ContentsView::selectionChanged(const QItemSelection &selected, const QItemS
 	const QModelIndexList &list = selected.indexes();
 	for (QModelIndexList::ConstIterator it = list.begin(); it != list.end(); ++it) {
 		if ((*it).column() == 0 && (*it).isValid() && !selectedIndices_.contains((*it).row())) {
-			if (static_cast<ldraw::element_base *>((*it).internalPointer())->line_type() == 0)
-				continue;
-			
 			selectedIndices_.insert((*it).row());
 			++affected;
 		}
@@ -81,9 +78,6 @@ void ContentsView::selectionChanged(const QItemSelection &selected, const QItemS
 	const QModelIndexList &delist = deselected.indexes();
 	for (QModelIndexList::ConstIterator it = delist.begin(); it != delist.end(); ++it) {
 		if ((*it).column() == 0 && (*it).isValid() && selectedIndices_.contains((*it).row())) {
-			if (static_cast<ldraw::element_base *>((*it).internalPointer())->line_type() == 0)
-					continue;
-			
 			if (selectedIndices_.contains((*it).row()))
 				selectedIndices_.remove((*it).row());
 			else if (hiddenIndices_->find((*it).row()) != hiddenIndices_->end())

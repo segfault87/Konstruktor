@@ -30,9 +30,9 @@ bool CommandBase::needRepaint() const
 	return true;
 }
 
-QPair<CommandBase::AffectedRow, QSet<int> > CommandBase::affectedRows() const
+CommandBase::AffectedRowInfo CommandBase::affectedRows() const
 {
-	return QPair<CommandBase::AffectedRow, QSet<int> >(Inserted, QSet<int>());
+	return AffectedRowInfo(Inserted, QSet<int>());
 }
 
 }

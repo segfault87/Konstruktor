@@ -7,9 +7,12 @@
 #include <libldr/model.h>
 
 #include <QAction>
+#include <QClipboard>
 #include <QCursor>
+#include <QMimeData>
 
 #include <kactioncollection.h>
+#include <kapplication.h>
 #include <kicon.h>
 #include <kmenu.h>
 #include <klocalizedstring.h>
@@ -21,13 +24,33 @@
 #include "colormanager.h"
 #include "commandcolor.h"
 #include "commandinsert.h"
+#include "commandpaste.h"
 #include "commandremove.h"
 #include "commandtransform.h"
 #include "editor.h"
+#include "objectlist.h"
 #include "utils.h"
 
 namespace Konstruktor
 {
+
+UndoAction::UndoAction(const QString &prefix, QObject *parent)
+	: KAction(parent)
+{
+	prefix_ = prefix;
+}
+
+void UndoAction::setPrefixedText(const QString &text)
+{
+	QString s = prefix_;
+	
+	if (!prefix_.isEmpty() && !text.isEmpty())
+		s.append(QLatin1Char(' '));
+	
+	s.append(text);
+
+	setText(s);
+}
 
 Editor::Editor(QObject *parent)
 	: QUndoGroup(parent)
@@ -48,40 +71,42 @@ Editor::~Editor()
 
 }
 
-QAction* Editor::createRedoAction(KActionCollection *actionCollection, const QString &actionName)
+KAction* Editor::createRedoAction(KActionCollection *actionCollection)
 {
-	QAction *action = QUndoGroup::createRedoAction(actionCollection);
-
-	if (actionName.isEmpty()) {
-		action->setObjectName(KStandardAction::name(KStandardAction::Redo));
-	} else {
-		action->setObjectName(actionName);
-	}
+	UndoAction *action = new UndoAction(i18n("Redo"), actionCollection);
+	
+	action->setEnabled(canRedo());
+	action->setPrefixedText(redoText());
+	
+	connect(this, SIGNAL(canRedoChanged(bool)), action, SLOT(setEnabled(bool)));
+	connect(this, SIGNAL(redoTextChanged(QString)), action, SLOT(setPrefixedText(QString)));
+	connect(action, SIGNAL(triggered()), this, SLOT(redo()));
 
 	action->setIcon(KIcon("edit-redo"));
 	action->setIconText(i18n("Redo"));
 	action->setShortcuts(KStandardShortcut::redo());
 
-	actionCollection->addAction(action->objectName(), action);
+	actionCollection->addAction(KStandardAction::name(KStandardAction::Redo), action);
 
 	return action;
 }
 
-QAction* Editor::createUndoAction(KActionCollection *actionCollection, const QString &actionName)
+KAction* Editor::createUndoAction(KActionCollection *actionCollection)
 {
-	QAction *action = QUndoGroup::createUndoAction(actionCollection);
-
-	if (actionName.isEmpty()) {
-		action->setObjectName(KStandardAction::name(KStandardAction::Undo));
-	} else {
-		action->setObjectName(actionName);
-	}
+	UndoAction *action = new UndoAction(i18n("Undo"), actionCollection);
+	
+	action->setEnabled(canUndo());
+	action->setPrefixedText(undoText());
+	
+	connect(this, SIGNAL(canUndoChanged(bool)), action, SLOT(setEnabled(bool)));
+	connect(this, SIGNAL(undoTextChanged(QString)), action, SLOT(setPrefixedText(QString)));
+	connect(action, SIGNAL(triggered()), this, SLOT(undo()));
 
 	action->setIcon(KIcon("edit-undo"));
 	action->setIconText(i18n("Undo"));
 	action->setShortcuts(KStandardShortcut::undo());
 
-	actionCollection->addAction(action->objectName(), action);
+	actionCollection->addAction(KStandardAction::name(KStandardAction::Undo), action);
 
 	return action;
 }
@@ -176,6 +201,46 @@ void Editor::stackAdded(QUndoStack *stack)
 void Editor::setGridMode(GridMode mode)
 {
 	gridMode_ = mode;
+}
+
+void Editor::cut()
+{
+	if (!activeStack() || selection_->empty())
+		return;
+
+	copy();
+	deleteSelected();
+}
+
+void Editor::copy()
+{
+	if (!activeStack() || selection_->empty())
+		return;
+
+	ObjectList ol(*selection_, model_);
+
+	QClipboard *clipboard = kapp->clipboard();
+	clipboard->setMimeData(ol.mimeData(), QClipboard::Clipboard);
+}
+
+void Editor::paste()
+{
+	if (!activeStack())
+		return;
+
+	QClipboard *clipboard = kapp->clipboard();
+	const QMimeData *mimeData = clipboard->mimeData(QClipboard::Clipboard);
+
+	if (!mimeData)
+		return;
+	else if (!mimeData->hasFormat(ObjectList::mimeType))
+		return;
+
+	ObjectList list = ObjectList::deserialize(mimeData->data(ObjectList::mimeType));
+
+	activeStack()->push(new CommandPaste(list, *selection_, model_));
+	
+	emit modified();
 }
 
 void Editor::deleteSelected()

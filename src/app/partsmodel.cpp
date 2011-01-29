@@ -177,7 +177,7 @@ Qt::ItemFlags PartsModel::flags(const QModelIndex &index) const
 QStringList PartsModel::mimeTypes() const
 {
 	QStringList types;
-	types << "application/konstruktor-refobject";
+	types << RefObject::mimeType;
 	return types;
 }
 
@@ -193,12 +193,8 @@ QMimeData* PartsModel::mimeData(const QModelIndexList &indexes) const
 	PartItemBase *item = static_cast<PartItemBase *>(index.internalPointer());
 	if (item->type() != PartItemBase::TypePartItem)
 		return 0L;
-	
-	QMimeData *mimeData = new QMimeData();
-	QByteArray encodedData = dynamic_cast<PartItem *>(item)->serialize();
 
-	mimeData->setData("application/konstruktor-refobject", encodedData);
-	return mimeData;
+	return dynamic_cast<PartItem *>(item)->mimeData();
 }
 
 }

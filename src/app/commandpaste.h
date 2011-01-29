@@ -1,24 +1,20 @@
 // Konstruktor - An interactive LDraw modeler for KDE
 // Copyright (c)2006-2011 Park "segfault" J. K. <mastermind@planetmono.org>
 
-#ifndef _COMMANDREMOVE_H_
-#define _COMMANDREMOVE_H_
-
-#include <string>
-
-#include <QList>
-#include <QMap>
+#ifndef _COMMANDPASTE_H_
+#define _COMMANDPASTE_H_
 
 #include "commandbase.h"
+#include "objectlist.h"
 
 namespace Konstruktor
 {
 
-class CommandRemove : public CommandBase
+class CommandPaste : public CommandBase
 {
   public:
-	CommandRemove(const QSet<int> &selection, ldraw::model *model);
-	~CommandRemove();
+	CommandPaste(const ObjectList &list, const QSet<int> &selection, ldraw::model *model);
+	~CommandPaste();
 
 	bool needUpdateDimension() const;
 	AffectedRowInfo affectedRows() const;
@@ -27,8 +23,8 @@ class CommandRemove : public CommandBase
 	void undo();
 
   private:
-	QList<int> itemsToRemove_;
-	QMap<int, std::string> objects_;
+	ObjectList list_;
+	int offset_;
 };
 
 }

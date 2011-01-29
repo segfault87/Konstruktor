@@ -12,6 +12,7 @@ set(konstruktor_SRCS
   commandbase.cpp
   commandcolor.cpp
   commandinsert.cpp
+  commandpaste.cpp
   commandremove.cpp
   commandtransform.cpp
   configdialog.cpp
@@ -23,6 +24,7 @@ set(konstruktor_SRCS
   mainwindow.cpp
   newmodeldialog.cpp
   newsubmodeldialog.cpp
+  objectlist.cpp
   partitems.cpp
   partsiconwidget.cpp
   partsmodel.cpp

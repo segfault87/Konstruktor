@@ -85,6 +85,7 @@ class MainWindow : public KXmlGuiWindow
 	void selectionChanged(const QSet<int> &cset);
 	void gridModeChanged(QAction *action);
 	void modelModified();
+	void clipboardChanged();
 
   private:
 	void closeEvent(QCloseEvent *event);
@@ -137,11 +138,11 @@ class MainWindow : public KXmlGuiWindow
 	KAction *actionQuit_;
 
 	// Edit menu
-	QAction *actionCopy_;
-	QAction *actionCut_;
-	QAction *actionPaste_;
-	QAction *actionUndo_;
-	QAction *actionRedo_;
+	KAction *actionCopy_;
+	KAction *actionCut_;
+	KAction *actionPaste_;
+	KAction *actionUndo_;
+	KAction *actionRedo_;
 	KAction *actionSelectAll_;
 	KAction *actionSelectNone_;
 	KAction *actionHide_;

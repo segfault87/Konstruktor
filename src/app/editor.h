@@ -7,6 +7,8 @@
 #include <QSet>
 #include <QUndoGroup>
 
+#include <kaction.h>
+
 #include "commandbase.h"
 
 namespace ldraw
@@ -16,12 +18,26 @@ namespace ldraw
     class model;
 }
 
-class QAction;
 class KActionCollection;
 class KMenu;
 
 namespace Konstruktor
 {
+
+class UndoAction : public KAction 
+{
+	Q_OBJECT;
+
+  public:
+	UndoAction(const QString &prefix, QObject *parent = 0L);
+
+  public slots:
+	void setPrefixedText(const QString &text);
+
+  private:
+	QString prefix_;
+};
+
 
 class Editor : public QUndoGroup
 {
@@ -34,8 +50,8 @@ class Editor : public QUndoGroup
 	Editor(QObject *parent = 0L);
 	~Editor();
 
-	QAction* createRedoAction(KActionCollection *actionCollection, const QString &actionName = QString());
-	QAction* createUndoAction(KActionCollection *actionCollection, const QString &actionName = QString());
+	KAction* createRedoAction(KActionCollection *actionCollection);
+	KAction* createUndoAction(KActionCollection *actionCollection);
 
 	GridMode gridMode() const { return gridMode_; }
 
@@ -62,6 +78,9 @@ class Editor : public QUndoGroup
 	void setGridMode(GridMode mode);
 	
 	// Editing
+	void cut();
+	void copy();
+	void paste();
 	void deleteSelected();
 	void editColor();
 	void move(const ldraw::vector &vector);

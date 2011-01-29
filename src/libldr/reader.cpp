@@ -185,7 +185,7 @@ element_base* reader::parse_line(const std::string &command, model *m)
 		if (cont[0] == '!') {
 			// header data
 			size_t pos = cont.find_first_of(" ");
-			if (pos != std::string::npos)
+			if (m && pos != std::string::npos)
 				m->set_header(cont.substr(1, pos - 1), cont.substr(pos + 1));
 		} else if (contlc == "step") {
 			return new element_state(element_state::state_step);
@@ -224,7 +224,7 @@ element_base* reader::parse_line(const std::string &command, model *m)
 			else if (subs == "nocertify")
 				cert = bfc_certification::uncertified;
 
-			if (cert != -1) {
+			if (m && cert != -1) {
 				bfc_certification *c = m->init_custom_data<bfc_certification>();
 				c->set_certification((bfc_certification::cert_status)cert);
 				if (winding != -1)

@@ -8,6 +8,7 @@
 #include <klocalizedstring.h>
 
 #include "application.h"
+#include "utils.h"
 
 #include "commandinsert.h"
 
@@ -21,10 +22,10 @@ CommandInsert::CommandInsert(const QString &filename, const ldraw::matrix &matri
 	matrix_ = matrix;
 	color_ = color;
 
-	if (selection.size() != 1)
+	if (selection.size() == 0)
 		offset_ = -1;
 	else
-		offset_ = *selection.begin() + 1;
+		offset_ = Utils::maximum(selection) + 1;
 
 	if (offset_ >= (int)model_->elements().size())
 		offset_ = -1;
@@ -42,7 +43,7 @@ bool CommandInsert::needUpdateDimension() const
 	return true;
 }
 
-QPair<CommandBase::AffectedRow, QSet<int> > CommandInsert::affectedRows() const
+CommandInsert::AffectedRowInfo CommandInsert::affectedRows() const
 {
 	QSet<int> set;
 
@@ -51,7 +52,7 @@ QPair<CommandBase::AffectedRow, QSet<int> > CommandInsert::affectedRows() const
 	else
 		set.insert(model_->elements().size() - 1);
 
-	return QPair<CommandBase::AffectedRow, QSet<int> >(Inserted, set);
+	return AffectedRowInfo(Inserted, set);
 }
 
 void CommandInsert::redo()

@@ -911,8 +911,8 @@ void RenderWidget::dragEnterEvent(QDragEnterEvent *event)
 {
 	if (viewportMode_ == Free)
 		return;
-	
-	QByteArray data = event->mimeData()->data("application/konstruktor-refobject");
+
+	QByteArray data = event->mimeData()->data(RefObject::mimeType);
 	
 	if (data.isEmpty())
 		return;
@@ -960,7 +960,7 @@ void RenderWidget::dropEvent(QDropEvent *event)
 
 	updatePositionVector(event->pos() - lastPos_);
 
-	QByteArray data = event->mimeData()->data("application/konstruktor-refobject");
+	QByteArray data = event->mimeData()->data(RefObject::mimeType);
 	
 	if (data.isEmpty())
 		return;

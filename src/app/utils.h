@@ -4,6 +4,7 @@
 #ifndef _UTILS_H_
 #define _UTILS_H_
 
+#include <QSet>
 #include <QString>
 
 namespace Konstruktor
@@ -17,6 +18,7 @@ class Utils
 	
   public:
 	static float floatModulo(float dividend, float divisor);
+	static int maximum(const QSet<int> &set);
 };
 
 }

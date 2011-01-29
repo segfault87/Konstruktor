@@ -4,11 +4,14 @@
 #include <libldr/metrics.h>
 
 #include <QDataStream>
+#include <QMimeData>
 
 #include "refobject.h"
 
 namespace Konstruktor
 {
+
+const char RefObject::mimeType[] = "application/x-konstruktor-refobject";
 
 RefObject::RefObject()
 	: metrics_(0L)
@@ -51,6 +54,15 @@ RefObject& RefObject::operator= (const RefObject &rhs)
 	metrics_ = rhs.metrics();
 
 	return *this;
+}
+
+QMimeData* RefObject::mimeData() const
+{
+	QMimeData *mime = new QMimeData();
+
+	mime->setData(mimeType, serialize());
+
+	return mime;
 }
 
 QByteArray RefObject::serialize() const

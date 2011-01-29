@@ -52,9 +52,9 @@ bool CommandRemove::needUpdateDimension() const
 	return true;
 }
 
-QPair<CommandBase::AffectedRow, QSet<int> > CommandRemove::affectedRows() const
+CommandRemove::AffectedRowInfo CommandRemove::affectedRows() const
 {
-	return QPair<CommandBase::AffectedRow, QSet<int> >(Removed, selection_);
+	return AffectedRowInfo(Removed, selection_);
 }
 
 void CommandRemove::redo()

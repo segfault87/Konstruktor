@@ -296,14 +296,14 @@ Qt::ItemFlags ContentsModel::flags(const QModelIndex &index) const
 
 	if (!checkTable_->find(index.row()))
 		flags |= Qt::ItemIsSelectable;
-	
+
 	if (index.column() == ColumnCheck && model_->elements()[index.row()]->get_type() == ldraw::type_ref)
 		flags |= Qt::ItemIsUserCheckable;
 	
 	return flags;
 }
 
-void ContentsModel::rowsChanged(const QPair<CommandBase::AffectedRow, QSet<int> > &/*rowList*/)
+void ContentsModel::rowsChanged(const CommandBase::AffectedRowInfo &/*rowList*/)
 {
 	// FIXME
 	reset();

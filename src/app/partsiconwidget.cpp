@@ -27,7 +27,7 @@ PartsIconWidget::~PartsIconWidget()
 QStringList PartsIconWidget::mimeTypes() const
 {	
 	QStringList types;
-	types << "application/konstruktor-refobject";
+	types << RefObject::mimeType;
 	return types;
 }
 
@@ -37,12 +37,8 @@ QMimeData* PartsIconWidget::mimeData(const QList<QListWidgetItem *> items) const
 		return 0L;
 
 	PartItem item = items[0]->data(Qt::UserRole).value<PartItem>();
-	
-	QMimeData *mimeData = new QMimeData();
-	QByteArray encodedData = item.serialize();
 
-	mimeData->setData("application/konstruktor-refobject", encodedData);
-	return mimeData;
+	return item.mimeData();
 }
 
 }

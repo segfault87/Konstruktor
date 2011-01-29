@@ -17,12 +17,16 @@ namespace ldraw
 	class metrics;
 }
 
+class QMimeData;
+
 namespace Konstruktor
 {
 
 class RefObject
 {
   public:
+	static const char mimeType[];
+	
 	RefObject();
 	RefObject(const RefObject &rhs);
 	RefObject(const QString &filename, const ldraw::metrics &metrics);
@@ -34,6 +38,8 @@ class RefObject
 	void setMetrics(const ldraw::metrics &metrics);
 
 	RefObject& operator= (const RefObject &rhs);
+
+	QMimeData* mimeData() const;
 
 	QByteArray serialize() const;
 	static RefObject deserialize(QByteArray &data);
