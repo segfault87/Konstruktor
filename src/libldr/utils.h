@@ -11,6 +11,7 @@
 #include <string>
 
 #include "common.h"
+#include "math.h"
 
 namespace ldraw
 {
@@ -29,7 +30,7 @@ LIBLDR_EXPORT bool cyclic_reference_test(const model *m);
 LIBLDR_EXPORT bool cyclic_reference_test(const model *m, const model *insert);
 
 // Returns a list of submodels (including model) which could be affected by a model
-LIBLDR_EXPORT std::list<std::string> affected_models(model_multipart *model, const std::string &name);
+LIBLDR_EXPORT std::list<model *> affected_models(model_multipart *base, model *m);
 
 // Name duplicate test
 LIBLDR_EXPORT bool name_duplicate_test(const std::string &name, const model_multipart *model);

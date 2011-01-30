@@ -9,6 +9,8 @@
 
 #include <libldr/model.h>
 
+#include "application.h"
+#include "config.h"
 #include "document.h"
 #include "pixmapextension.h"
 #include "refobject.h"
@@ -22,6 +24,7 @@ SubmodelModel::SubmodelModel(Document *document, QObject *parent)
 	: QAbstractItemModel(parent)
 {
 	document_ = document;
+	active_ = 0;
 
 	resetItems();
 }
@@ -31,16 +34,44 @@ SubmodelModel::~SubmodelModel()
 	
 }
 
+Document* SubmodelModel::getDocument()
+{
+	return document_;
+}
+
 QPair<std::string, ldraw::model *> SubmodelModel::modelIndexOf(const QModelIndex &index)
 {
 	if (index.row() == 0)
-		return QPair<std::string, ldraw::model *>("", 0L);
+		return QPair<std::string, ldraw::model *>("", document_->contents()->main_model());
 	else
 		return submodelList_[index.row() - 1];
 }
 
+QModelIndex SubmodelModel::index(const ldraw::model *m)
+{
+	typedef QPair<std::string, ldraw::model *> NameModelPair;
+
+	if (m == document_->contents()->main_model())
+		return index(0, 0);
+
+	int i = 1;
+	foreach (const NameModelPair &p, submodelList_) {
+		if (p.second == m)
+			return index(i, 0);
+
+		++i;
+	}
+
+	return QModelIndex();
+}
+
 void SubmodelModel::resetItems()
 {
+	active_ = 0;
+
+	submodelList_.clear();
+	refobjects_.clear();
+	
 	for (std::map<std::string, ldraw::model *>::iterator it = document_->contents()->submodel_list().begin(); it != document_->contents()->submodel_list().end(); ++it) {
 		submodelList_.append(QPair<std::string, ldraw::model *>((*it).first, (*it).second));
 		ldraw::model *m = (*it).second;
@@ -79,21 +110,47 @@ QVariant SubmodelModel::data(const QModelIndex &index, int role) const
 		else
 			m = submodelList_[index.row() - 1].second;
 
-		const QPixmap &thumbnail = m->custom_data<PixmapExtension>()->pixmap();
-
-		if (thumbnail.width() > 96 || thumbnail.height() > 96)
-			return thumbnail.scaled(96, 96, Qt::KeepAspectRatio, Qt::SmoothTransformation);
-		else
-			return thumbnail;
+		return m->custom_data<PixmapExtension>()->pixmap();
 	} else if (role == Qt::UserRole) {
 		if (index.row() == 0) {
 			return "";
 		} else {
 			return submodelList_[index.row() - 1].first.c_str();
 		}
+	} else if (role == Qt::BackgroundRole) {
+		if (index.row() == active_)
+			return Application::self()->config()->activeSubmodelColor();
+		else
+			return QVariant();
 	}
+	
 
 	return QVariant();
+}
+
+bool SubmodelModel::setData(const QModelIndex &index, const QVariant &value, int role)
+{
+	if (!index.isValid())
+		return false;
+	
+	if (role == Qt::EditRole) {
+		int v = value.toInt();
+		
+		if (v == 0)
+			active_ = -1;
+		else
+			active_ = index.row();
+		
+		emit dataChanged(index, index);
+		
+		return true;
+	} else if (role == Qt::DecorationRole) {
+		emit dataChanged(index, index);
+
+		return true;
+	}
+
+	return false;
 }
 
 Qt::ItemFlags SubmodelModel::flags(const QModelIndex &index) const

@@ -57,6 +57,7 @@ class Document : public QObject
 	void setSaveable(bool s);
 
 	SubmodelModel* model() { return model_; }
+	PixmapRenderer* renderer() { return renderer_; }
 	
 	// Manipulation
 	ldraw::model* newSubmodel(const std::string &name, const std::string &desc, const std::string &author);

@@ -46,6 +46,10 @@
     </entry>
   </group>
   <group name="UI">
+    <entry name="ActiveSubmodelColor" type="Color">
+      <label>Item color of currently active submodel in list</label>
+      <default>#FF9B9D</default>
+    </entry>
     <entry name="ListRefColorize" type="Bool">
       <label>Colorize part list items</label>
       <default>true</default>

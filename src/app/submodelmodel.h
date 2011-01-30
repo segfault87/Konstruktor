@@ -28,7 +28,10 @@ class SubmodelModel : public QAbstractItemModel
 	SubmodelModel(Document *document, QObject *parent = 0L);
 	virtual ~SubmodelModel();
 
+	Document* getDocument();
+
 	QPair<std::string, ldraw::model *> modelIndexOf(const QModelIndex &index);
+	QModelIndex index(const ldraw::model *m);
 
 	void resetItems();
 	
@@ -39,6 +42,7 @@ class SubmodelModel : public QAbstractItemModel
 
 	QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const;
 	QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
+	bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole);
 	
 	QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const;
 	QModelIndex parent(const QModelIndex &) const { return QModelIndex(); }
@@ -52,6 +56,7 @@ class SubmodelModel : public QAbstractItemModel
 	Document *document_;
 	QVector<QPair<std::string, ldraw::model *> > submodelList_;
 	QList<RefObject> refobjects_;
+	int active_;
 };
 
 }

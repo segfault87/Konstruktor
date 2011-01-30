@@ -19,8 +19,13 @@ class SubmodelWidget : public QTreeView
 	SubmodelWidget(QWidget *parent = 0L);
 	virtual ~SubmodelWidget();
 
+  public slots:
+	void modelChanged(ldraw::model *m);
+
   private:
 	void contextMenuEvent(QContextMenuEvent *event);
+
+	QModelIndex previous_;
 };
 
 }

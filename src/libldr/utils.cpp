@@ -4,6 +4,8 @@
  *                                                                                   *
  * Author: (c)2006-2008 Park "segfault" J. K. <mastermind_at_planetmono_dot_org>     */
 
+#include <stdio.h>
+
 #include <algorithm>
 #include <cctype>
 #include <cmath>
@@ -65,32 +67,46 @@ bool cyclic_reference_test(const model *m, const model *insert)
 
 	return _cyclic_reference_test(names, m, insert);
 }
-std::list<std::string> affected_models(model_multipart *model, const std::string &name)
+
+bool _affected_model(const model *target, const model *m)
 {
-	std::list<std::string> list;
-
-	std::string lname = translate_string(name);
-
-	for (model::const_iterator it = model->main_model()->elements().begin(); it != model->main_model()->elements().end(); ++it) {
+	for (model::const_iterator it = m->elements().begin(); it != m->elements().end(); ++it) {
 		if ((*it)->get_type() == ldraw::type_ref) {
-			if (translate_string(CAST_AS_CONST_REF(*it)->filename()) == lname) {
-				list.push_back("");
-				break;
-			}
-		}
-	}
-	for (std::map<std::string, ldraw::model *>::const_iterator it = model->submodel_list().begin(); it != model->submodel_list().end(); ++it) {
-		for (model::const_iterator it2 = (*it).second->elements().begin(); it2 != (*it).second->elements().end(); ++it2) {
-			if ((*it2)->get_type() == ldraw::type_ref) {
-				if (translate_string(CAST_AS_CONST_REF(*it2)->filename()) == lname) {
-					list.push_back((*it).second->name());
-					break;
-				}
+			const element_ref *r = CAST_AS_CONST_REF(*it);
+
+			if (!r->get_model())
+				continue;
+
+			const model *cm = r->get_model();
+
+			if (cm == target)
+				return true;
+			else if (cm->modeltype() == model::submodel && m->parent() == target->parent()) {
+				if (_affected_model(target, cm))
+					return true;
 			}
 		}
 	}
 
-	return list;
+	return false;
+}
+
+std::list<model *> affected_models(model_multipart *base, ldraw::model *m)
+{
+	std::list<ldraw::model *> set;
+
+	if (base->main_model() != m && !m->is_submodel_of(base))
+		return set;
+	
+	if (_affected_model(m, base->main_model()))
+		set.push_back(base->main_model());
+
+	for (std::map<std::string, model *>::const_iterator it = base->submodel_list().begin(); it != base->submodel_list().end(); ++it) {
+		if (_affected_model(m, (*it).second))
+			set.push_back((*it).second);
+	}
+
+	return set;
 }
 
 bool name_duplicate_test(const std::string &name, const model_multipart *model)
@@ -206,10 +222,18 @@ bool is_singular_matrix(const matrix &m)
 {
 	float d00, d01, d02, d03;
 
-	d00 = m.value(1, 1)*m.value(2, 2)*m.value(3, 3) + m.value(1, 2)*m.value(2, 3)*m.value(3, 1) + m.value(1, 3)*m.value(2, 1)*m.value(3, 2) - m.value(3, 1)*m.value(2, 2)*m.value(1, 3) - m.value(3, 2)*m.value(2, 3)*m.value(1, 1) - m.value(3, 3)*m.value(2, 1)*m.value(1, 2);
-	d01 = m.value(1, 0)*m.value(2, 2)*m.value(3, 3) + m.value(1, 2)*m.value(2, 3)*m.value(3, 0) + m.value(1, 3)*m.value(2, 0)*m.value(3, 2) - m.value(3, 0)*m.value(2, 2)*m.value(1, 3) - m.value(3, 2)*m.value(2, 3)*m.value(1, 0) - m.value(3, 3)*m.value(2, 0)*m.value(1, 2);
-	d02 = m.value(1, 0)*m.value(2, 1)*m.value(3, 3) + m.value(1, 1)*m.value(2, 3)*m.value(3, 0) + m.value(1, 3)*m.value(2, 0)*m.value(3, 1) - m.value(3, 0)*m.value(2, 1)*m.value(1, 3) - m.value(3, 1)*m.value(2, 3)*m.value(1, 0) - m.value(3, 3)*m.value(2, 0)*m.value(1, 1);
-	d03 = m.value(1, 0)*m.value(2, 1)*m.value(3, 2) + m.value(1, 1)*m.value(2, 2)*m.value(3, 0) + m.value(1, 2)*m.value(2, 0)*m.value(3, 1) - m.value(3, 0)*m.value(2, 1)*m.value(1, 2) - m.value(3, 1)*m.value(2, 2)*m.value(1, 0) - m.value(3, 2)*m.value(2, 0)*m.value(1, 1);
+	d00 = m.value(1, 1)*m.value(2, 2)*m.value(3, 3) + m.value(1, 2)*m.value(2, 3)*m.value(3, 1) +
+		m.value(1, 3)*m.value(2, 1)*m.value(3, 2) - m.value(3, 1)*m.value(2, 2)*m.value(1, 3) -
+		m.value(3, 2)*m.value(2, 3)*m.value(1, 1) - m.value(3, 3)*m.value(2, 1)*m.value(1, 2);
+	d01 = m.value(1, 0)*m.value(2, 2)*m.value(3, 3) + m.value(1, 2)*m.value(2, 3)*m.value(3, 0) +
+		m.value(1, 3)*m.value(2, 0)*m.value(3, 2) - m.value(3, 0)*m.value(2, 2)*m.value(1, 3) -
+		m.value(3, 2)*m.value(2, 3)*m.value(1, 0) - m.value(3, 3)*m.value(2, 0)*m.value(1, 2);
+	d02 = m.value(1, 0)*m.value(2, 1)*m.value(3, 3) + m.value(1, 1)*m.value(2, 3)*m.value(3, 0) +
+		m.value(1, 3)*m.value(2, 0)*m.value(3, 1) - m.value(3, 0)*m.value(2, 1)*m.value(1, 3) -
+		m.value(3, 1)*m.value(2, 3)*m.value(1, 0) - m.value(3, 3)*m.value(2, 0)*m.value(1, 1);
+	d03 = m.value(1, 0)*m.value(2, 1)*m.value(3, 2) + m.value(1, 1)*m.value(2, 2)*m.value(3, 0) +
+		m.value(1, 2)*m.value(2, 0)*m.value(3, 1) - m.value(3, 0)*m.value(2, 1)*m.value(1, 2) -
+		m.value(3, 1)*m.value(2, 2)*m.value(1, 0) - m.value(3, 2)*m.value(2, 0)*m.value(1, 1);
 
 	return std::fabs(m.value(0, 0) * d00 - m.value(0, 1) * d01 + m.value(0, 2) * d02 - m.value(0, 3) * d03) < LDR_EPSILON;
 }

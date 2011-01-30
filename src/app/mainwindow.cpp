@@ -812,6 +812,7 @@ void MainWindow::initConnections()
 	connect(contentsModel_, SIGNAL(unhide(const QModelIndex &)), contentList_, SLOT(unhide(const QModelIndex &)));
 	connect(this, SIGNAL(activeModelChanged(ldraw::model *)), contentList_, SLOT(modelChanged(ldraw::model *)));
 	connect(this, SIGNAL(activeModelChanged(ldraw::model *)), editorGroup_, SLOT(modelChanged(ldraw::model *)));
+	connect(this, SIGNAL(activeModelChanged(ldraw::model *)), submodelList_, SLOT(modelChanged(ldraw::model *)));
 	connect(this, SIGNAL(viewChanged()), SLOT(updateViewports()));
 	connect(submodelList_, SIGNAL(doubleClicked(const QModelIndex &)), this, SLOT(submodelViewDoubleClicked(const QModelIndex &)));
 	connect(contentList_, SIGNAL(selectionChanged(const QSet<int> &)), this, SLOT(selectionChanged(const QSet<int> &)));
