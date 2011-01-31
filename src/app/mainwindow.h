@@ -58,6 +58,7 @@ class MainWindow : public KXmlGuiWindow
 	void updateViewports();
 	void changeCaption();
 	void activate(bool b);
+	void setStatusMessage(const QString &msg);
 	
 	void newFile();
 	void openFile();
@@ -81,11 +82,14 @@ class MainWindow : public KXmlGuiWindow
   private slots:
 	void activeDocumentChanged(int index);
 	void activeModelChanged(const std::string &name);
+	void modelChanged(ldraw::model *m);
 	void submodelViewDoubleClicked(const QModelIndex &index);
 	void selectionChanged(const QSet<int> &cset);
 	void gridModeChanged(QAction *action);
 	void modelModified();
 	void clipboardChanged();
+
+	void notImplemented();
 
   private:
 	void closeEvent(QCloseEvent *event);
@@ -179,6 +183,7 @@ class MainWindow : public KXmlGuiWindow
 	// Render menu
 	KAction *actionRender_;
 	KAction *actionRenderSteps_;
+	KAction *actionRenderSetup_;
 
 	// Setting menu
 	KAction *actionConfigure_;

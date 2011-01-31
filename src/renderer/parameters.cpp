@@ -4,8 +4,6 @@
  *                                                                                   *
  * Author: (c)2006-2010 Park "segfault" J. K. <mastermind_at_planetmono_dot_org>     */
 
-#include <stdio.h>
-
 #include "parameters.h"
 
 namespace ldraw_renderer

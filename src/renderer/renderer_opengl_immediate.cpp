@@ -10,8 +10,6 @@
 #include <cmath>
 #include <string>
 
-#include <stdio.h>
-
 #include <libldr/color.h>
 #include <libldr/elements.h>
 #include <libldr/math.h>

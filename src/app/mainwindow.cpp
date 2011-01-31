@@ -30,6 +30,8 @@
 #include <kurl.h>
 #include <kio/netaccess.h>
 
+#include <libldr/utils.h>
+
 #include "configdialog.h"
 #include "contentsmodel.h"
 #include "contentsview.h"
@@ -50,6 +52,8 @@
 
 namespace Konstruktor
 {
+
+#define EXIT_IF_NO_DOCUMENT if (!activeDocument_) return
 
 MainWindow::MainWindow(QWidget *parent)
 	: KXmlGuiWindow(parent)
@@ -74,7 +78,9 @@ MainWindow::MainWindow(QWidget *parent)
 	for (int i = 0; i < args->count(); ++i)
 		openFile(KUrl(args->arg(i)));
 
-	statusBar()->showMessage(i18n("Ready..."));
+	activate(false);
+	
+	setStatusMessage(i18n("Ready..."));
 }
 
 MainWindow::~MainWindow()
@@ -108,8 +114,7 @@ void MainWindow::modelModified(const QSet<int> &)
 
 void MainWindow::clipboardChanged()
 {
-	if (!activeDocument_)
-		return;
+	EXIT_IF_NO_DOCUMENT;
 
 	const QMimeData *mimeData = kapp->clipboard()->mimeData(QClipboard::Clipboard);
 
@@ -150,7 +155,12 @@ void MainWindow::activate(bool b)
 		(*it)->setEnabled(b);
 
 	actionRender_->setEnabled(Application::self()->hasPovRay());
-	actionRenderSteps_->setEnabled(Application::self()->hasPovRay());
+	//actionRenderSteps_->setEnabled(Application::self()->hasPovRay());
+}
+
+void MainWindow::setStatusMessage(const QString &msg)
+{
+	statusBar()->showMessage(msg);
 }
 
 void MainWindow::newFile()
@@ -178,7 +188,7 @@ void MainWindow::newFile()
 		
 		++newcnt_;
 
-		statusBar()->showMessage(i18n("New document created."));
+		setStatusMessage(i18n("New document created."));
 	}
 	
 	dialog->close();
@@ -258,13 +268,12 @@ void MainWindow::openFile(const KUrl &url)
 		KMessageBox::error(this, i18n("Could not open a file: %1", e.details().c_str()));
 	}
 
-	statusBar()->showMessage(i18n("Document '%1' opened.", aurl.fileName()));
+	setStatusMessage(i18n("Document '%1' opened.", aurl.fileName()));
 }
 
 void MainWindow::closeFile()
 {
-	if (!activeDocument_)
-		return;
+	EXIT_IF_NO_DOCUMENT;
 
 	if (activeDocument_->canSave()) {
 		switch (KMessageBox::warningYesNoCancel(this, i18n("The document \"%1\" has been modified. Do you want to save it?", activeDocument_->location().fileName()), QString(), KStandardGuiItem::save(), KStandardGuiItem::discard())) {
@@ -293,8 +302,7 @@ void MainWindow::closeFile()
 
 void MainWindow::saveFile()
 {
-	if (!activeDocument_)
-		return;
+	EXIT_IF_NO_DOCUMENT;
 	
 	doSave(activeDocument_, false);
 }
@@ -323,18 +331,40 @@ void MainWindow::newSubmodel()
 			submodelList_->reset();
 		}
 	}
+
+	modelModified();
 	
 	delete dialog;
 }
 
 void MainWindow::deleteSubmodel()
 {
+	EXIT_IF_NO_DOCUMENT;
+
+	if (activeDocument_->getActiveModel() == activeDocument_->contents()->main_model())
+		return;
+
+	if (ldraw::utils::affected_models(activeDocument_->contents(), activeDocument_->getActiveModel()).size() > 0) {
+		KMessageBox::error(this, i18n("This submodel is included in somewhere else."));
+		return;
+	}
+
+	if (KMessageBox::questionYesNo(this, i18n("This operation cannot be undone. Would you like to proceed?")) == KMessageBox::No)
+		return;
+
+	ldraw::model *d = activeDocument_->getActiveModel();
 	
+	activeModelChanged("");
+	
+	activeDocument_->deleteSubmodel(d);
+	activeDocument_->model()->resetItems();
+
+	modelModified();
 }
 
 void MainWindow::modelProperties()
 {
-
+	notImplemented();
 }
 
 void MainWindow::quit()
@@ -386,8 +416,11 @@ void MainWindow::render()
 
 void MainWindow::showConfigDialog()
 {
+	notImplemented();
+	/*
 	ConfigDialog dialog(this);
 	dialog.exec();
+	*/
 }
 
 
@@ -463,6 +496,16 @@ void MainWindow::activeModelChanged(const std::string &name)
 
 	emit activeModelChanged(activeDocument_->getActiveModel());
 	emit viewChanged();
+}
+
+void MainWindow::modelChanged(ldraw::model *m)
+{
+	EXIT_IF_NO_DOCUMENT;
+	
+	if (m == activeDocument_->contents()->main_model())
+		actionDeleteSubmodel_->setEnabled(false);
+	else
+		actionDeleteSubmodel_->setEnabled(true);
 }
 
 void MainWindow::submodelViewDoubleClicked(const QModelIndex &index)
@@ -675,62 +718,62 @@ void MainWindow::initActions()
 	connect(actionDelete_, SIGNAL(triggered()), editorGroup_, SLOT(deleteSelected()));
 
 	actionMoveByXPositive_ = ac->addAction("move_by_x_positive");
-	actionMoveByXPositive_->setText(i18n("Move by X Positively"));
+	actionMoveByXPositive_->setText(i18n("Move -X"));
 	actionMoveByXPositive_->setShortcut(KShortcut("Right"));
 	connect(actionMoveByXPositive_, SIGNAL(triggered()), editorGroup_, SLOT(moveByXPositive()));
 
 	actionMoveByXNegative_ = ac->addAction("move_by_x_negative");
-	actionMoveByXNegative_->setText(i18n("Move by X Negatively"));
+	actionMoveByXNegative_->setText(i18n("Move +X"));
 	actionMoveByXNegative_->setShortcut(KShortcut("Left"));
 	connect(actionMoveByXNegative_, SIGNAL(triggered()), editorGroup_, SLOT(moveByXNegative()));
 
 	actionMoveByYPositive_ = ac->addAction("move_by_y_positive");
-	actionMoveByYPositive_->setText(i18n("Move by Y Positively"));
+	actionMoveByYPositive_->setText(i18n("Move -Y"));
 	actionMoveByYPositive_->setShortcut(KShortcut("Shift+Down"));
 	connect(actionMoveByYPositive_, SIGNAL(triggered()), editorGroup_, SLOT(moveByYPositive()));
 
 	actionMoveByYNegative_ = ac->addAction("move_by_y_negative");
-	actionMoveByYNegative_->setText(i18n("Move by Y Negatively"));
+	actionMoveByYNegative_->setText(i18n("Move +Y"));
 	actionMoveByYNegative_->setShortcut(KShortcut("Shift+Up"));
 	connect(actionMoveByYNegative_, SIGNAL(triggered()), editorGroup_, SLOT(moveByYNegative()));
 
 	actionMoveByZPositive_ = ac->addAction("move_by_z_positive");
-	actionMoveByZPositive_->setText(i18n("Move by Z Positively"));
+	actionMoveByZPositive_->setText(i18n("Move +Z"));
 	actionMoveByZPositive_->setShortcut(KShortcut("Up"));
 	connect(actionMoveByZPositive_, SIGNAL(triggered()), editorGroup_, SLOT(moveByZPositive()));
 
 	actionMoveByZNegative_ = ac->addAction("move_by_z_negative");
-	actionMoveByZNegative_->setText(i18n("Move by Z Negatively"));
+	actionMoveByZNegative_->setText(i18n("Move -Z"));
 	actionMoveByZNegative_->setShortcut(KShortcut("Down"));
 	connect(actionMoveByZNegative_, SIGNAL(triggered()), editorGroup_, SLOT(moveByZNegative()));
 
 	actionRotateByXClockwise_ = ac->addAction("rotate_x_cw");
-	actionRotateByXClockwise_->setText(i18n("X+"));
+	actionRotateByXClockwise_->setText(i18n("Rotate +X"));
 	actionRotateByXClockwise_->setShortcut(KShortcut("Ctrl+Right"));
 	connect(actionRotateByXClockwise_, SIGNAL(triggered()), editorGroup_, SLOT(rotateByXClockwise()));
 
 	actionRotateByXCounterClockwise_ = ac->addAction("rotate_x_ccw");
-	actionRotateByXCounterClockwise_->setText(i18n("X-"));
+	actionRotateByXCounterClockwise_->setText(i18n("Rotate -X"));
 	actionRotateByXCounterClockwise_->setShortcut(KShortcut("Ctrl+Left"));
 	connect(actionRotateByXCounterClockwise_, SIGNAL(triggered()), editorGroup_, SLOT(rotateByXCounterClockwise()));
 
 	actionRotateByYClockwise_ = ac->addAction("rotate_y_cw");
-	actionRotateByYClockwise_->setText(i18n("Y+"));
+	actionRotateByYClockwise_->setText(i18n("Rotate +Y"));
 	actionRotateByYClockwise_->setShortcut(KShortcut("Ctrl+Shift+Down"));
 	connect(actionRotateByYClockwise_, SIGNAL(triggered()), editorGroup_, SLOT(rotateByYClockwise()));
 
 	actionRotateByYCounterClockwise_ = ac->addAction("rotate_y_ccw");
-	actionRotateByYCounterClockwise_->setText(i18n("Y-"));
+	actionRotateByYCounterClockwise_->setText(i18n("Rotate -Y"));
 	actionRotateByYCounterClockwise_->setShortcut(KShortcut("Ctrl+Shift+up"));
 	connect(actionRotateByYCounterClockwise_, SIGNAL(triggered()), editorGroup_, SLOT(rotateByYCounterClockwise()));
 
 	actionRotateByZClockwise_ = ac->addAction("rotate_z_cw");
-	actionRotateByZClockwise_->setText(i18n("Z+"));
+	actionRotateByZClockwise_->setText(i18n("Rotate +Z"));
 	actionRotateByZClockwise_->setShortcut(KShortcut("Ctrl+Up"));
 	connect(actionRotateByZClockwise_, SIGNAL(triggered()), editorGroup_, SLOT(rotateByZClockwise()));
 
 	actionRotateByZCounterClockwise_ = ac->addAction("rotate_z_ccw");
-	actionRotateByZCounterClockwise_->setText(i18n("Z-"));
+	actionRotateByZCounterClockwise_->setText(i18n("Rotate -Z"));
 	actionRotateByZCounterClockwise_->setShortcut(KShortcut("Ctrl+Down"));
 	connect(actionRotateByZCounterClockwise_, SIGNAL(triggered()), editorGroup_, SLOT(rotateByZCounterClockwise()));
 	
@@ -768,10 +811,15 @@ void MainWindow::initActions()
 	actionRender_->setIcon(KIcon("view-preview"));
 	connect(actionRender_, SIGNAL(triggered()), this, SLOT(render()));
 
-	actionRenderSteps_ = ac->addAction("render_steps");
+	/*actionRenderSteps_ = ac->addAction("render_steps");
 	actionRenderSteps_->setText(i18n("Render by &Steps..."));
 	actionRenderSteps_->setShortcut(KShortcut("Ctrl+Shift+F11"));
-	actionRenderSteps_->setIcon(KIcon("view-preview"));
+	actionRenderSteps_->setIcon(KIcon("view-preview"));*/
+
+	actionRenderSetup_ = ac->addAction("render_setup");
+	actionRenderSetup_->setText(i18n("&Configure Renderer..."));
+	actionRenderSetup_->setIcon(KIcon("configure"));
+	connect(actionRenderSetup_, SIGNAL(triggered()), this, SLOT(notImplemented()));
 
 	// Settings
 	ac->addAction(KStandardAction::Preferences, this, SLOT(showConfigDialog()));
@@ -784,6 +832,7 @@ void MainWindow::initActions()
 	stateChangeableActions_.append(actionNewSubmodel_);
 	stateChangeableActions_.append(actionDeleteSubmodel_);
 	stateChangeableActions_.append(actionModelProperties_);
+	stateChangeableActions_.append(actionUnhideAll_);
 
 	selectionDependentActions_.append(actionCut_);
 	selectionDependentActions_.append(actionCopy_);
@@ -813,6 +862,7 @@ void MainWindow::initConnections()
 	connect(this, SIGNAL(activeModelChanged(ldraw::model *)), contentList_, SLOT(modelChanged(ldraw::model *)));
 	connect(this, SIGNAL(activeModelChanged(ldraw::model *)), editorGroup_, SLOT(modelChanged(ldraw::model *)));
 	connect(this, SIGNAL(activeModelChanged(ldraw::model *)), submodelList_, SLOT(modelChanged(ldraw::model *)));
+	connect(this, SIGNAL(activeModelChanged(ldraw::model *)), this, SLOT(modelChanged(ldraw::model *)));
 	connect(this, SIGNAL(viewChanged()), SLOT(updateViewports()));
 	connect(submodelList_, SIGNAL(doubleClicked(const QModelIndex &)), this, SLOT(submodelViewDoubleClicked(const QModelIndex &)));
 	connect(contentList_, SIGNAL(selectionChanged(const QSet<int> &)), this, SLOT(selectionChanged(const QSet<int> &)));
@@ -961,9 +1011,14 @@ bool MainWindow::doSave(Document *document, bool newname)
 
 	fwriter.close();
 
-	statusBar()->showMessage(i18n("Document '%1' saved.", url.fileName()));
+	setStatusMessage(i18n("Document '%1' saved.", url.fileName()));
 
 	return true;
+}
+
+void MainWindow::notImplemented()
+{
+	KMessageBox::sorry(this, i18n("Not implemented yet."));
 }
 
 }

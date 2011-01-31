@@ -7,8 +7,6 @@
 #include <libldr/elements.h>
 #include <libldr/model.h>
 
-#include <stdio.h>
-
 #include "normal_extension.h"
 
 namespace ldraw_renderer

@@ -138,7 +138,7 @@ void model::clear()
 bool model_multipart::contains(const model *m) const
 {
 	std::string lowercase = utils::translate_string(m->name());
-	
+
 	if (m_submodel_list.find(lowercase) == m_submodel_list.end())
 		if (m_external_model_list.find(lowercase) == m_external_model_list.end())
 			return false;
@@ -225,14 +225,24 @@ bool model_multipart::remove_submodel(const std::string &name)
 {
 	std::string lowercase = utils::translate_string(name);
 	std::map<std::string, model*>::iterator it = m_submodel_list.find(lowercase);
-	
-	if(it == m_submodel_list.end())
+
+	if (it == m_submodel_list.end())
+		return false;
+
+	model *m = (*it).second;
+
+	if (utils::affected_models(this, m).size() > 0)
 		return false;
 	
-	delete (*it).second;
+	delete m;
 	m_submodel_list.erase(it);
 	
 	return true;
+}
+
+bool model_multipart::remove_submodel(ldraw::model *m)
+{
+	return remove_submodel(m->name());
 }
 
 bool model_multipart::rename_submodel(const std::string &name, const std::string &newname)

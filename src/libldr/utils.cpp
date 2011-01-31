@@ -4,8 +4,6 @@
  *                                                                                   *
  * Author: (c)2006-2008 Park "segfault" J. K. <mastermind_at_planetmono_dot_org>     */
 
-#include <stdio.h>
-
 #include <algorithm>
 #include <cctype>
 #include <cmath>

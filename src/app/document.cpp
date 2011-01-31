@@ -159,6 +159,11 @@ ldraw::model* Document::newSubmodel(const std::string &name, const std::string &
 	return m;
 }
 
+void Document::deleteSubmodel(ldraw::model *model)
+{
+	modelBase_->remove_submodel(model);
+}
+
 void Document::updatePixmap()
 {
 	modelBase_->main_model()->update_custom_data<PixmapExtension>(renderer_);

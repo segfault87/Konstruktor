@@ -186,6 +186,7 @@ class LIBLDR_EXPORT model_multipart
 	bool insert_submodel(model *m);
 	bool insert_submodel(model *m, const std::string &key);
 	bool remove_submodel(const std::string &name);
+	bool remove_submodel(model *m);
 	bool rename_submodel(const std::string &name, const std::string &newname);
 	
 	void clear();

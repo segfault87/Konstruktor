@@ -37,7 +37,7 @@
       <Action name="render" />
       <Action name="render_steps" />
       <Separator />
-      <Action name="render_settings" />
+      <Action name="render_setup" />
     </Menu>
   </MenuBar>
   

@@ -4,8 +4,6 @@
  *                                                                                   *
  * Author: (c)2006-2008 Park "segfault" J. K. <mastermind_at_planetmono_dot_org>     */
 
-#include <stdio.h>
-
 #define GL_GLEXT_PROTOTYPES
 #include <GL/gl.h>
 #include <GL/glu.h>
@@ -419,6 +417,7 @@ selection_list renderer_opengl_retained::select(float *projection_matrix, float 
 	return result;
 }
 
+#if 0
 void printInfo(GLenum e)
 {
 	int infologLength = 0;
@@ -436,6 +435,7 @@ void printInfo(GLenum e)
         delete infoLog;
     }
 }
+#endif
 
 void renderer_opengl_retained::init_shader()
 {
@@ -453,8 +453,10 @@ void renderer_opengl_retained::init_shader()
 		shader->glAttachShader(m_vs_color_program, m_vs_color_shader);
 		shader->glLinkProgram(m_vs_color_program);
 
+#if 0
 		printInfo(m_vs_color_shader);
 		printInfo(m_vs_color_program);
+#endif
 
 		m_vs_color_location_rgba = shader->glGetUniformLocation(m_vs_color_program, "rgba");
 		m_vs_color_location_complement = shader->glGetUniformLocation(m_vs_color_program, "complement");
