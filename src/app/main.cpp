@@ -15,7 +15,7 @@ int main(int argc, char *argv[])
 {
 	KAboutData about(
 		"konstruktor", 0, ki18nc("@title", "Konstruktor"), version, ki18nc("@title", description),
-		KAboutData::License_GPL_V3, ki18nc("@info:credit", "(c) 2008, Park \"segfault\" Joon-Kyu")
+		KAboutData::License_GPL_V3, ki18nc("@info:credit", "(c) 2011, Park \"segfault\" Joon-Kyu")
 	);
 	about.addAuthor(ki18nc("@info:credit", "Park \"segfault\" Joon-Kyu"), ki18nc("@info:credit", "Main developer"),
 					"mastermind@planetmono.org", "http://planetmono.org");
