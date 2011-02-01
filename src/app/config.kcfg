@@ -173,7 +173,7 @@
 	<choice name="Square" />
 	<choice name="Line" />
       </choices>
-      <default>Square</default>
+      <default>Normal</default>
     </entry>
     <entry name="HighlightColor" type="Color">
       <label>Bounding box color for selected object(s)</label>
