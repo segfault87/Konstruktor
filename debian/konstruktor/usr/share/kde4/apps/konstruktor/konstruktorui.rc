@@ -1,0 +1,69 @@
+<!DOCTYPE kpartgui SYSTEM "kpartgui.dtd">
+<kpartgui name="konstruktor" version="1">
+  <MenuBar>
+    <Menu name="edit">
+      <text>&amp;Edit</text>
+      <Action name="undo" />
+      <Action name="redo" />
+      <Separator />
+      <Action name="delete" />
+      <Separator />
+      <Action name="select_all" />
+      <Action name="select_none" />
+      <Action name="hide" />
+      <Action name="unhide_all" />
+    </Menu>
+    
+    <Menu name="model">
+      <text>&amp;Model</text>
+      <Action name="submodel_new" />
+      <Action name="submodel_delete" />
+      <Action name="model_properties" />
+    </Menu>
+    
+    <Menu name="view">
+      <text>&amp;View</text>
+      <Action name="move_to_first" />
+      <Action name="move_backward" />
+      <Action name="move_forward" />
+      <Action name="move_to_last" />
+      <Separator />
+      <Action name="reset_zoom" />
+      <Action name="reset_3d_view" />
+    </Menu>
+    
+    <Menu name="render">
+      <text>&amp;Render</text>
+      <Action name="render" />
+      <Action name="render_steps" />
+      <Separator />
+      <Action name="render_setup" />
+    </Menu>
+  </MenuBar>
+  
+  <ToolBar name="editBar">
+    <text>Edit</text>
+    <Action name="select_color" />
+    <Separator />
+    <Action name="grid_sparse" group="grid" />
+    <Action name="grid_normal" group="grid" />
+    <Action name="grid_dense" group="grid" />
+    <Action name="grid_none" group="grid" />
+    <Separator />
+    <Action name="rotate_x_ccw" />
+    <Action name="rotate_x_cw" />
+    <Action name="rotate_y_ccw" />
+    <Action name="rotate_y_cw" />
+    <Action name="rotate_z_ccw" />
+    <Action name="rotate_z_cw" />
+    <Separator />
+    <Action name="delete" />
+  </ToolBar>
+  
+  <ToolBar name="viewBar">
+    <text>View</text>
+    <Action name="reset_zoom" />
+    <Action name="reset_3d_view" />
+  </ToolBar>
+  
+</kpartgui>

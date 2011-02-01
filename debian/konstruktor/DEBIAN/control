@@ -1,0 +1,13 @@
+Package: konstruktor
+Version: 0.9-beta1-1
+Architecture: amd64
+Maintainer: Park Joon-Kyu <mastermind@planetmono.org>
+Installed-Size: 1296
+Depends: kdebase-runtime, libc6 (>= 2.4), libgcc1 (>= 1:4.1.1), libglu1-mesa | libglu1, libkdecore5 (>= 4:4.3.4), libkdeui5 (>= 4:4.3.4), libkio5 (>= 4:4.3.4), libqt4-opengl (>= 4:4.5.3), libqtcore4 (>= 4:4.7.0~beta1), libqtgui4 (>= 4:4.5.3), libsqlite3-0 (>= 3.7.3), libstdc++6 (>= 4.5), nvidia-current, kdelibs5, oxygen-icon-theme
+Suggests: povray
+Section: graphics
+Priority: extra
+Homepage: http://konstruktor.influx.kr
+Description: A Virtual LEGO(r) modeling tool based on LDraw.
+ Konstruktor is a virtual LEGO(r) CAD for Linux, Windows and Mac OS X.
+ For more information, visit the homepage.

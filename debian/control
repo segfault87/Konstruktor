@@ -1,0 +1,19 @@
+
+Source: konstruktor
+Section: graphics
+Priority: extra
+Maintainer: Park Joon-Kyu <mastermind@planetmono.org>
+Build-Depends: debhelper (>= 7.0.50~), cmake, kdelibs5-dev, libqt4-dev,
+  libqt4-opengl-dev
+Standards-Version: 3.9.1
+Homepage: http://konstruktor.influx.kr
+Vcs-Git: git://github.com/segfault87/Konstruktor.git
+Vcs-Browser: http://github.com/segfault87/Konstruktor
+
+Package: konstruktor
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, kdelibs5, oxygen-icon-theme
+Suggests: povray
+Description: A Virtual LEGO(r) modeling tool based on LDraw.
+ Konstruktor is a virtual LEGO(r) CAD for Linux, Windows and Mac OS X.
+ For more information, visit the homepage.
