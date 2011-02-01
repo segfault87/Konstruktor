@@ -28,13 +28,14 @@ PartsWidget::PartsWidget(QWidget *parent)
 	
 	ui_ = new Ui::PartsWidget;
 	ui_->setupUi(this);
-	
-	model_ = new PartsModel(categories_, categorymap_, list_, this);
-	sortModel_ = new QSortFilterProxyModel(model_);
-	sortModel_->setSourceModel(model_);
 
-	initialize(search_, hideUnofficial_);
+	model_ = new PartsModel(categories_, categorymap_, list_, this);
+	sortModel_ = new QSortFilterProxyModel(this);
 	
+	initialize();
+	resetItems(search_, hideUnofficial_);
+
+	sortModel_->setSourceModel(model_);
 	ui_->partView->setModel(sortModel_);
 	ui_->partView->setSortingEnabled(true);
 	ui_->partView->sortByColumn(0, Qt::AscendingOrder);
@@ -51,7 +52,7 @@ PartsWidget::~PartsWidget()
 	delete ui_;
 }
 
-void PartsWidget::initialize(const QString &search, bool hideUnofficial)
+void PartsWidget::resetItems(const QString &search, bool hideUnofficial)
 {
 	/* FIXME optimize */
 	
@@ -62,22 +63,13 @@ void PartsWidget::initialize(const QString &search, bool hideUnofficial)
 	if (!search.isEmpty())
 		subq2 = QString("(id IN (SELECT partid AS id FROM part_keywords WHERE keyword LIKE '%%1%') OR p.desc LIKE '%%1%' OR p.partid LIKE '%%1%') AND").arg(search);
 	
-	categories_.clear();
-	categorymap_.clear();
 	list_.clear();
-	
+	catidmap_.clear();
+
+	categories_ = allCategories_;
+
 	DBManager *db = Application::self()->database();
-
-	QStringList cats = db->query("SELECT category, id, visibility FROM categories WHERE visibility < 2 ORDER BY category ASC");
-	int i = 0;
-	for (QStringList::Iterator it = cats.begin(); it != cats.end(); ++it, ++i) {
-		QString name = *it++;
-		int id = (*it++).toInt();
-		int visibility = (*it).toInt();
-		categories_.append(PartCategory(name, id, visibility, i));
-		categorymap_[id] = &categories_[i];
-	}
-
+	
 	QString query = QString("SELECT p.desc, p.filename, p.minx, p.miny, p.minz, p.maxx, p.maxy, p.maxz, pc.catid FROM parts AS p, part_categories AS pc WHERE %1 %2 pc.partid = p.id ORDER BY p.desc ASC").arg(subq1, subq2);
 
 	QStringList parts = db->query(query);
@@ -105,6 +97,11 @@ void PartsWidget::initialize(const QString &search, bool hideUnofficial)
 			categories_.removeAt(i);
 	}
 
+	int j = 0;
+	for (int i = 0; i < categories_.size(); ++i) {
+		catidmap_[categories_[i].index()] = j++;
+	}
+
 	model_->reset();
 }
 
@@ -115,7 +112,7 @@ void PartsWidget::hideUnofficial(int checkState)
 	else
 		hideUnofficial_ = false;
 	
-	initialize(search_, hideUnofficial_);
+	resetItems(search_, hideUnofficial_);
 }
 
 void PartsWidget::selectionChanged(const QModelIndex &current, const QModelIndex &)
@@ -127,7 +124,7 @@ void PartsWidget::selectionChanged(const QModelIndex &current, const QModelIndex
 
 	int cat;
 	if (index.parent().isValid())
-		cat = index.parent().row();
+		cat = catidmap_[index.parent().row()];
 	else
 		cat = index.row();
 
@@ -159,7 +156,7 @@ void PartsWidget::selectionChanged(const QModelIndex &current, const QModelIndex
 
 void PartsWidget::searchTextChanged(const QString &ref)
 {
-	Q_UNUSED(ref);
+	search_ = ref;
 	
 	if (searchDelay_->isActive())
 		searchDelay_->stop();
@@ -169,14 +166,30 @@ void PartsWidget::searchTextChanged(const QString &ref)
 
 void PartsWidget::search()
 {
-	initialize(ui_->searchEdit->text(), hideUnofficial_);
+	resetItems(ui_->searchEdit->text(), hideUnofficial_);
 }
 
 void PartsWidget::iconSelected(QListWidgetItem *item)
 {
+	Q_UNUSED(item);
 	/*ui_->partView->selectionModel()->select(
 		sortModel_->mapToSource(model_->index(ui_->iconView->row(item), 0, model_->index(lastCat_, 0)),
 		QItemSelectionModel::SelectCurrent);*/
+}
+
+void PartsWidget::initialize()
+{
+	DBManager *db = Application::self()->database();
+
+	QStringList cats = db->query("SELECT category, id, visibility FROM categories WHERE visibility < 2 ORDER BY category ASC");
+	int i = 0;
+	for (QStringList::Iterator it = cats.begin(); it != cats.end(); ++it, ++i) {
+		QString name = *it++;
+		int id = (*it++).toInt();
+		int visibility = (*it).toInt();
+		allCategories_.append(PartCategory(name, id, visibility, i));
+		categorymap_[id] = &allCategories_[i];
+	}
 }
 
 }

@@ -31,7 +31,7 @@ class PartsWidget : public QWidget
 	virtual ~PartsWidget();
 
   public slots:
-	void initialize(const QString &search = QString(), bool hideUnofficial = false);
+	void resetItems(const QString &search = QString(), bool hideUnofficial = false);
 	void hideUnofficial(int checkState);
 
   private slots:
@@ -39,6 +39,9 @@ class PartsWidget : public QWidget
 	void searchTextChanged(const QString &ref);
 	void search();
 	void iconSelected(QListWidgetItem *item);
+
+  private:
+	void initialize();
 
   private:
 	Ui::PartsWidget *ui_;
@@ -49,6 +52,8 @@ class PartsWidget : public QWidget
 	bool hideUnofficial_;
 	
 	QList<PartCategory> categories_;
+	QList<PartCategory> allCategories_;
+	QMap<int, int> catidmap_;
 	QMap<int, PartCategory *> categorymap_;
 	QMap<int, QList<PartItem> > list_;
 
