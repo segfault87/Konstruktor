@@ -9,12 +9,13 @@
 
 #include <kaction.h>
 
+#include <libldr/color.h>
+#include <libldr/math.h>
+
 #include "commandbase.h"
 
 namespace ldraw
 {
-    class color;
-    class matrix;
     class model;
 }
 

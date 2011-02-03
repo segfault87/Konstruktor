@@ -8,6 +8,11 @@
 
 class QContextMenuEvent;
 
+namespace ldraw
+{
+	class model;
+}
+
 namespace Konstruktor
 {
 
