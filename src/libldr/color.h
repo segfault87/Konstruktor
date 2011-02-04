@@ -43,8 +43,9 @@ struct material_traits_glitter
 	int size;
 };
 
-struct color_entity
+class color_entity
 {
+public:
 	material_type material;
 	unsigned char rgba[4]; // RGBA Array
 	unsigned char complement[4]; // RGBA Array

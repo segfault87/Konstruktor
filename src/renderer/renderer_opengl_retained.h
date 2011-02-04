@@ -18,7 +18,7 @@ class parameters;
 
 /* OpenGL retained rendering path */
 
-class LIBLDR_EXPORT renderer_opengl_retained : public renderer_opengl
+class LIBLDRAWRENDERER_EXPORT renderer_opengl_retained : public renderer_opengl
 {
   public:
 	~renderer_opengl_retained();

@@ -28,7 +28,7 @@ class parameters;
 
 typedef std::list<std::pair<int, unsigned int> > selection_list;
 
-class LIBLDR_EXPORT render_filter
+class LIBLDRAWRENDERER_EXPORT render_filter
 {
   public:
 	virtual ~render_filter() {}
@@ -36,7 +36,7 @@ class LIBLDR_EXPORT render_filter
 	virtual bool query(const ldraw::model *m, int index, int depth) const = 0;
 };	
 
-class LIBLDR_EXPORT renderer
+class LIBLDRAWRENDERER_EXPORT renderer
 {
   public:
 	enum selection { selection_points, selection_bounding_boxes, selection_model_full };

@@ -12,7 +12,7 @@
 namespace ldraw_renderer
 {
 
-class LIBLDR_EXPORT opengl_extension
+class LIBLDRAWRENDERER_EXPORT opengl_extension
 {
   public:
 	typedef void (*func_ptr)();

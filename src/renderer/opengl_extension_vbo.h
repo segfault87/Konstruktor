@@ -7,6 +7,10 @@
 #ifndef _RENDERER_OPENGL_EXTENSION_VBO_H_
 #define _RENDERER_OPENGL_EXTENSION_VBO_H_
 
+#if defined(WIN32)
+#include <windows.h>
+#endif
+
 #include <GL/gl.h>
 
 #include <libldr/common.h>
@@ -16,7 +20,7 @@
 namespace ldraw_renderer
 {
 
-class LIBLDR_EXPORT opengl_extension_vbo : public opengl_extension
+class LIBLDRAWRENDERER_EXPORT opengl_extension_vbo : public opengl_extension
 {
   public:
 	static opengl_extension_vbo* self();

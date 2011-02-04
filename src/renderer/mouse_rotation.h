@@ -12,7 +12,7 @@
 namespace ldraw_renderer
 {
 
-class LIBLDR_EXPORT mouse_rotation
+class LIBLDRAWRENDERER_EXPORT mouse_rotation
 {
   public:
 	static const ldraw::matrix isometric_projection_matrix;

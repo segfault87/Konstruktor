@@ -27,6 +27,7 @@ set(libldrawrenderer_HEADERS
 	renderer_opengl_retained.h
 	vbuffer_extension.h
 )
+add_definitions(-DMAKE_LIBLDRAWRENDERER_LIB)
 
 add_library(libldrawrenderer SHARED ${libldrawrenderer_SOURCES})
 target_link_libraries(libldrawrenderer libldr ${OPENGL_gl_LIBRARY} ${OPENGL_glu_LIBRARY})

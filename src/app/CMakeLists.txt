@@ -58,8 +58,8 @@ kde4_add_ui_files(konstruktor_SRCS
 )
 
 kde4_add_executable(konstruktor ${konstruktor_SRCS})
-target_link_libraries(konstruktor libldrawrenderer ${SQLITE_LIBRARIES} ${KDE4_KDECORE_LIBS}
-${KDE4_KIO_LIBS} ${KDE4_KDEUI_LIBS} ${QT_QTCORE_LIBRARY} ${QT_QTGUI_LIBRARY} ${QT_QTOPENGL_LIBRARY})
+target_link_libraries(konstruktor libldr libldrawrenderer ${SQLITE_LIBRARIES} ${KDE4_KDECORE_LIBS}
+${KDE4_KIO_LIBS} ${KDE4_KDEUI_LIBS} ${QT_QTCORE_LIBRARY} ${QT_QTGUI_LIBRARY} ${QT_QTOPENGL_LIBRARY} )
 
 # Konstruktor DB Updater
 
@@ -75,7 +75,7 @@ kde4_add_kcfg_files(konstruktor_db_updater_SRCS config.kcfgc)
 
 kde4_add_executable(konstruktor_db_updater ${konstruktor_db_updater_SRCS})
 set_target_properties(konstruktor_db_updater PROPERTIES COMPILE_FLAGS -DKONSTRUKTOR_DB_UPDATER)
-target_link_libraries(konstruktor_db_updater libldrawrenderer ${SQLITE_LIBRARIES} ${QT_QTCORE_LIBRARY} ${QT_QTGUI_LIBRARY} ${QT_QTOPENGL_LIBRARY} ${KDE4_KDECORE_LIBRARY} ${KDE4_KDEUI_LIBRARY})
+target_link_libraries(konstruktor_db_updater libldr libldrawrenderer ${SQLITE_LIBRARIES} ${QT_QTCORE_LIBRARY} ${QT_QTGUI_LIBRARY} ${QT_QTOPENGL_LIBRARY} ${KDE4_KDECORE_LIBRARY} ${KDE4_KDEUI_LIBRARY})
 
 # install
 install(TARGETS konstruktor konstruktor_db_updater DESTINATION ${INSTALL_TARGETS_DEFAULT_ARGS})
