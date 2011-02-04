@@ -29,13 +29,11 @@ namespace Konstruktor
 {
 
 // Creates an empty document
-Document::Document(const QString &name, const QString &desc, const QString &author, QGLWidget *glBase, QObject *parent)
+Document::Document(const QString &name, const QString &desc, const QString &author, QObject *parent)
 	: QObject(parent)
 {
 	activeUndoStack_ = 0L;
 	canSave_ = false;
-	
-	renderer_ = new PixmapRenderer(256, 256, glBase);
 	
 	modelBase_ = new ldraw::model_multipart;
 	modelBase_->main_model()->set_name(std::string(name.toLocal8Bit().data()));
@@ -54,14 +52,12 @@ Document::Document(const QString &name, const QString &desc, const QString &auth
 }
 
 // Load an existing model from a file
-Document::Document(const QString &path, const KUrl &url, QGLWidget *glBase, QObject *parent)
+Document::Document(const QString &path, const KUrl &url, QObject *parent)
 	: QObject(parent)
 {
 	activeUndoStack_ = 0L;
 	location_ = url;
 	canSave_ = false;
-	
-	renderer_ = new PixmapRenderer(256, 256, glBase);
 	
 	ldraw::reader r;
 	modelBase_ = r.load_from_file(path.toLocal8Bit().data());
@@ -90,8 +86,6 @@ Document::~Document()
 
 	if (modelBase_)
 		delete modelBase_;
-	
-	delete renderer_;
 }
 
 void Document::sendSignals()
@@ -150,7 +144,7 @@ ldraw::model* Document::newSubmodel(const std::string &name, const std::string &
 		return 0L;
 	
 	m->init_custom_data<ldraw::metrics>();
-	m->update_custom_data<PixmapExtension>(renderer_);
+	m->update_custom_data<PixmapExtension>(Application::self()->pixmapRenderer());
 	UndoStackExtension *ext = m->init_custom_data<UndoStackExtension>(this);
 	emit undoStackAdded(ext);
 
@@ -166,9 +160,11 @@ void Document::deleteSubmodel(ldraw::model *model)
 
 void Document::updatePixmap()
 {
-	modelBase_->main_model()->update_custom_data<PixmapExtension>(renderer_);
+	PixmapRenderer *pr = Application::self()->pixmapRenderer();
+	
+	modelBase_->main_model()->update_custom_data<PixmapExtension>(pr);
 	for (ldraw::model_multipart::submodel_iterator it = contents()->submodel_list().begin(); it != contents()->submodel_list().end(); ++it)
-		(*it).second->update_custom_data<PixmapExtension>(renderer_);
+		(*it).second->update_custom_data<PixmapExtension>(pr);
 }
 
 bool Document::updatePixmap(ldraw::model *model)
@@ -176,7 +172,7 @@ bool Document::updatePixmap(ldraw::model *model)
 	if (!INCLUDED_IN_CURRENT_DOCUMENT(model))
 		return false;
 	
-	model->update_custom_data<PixmapExtension>(renderer_);
+	model->update_custom_data<PixmapExtension>(Application::self()->pixmapRenderer());
 
 	return true;
 }

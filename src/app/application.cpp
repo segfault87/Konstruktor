@@ -23,6 +23,7 @@
 #include "colormanager.h"
 #include "dbmanager.h"
 #include "mainwindow.h"
+#include "pixmaprenderer.h"
 
 #include "application.h"
 
@@ -34,6 +35,7 @@ Application* Application::instance_ = 0L;
 Application::Application(QObject *parent)
 	: QObject(parent)
 {
+	renderer_ = 0L;
 	instance_ = this;
 	
 	ldraw::color::init();
@@ -181,6 +183,12 @@ void Application::testPovRay(bool overrideconfig)
 			hasPovRay_ = false;
 		}
 	}			
+}
+
+void Application::initializeRenderer(QGLWidget *glBase)
+{
+	if (!renderer_)
+		renderer_ = new PixmapRenderer(256, 256, glBase);
 }
 
 void Application::configUpdated()

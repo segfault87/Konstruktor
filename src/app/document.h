@@ -21,7 +21,6 @@
 
 #include "viewport.h"
 
-class QGLWidget;
 class QUndoStack;
 
 namespace Konstruktor
@@ -29,7 +28,6 @@ namespace Konstruktor
 
 extern const ldraw::matrix isometricProjectionMatrix;
 
-class PixmapRenderer;
 class SubmodelModel;
 
 class Document : public QObject
@@ -37,8 +35,8 @@ class Document : public QObject
 	Q_OBJECT;
 	
   public:
-	Document(const QString &name, const QString &desc, const QString &author, QGLWidget *glBase, QObject *parent = 0L);
-	Document(const QString &path, const KUrl &url, QGLWidget *glBase, QObject *parent = 0L);
+	Document(const QString &name, const QString &desc, const QString &author, QObject *parent = 0L);
+	Document(const QString &path, const KUrl &url, QObject *parent = 0L);
 	~Document();
 
 	void sendSignals();
@@ -57,7 +55,6 @@ class Document : public QObject
 	void setSaveable(bool s);
 
 	SubmodelModel* model() { return model_; }
-	PixmapRenderer* renderer() { return renderer_; }
 	
 	// Manipulation
 	ldraw::model* newSubmodel(const std::string &name, const std::string &desc, const std::string &author);
@@ -97,7 +94,6 @@ class Document : public QObject
 	
 	bool canSave_;
 	
-	PixmapRenderer *renderer_;
 	SubmodelModel *model_;
 	
 	//friend class PixmapUpdater;

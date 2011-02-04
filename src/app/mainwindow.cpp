@@ -171,7 +171,7 @@ void MainWindow::newFile()
 
 	if (dialog->result() == QDialog::Accepted) {
 		QString filename = QString("unnamed%1.ldr").arg(newcnt_);
-		Document *document = new Document(filename, dialog->textDesc(), dialog->textAuthor(), renderWidget_[0]);
+		Document *document = new Document(filename, dialog->textDesc(), dialog->textAuthor());
 
 		// Initialize connection
 		connect(document, SIGNAL(undoStackAdded(QUndoStack *)), editorGroup_, SLOT(stackAdded(QUndoStack *)));
@@ -243,7 +243,7 @@ void MainWindow::openFile(const KUrl &url)
 			return;
 		}
 		
-		document = new Document(tmploc, aurl, renderWidget_[0]);
+		document = new Document(tmploc, aurl);
 
 		// Initialize connection
 		connect(document, SIGNAL(undoStackAdded(QUndoStack *)), editorGroup_, SLOT(stackAdded(QUndoStack *)));
@@ -612,6 +612,8 @@ void MainWindow::initGui()
 	renderWidget_[1] = new RenderWidget(this, &activeDocument_, RenderWidget::Left, new QGLContext(format), renderWidget_[0], srh1);
 	renderWidget_[2] = new RenderWidget(this, &activeDocument_, RenderWidget::Front, new QGLContext(format), renderWidget_[0], srh2);
 	renderWidget_[3] = new RenderWidget(this, &activeDocument_, RenderWidget::Free, new QGLContext(format), renderWidget_[0], srh2);
+
+	Application::self()->initializeRenderer(renderWidget_[0]);
 
 	tabbar_ = new KTabBar(sc);
 	tabbar_->setShape(QTabBar::RoundedSouth);

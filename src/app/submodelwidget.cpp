@@ -7,7 +7,7 @@
 #include <kaction.h>
 #include <klocale.h>
 
-#include "document.h"
+#include "application.h"
 #include "pixmapextension.h"
 #include "submodelmodel.h"
 
@@ -48,7 +48,7 @@ void SubmodelWidget::modelChanged(ldraw::model *m)
 		ldraw::model *m = sm->modelIndexOf(previous_).second;
 
 		if (m) {
-			std::list<ldraw::model *> affected = PixmapExtension::updateRelevant(m, sm->getDocument()->renderer());
+			std::list<ldraw::model *> affected = PixmapExtension::updateRelevant(m, Application::self()->pixmapRenderer());
 
 			for (std::list<ldraw::model *>::iterator it = affected.begin(); it != affected.end(); ++it) {
 				QModelIndex ii = sm->index(*it);
