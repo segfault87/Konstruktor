@@ -23,6 +23,11 @@ opengl_extension::opengl_extension(const char *name)
 {
 	const GLubyte *str = glGetString(GL_EXTENSIONS);
 
+	if (!str) {
+		m_supported = false;
+		return;
+	}
+
 	if (std::strstr((const char *)str, name) != NULL)
 		m_supported = true;
 	else
