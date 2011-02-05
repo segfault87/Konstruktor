@@ -11,6 +11,7 @@
 #include <QPair>
 #include <QVector>
 
+#include <kshortcut.h>
 #include <kxmlguiwindow.h>
 
 namespace ldraw 
@@ -18,13 +19,13 @@ namespace ldraw
 class model;
 }
 
+class QAction;
 class QCloseEvent;
 class QModelIndex;
 class QTreeView;
 
-class KAction;
+class KActionCollection;
 class KRecentFilesAction;
-class KSelectAction;
 class KTabBar;
 class KUrl;
 
@@ -93,6 +94,8 @@ class MainWindow : public KXmlGuiWindow
 
   private:
 	void closeEvent(QCloseEvent *event);
+
+	QAction* createAction(KActionCollection *ac, const char *actionName, const QString &name, QObject *receiver, const char *slot, const KShortcut &shortcut = KShortcut(), const QString &icon = QString());
 	
 	void initGui();
 	void initObjects();
@@ -133,60 +136,60 @@ class MainWindow : public KXmlGuiWindow
 	QList<QAction *> selectionDependentActions_;
 	
 	// File menu
-	KAction *actionNew_;
-	KAction *actionOpen_;
+	QAction *actionNew_;
+	QAction *actionOpen_;
 	KRecentFilesAction *actionOpenRecent_;
-	KAction *actionClose_;
-	KAction *actionSave_;
-	KAction *actionSaveAs_;
-	KAction *actionQuit_;
+	QAction *actionClose_;
+	QAction *actionSave_;
+	QAction *actionSaveAs_;
+	QAction *actionQuit_;
 
 	// Edit menu
-	KAction *actionCopy_;
-	KAction *actionCut_;
-	KAction *actionPaste_;
-	KAction *actionUndo_;
-	KAction *actionRedo_;
-	KAction *actionSelectAll_;
-	KAction *actionSelectNone_;
-	KAction *actionHide_;
-	KAction *actionUnhideAll_;
-	KAction *actionColor_;
-	KAction *actionGridSparse_;
-	KAction *actionGridNormal_;
-	KAction *actionGridDense_;
-	KAction *actionGridNone_;
-	KAction *actionDelete_;
-	KAction *actionMoveByXPositive_;
-	KAction *actionMoveByXNegative_;
-	KAction *actionMoveByYPositive_;
-	KAction *actionMoveByYNegative_;
-	KAction *actionMoveByZPositive_;
-	KAction *actionMoveByZNegative_;
-	KAction *actionRotateByXClockwise_;
-	KAction *actionRotateByXCounterClockwise_;
-	KAction *actionRotateByYClockwise_;
-	KAction *actionRotateByYCounterClockwise_;
-	KAction *actionRotateByZClockwise_;
-	KAction *actionRotateByZCounterClockwise_;
+	QAction *actionCopy_;
+	QAction *actionCut_;
+	QAction *actionPaste_;
+	QAction *actionUndo_;
+	QAction *actionRedo_;
+	QAction *actionSelectAll_;
+	QAction *actionSelectNone_;
+	QAction *actionHide_;
+	QAction *actionUnhideAll_;
+	QAction *actionColor_;
+	QAction *actionGridSparse_;
+	QAction *actionGridNormal_;
+	QAction *actionGridDense_;
+	QAction *actionGridNone_;
+	QAction *actionDelete_;
+	QAction *actionMoveByXPositive_;
+	QAction *actionMoveByXNegative_;
+	QAction *actionMoveByYPositive_;
+	QAction *actionMoveByYNegative_;
+	QAction *actionMoveByZPositive_;
+	QAction *actionMoveByZNegative_;
+	QAction *actionRotateByXClockwise_;
+	QAction *actionRotateByXCounterClockwise_;
+	QAction *actionRotateByYClockwise_;
+	QAction *actionRotateByYCounterClockwise_;
+	QAction *actionRotateByZClockwise_;
+	QAction *actionRotateByZCounterClockwise_;
 
 	// View menu
-	KAction *actionResetZoom_;
-	KAction *actionReset3dView_;
+	QAction *actionResetZoom_;
+	QAction *actionReset3dView_;
 
 	// Submodel menu
-	KAction *actionNewSubmodel_;
-	KAction *actionDeleteSubmodel_;
-	KAction *actionCollapseSubmodel_;
-	KAction *actionModelProperties_;
+	QAction *actionNewSubmodel_;
+	QAction *actionDeleteSubmodel_;
+	QAction *actionCollapseSubmodel_;
+	QAction *actionModelProperties_;
 
 	// Render menu
-	KAction *actionRender_;
-	KAction *actionRenderSteps_;
-	KAction *actionRenderSetup_;
+	QAction *actionRender_;
+	QAction *actionRenderSteps_;
+	QAction *actionRenderSetup_;
 
 	// Setting menu
-	KAction *actionConfigure_;
+	QAction *actionConfigure_;
 };
 
 }
