@@ -201,7 +201,8 @@ void MainWindow::openFile()
 	mimes << "application/x-ldraw";
 	mimes << "application/x-multi-part-ldraw";
 	
-	KFileDialog dialog(KUrl(), mimes.join(" "), this);
+	KFileDialog dialog(KUrl(), QString(), this);
+	dialog.setMimeFilter(mimes, "application/x-ldraw");
 	dialog.setCaption(i18n("Select document(s)"));
 	dialog.setOperationMode(KFileDialog::Opening);
 	dialog.setMode(KFile::Files | KFile::ExistingOnly);
@@ -560,7 +561,8 @@ QAction* MainWindow::createAction(KActionCollection *ac, const char *actionName,
 		action->setIcon(KIcon(icon));
 	if (!shortcut.isEmpty())
 		action->setShortcut(shortcut);
-	connect(action, SIGNAL(triggered()), receiver, slot);
+	if (receiver && slot)
+		connect(action, SIGNAL(triggered()), receiver, slot);
 
 	return action;
 }
@@ -676,24 +678,20 @@ void MainWindow::initActions()
 	actionUnhideAll_ = createAction(ac, "unhide_all", i18n("Unhide All"), contentList_, SLOT(unhideAll()), KShortcut("Shift+Ctrl+H"));
 	
 	actionColor_ = createAction(ac, "select_color", i18n("Select Color"), editorGroup_, SLOT(editColor()), KShortcut("Ctrl+L"), "fill-color");
-	
-	actionGridSparse_ = ac->addAction("grid_sparse");
-	actionGridSparse_->setText(i18n("Sparse Grid"));
+
+	actionGridSparse_ = createAction(ac, "grid_sparse", i18n("Thin Grid"), 0L, 0L, KShortcut("Ctrl+1"), "konstruktor-grid1");
 	actionGridSparse_->setData(Editor::Grid20);
 	actionGridSparse_->setCheckable(true);
 
-	actionGridNormal_ = ac->addAction("grid_normal");
-	actionGridNormal_->setText(i18n("Normal Grid"));
+	actionGridNormal_ = createAction(ac, "grid_normal", i18n("Medium Grid"), 0L, 0L, KShortcut("Ctrl+2"), "konstruktor-grid2");
 	actionGridNormal_->setData(Editor::Grid10);
 	actionGridNormal_->setCheckable(true);
 
-	actionGridDense_ = ac->addAction("grid_dense");
-	actionGridDense_->setText(i18n("Dense Grid"));
+	actionGridDense_ = createAction(ac, "grid_dense", i18n("Dense Grid"), 0L, 0L, KShortcut("Ctrl+3"), "konstruktor-grid3");
 	actionGridDense_->setData(Editor::Grid5);
 	actionGridDense_->setCheckable(true);
 
-	actionGridNone_ = ac->addAction("grid_none");
-	actionGridNone_->setText(i18n("Minimal Grid"));
+	actionGridNone_ = createAction(ac, "grid_none", i18n("Fine Grid"), 0L, 0L, KShortcut("Ctrl+4"), "konstruktor-grid4");
 	actionGridNone_->setData(Editor::Grid1);
 	actionGridNone_->setCheckable(true);
 
@@ -708,19 +706,19 @@ void MainWindow::initActions()
 
 	actionDelete_ = createAction(ac, "delete", i18n("Delete"), editorGroup_, SLOT(deleteSelected()), KShortcut("Delete"), "edit-delete");
 
-	actionMoveByXPositive_ = createAction(ac, "move_by_x_positive", i18n("Move -X"), editorGroup_, SLOT(moveByXPositive()), KShortcut("Right"));
-	actionMoveByXNegative_ = createAction(ac, "move_by_x_negative", i18n("Move +X"), editorGroup_, SLOT(moveByXNegative()), KShortcut("Left"));
-	actionMoveByYPositive_ = createAction(ac, "move_by_y_positive", i18n("Move -Y"), editorGroup_, SLOT(moveByYPositive()), KShortcut("Shift+Down"));
-	actionMoveByYNegative_ = createAction(ac, "move_by_y_negative", i18n("Move +Y"), editorGroup_, SLOT(moveByYNegative()), KShortcut("Shift+Up"));
-	actionMoveByZPositive_ = createAction(ac, "move_by_z_positive", i18n("Move +Z"), editorGroup_, SLOT(moveByZPositive()), KShortcut("Up"));
-	actionMoveByZNegative_ = createAction(ac, "move_by_z_negative", i18n("Move -Z"), editorGroup_, SLOT(moveByZNegative()), KShortcut("Down"));
+	actionMoveByXPositive_ = createAction(ac, "move_by_x_positive", i18n("Move -X"), editorGroup_, SLOT(moveByXPositive()), KShortcut("Right"), "konstruktor-move-x-pos");
+	actionMoveByXNegative_ = createAction(ac, "move_by_x_negative", i18n("Move +X"), editorGroup_, SLOT(moveByXNegative()), KShortcut("Left"), "konstruktor-move-x-neg");
+	actionMoveByYPositive_ = createAction(ac, "move_by_y_positive", i18n("Move -Y"), editorGroup_, SLOT(moveByYPositive()), KShortcut("PgDown"), "konstruktor-move-y-neg");
+	actionMoveByYNegative_ = createAction(ac, "move_by_y_negative", i18n("Move +Y"), editorGroup_, SLOT(moveByYNegative()), KShortcut("PgUp"), "konstruktor-move-y-pos");
+	actionMoveByZPositive_ = createAction(ac, "move_by_z_positive", i18n("Move +Z"), editorGroup_, SLOT(moveByZPositive()), KShortcut("Up"), "konstruktor-move-z-pos");
+	actionMoveByZNegative_ = createAction(ac, "move_by_z_negative", i18n("Move -Z"), editorGroup_, SLOT(moveByZNegative()), KShortcut("Down"), "konstruktor-move-z-neg");
 
-	actionRotateByXClockwise_ = createAction(ac, "rotate_x_cw", i18n("Rotate +X"), editorGroup_, SLOT(rotateByXClockwise()), KShortcut("Ctrl+Right"));
-	actionRotateByXCounterClockwise_ = createAction(ac, "rotate_x_ccw", i18n("Rotate -X"), editorGroup_, SLOT(rotateByXCounterClockwise()), KShortcut("Ctrl+Left"));
-	actionRotateByYClockwise_ = createAction(ac, "rotate_y_cw", i18n("Rotate +Y"), editorGroup_, SLOT(rotateByYClockwise()), KShortcut("Ctrl+Shift+Down"));
-	actionRotateByYCounterClockwise_ = createAction(ac, "rotate_y_ccw", i18n("Rotate -Y"), editorGroup_, SLOT(rotateByYCounterClockwise()), KShortcut("Ctrl+Shift+Up"));
-	actionRotateByZClockwise_ = createAction(ac, "rotate_z_cw", i18n("Rotate +Z"), editorGroup_, SLOT(rotateByZClockwise()), KShortcut("Ctrl+Up"));
-	actionRotateByZCounterClockwise_ = createAction(ac, "rotate_z_ccw", i18n("Rotate -Z"), editorGroup_, SLOT(rotateByZCounterClockwise()), KShortcut("Ctrl+Down"));
+	actionRotateByXClockwise_ = createAction(ac, "rotate_x_cw", i18n("Rotate +X"), editorGroup_, SLOT(rotateByXClockwise()), KShortcut("Ctrl+Right"), "konstruktor-rotate-x-pos");
+	actionRotateByXCounterClockwise_ = createAction(ac, "rotate_x_ccw", i18n("Rotate -X"), editorGroup_, SLOT(rotateByXCounterClockwise()), KShortcut("Ctrl+Left"), "konstruktor-rotate-x-neg");
+	actionRotateByYClockwise_ = createAction(ac, "rotate_y_cw", i18n("Rotate +Y"), editorGroup_, SLOT(rotateByYClockwise()), KShortcut("Ctrl+Shift+Down"), "konstruktor-rotate-y-pos");
+	actionRotateByYCounterClockwise_ = createAction(ac, "rotate_y_ccw", i18n("Rotate -Y"), editorGroup_, SLOT(rotateByYCounterClockwise()), KShortcut("Ctrl+Shift+Up"), "konstruktor-rotate-y-neg");
+	actionRotateByZClockwise_ = createAction(ac, "rotate_z_cw", i18n("Rotate +Z"), editorGroup_, SLOT(rotateByZClockwise()), KShortcut("Ctrl+Up"), "konstruktor-rotate-z-pos");
+	actionRotateByZCounterClockwise_ = createAction(ac, "rotate_z_ccw", i18n("Rotate -Z"), editorGroup_, SLOT(rotateByZCounterClockwise()), KShortcut("Ctrl+Down"), "konstruktor-rotate-z-neg");
 
 	// View
 	actionResetZoom_ = createAction(ac, "reset_zoom", i18n("Reset &Zoom"), this, SLOT(resetZoom()), KShortcut("R"), "view-restore");

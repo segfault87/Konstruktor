@@ -47,7 +47,7 @@ set(konstruktor_SRCS
   main.cpp
 )
 
-kde4_add_kcfg_files(konstruktor_SRCS config.kcfgc)
+kde4_add_kcfg_files(konstruktor_SRCS kde/config.kcfgc)
 kde4_add_ui_files(konstruktor_SRCS
   colordialog.ui
   configdisplayform.ui
@@ -71,8 +71,7 @@ set(konstruktor_db_updater_SRCS
   main_dbupdater.cpp
 )
 
-kde4_add_kcfg_files(konstruktor_db_updater_SRCS config.kcfgc)
-
+kde4_add_kcfg_files(konstruktor_db_updater_SRCS kde/config.kcfgc)
 kde4_add_executable(konstruktor_db_updater ${konstruktor_db_updater_SRCS})
 set_target_properties(konstruktor_db_updater PROPERTIES COMPILE_FLAGS -DKONSTRUKTOR_DB_UPDATER)
 target_link_libraries(konstruktor_db_updater libldrawrenderer ${SQLITE_LIBRARIES} ${QT_QTCORE_LIBRARY} ${QT_QTGUI_LIBRARY} ${QT_QTOPENGL_LIBRARY} ${KDE4_KDECORE_LIBRARY} ${KDE4_KDEUI_LIBRARY})
@@ -80,7 +79,10 @@ target_link_libraries(konstruktor_db_updater libldrawrenderer ${SQLITE_LIBRARIES
 # install
 install(TARGETS konstruktor konstruktor_db_updater DESTINATION ${INSTALL_TARGETS_DEFAULT_ARGS})
 install(FILES konstruktor.desktop DESTINATION ${XDG_APPS_INSTALL_DIR})
-install(FILES konstruktorui.rc DESTINATION ${DATA_INSTALL_DIR}/konstruktor)
+install(FILES kde/konstruktorui.rc DESTINATION ${DATA_INSTALL_DIR}/konstruktor)
 install(FILES ldraw-mime.xml DESTINATION ${XDG_MIME_INSTALL_DIR})
 kde4_install_icons(${ICON_INSTALL_DIR})
 update_xdg_mimetypes(${XDG_MIME_INSTALL_DIR})
+
+# subdirectories
+add_subdirectory(icons)
