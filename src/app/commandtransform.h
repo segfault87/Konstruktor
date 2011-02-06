@@ -16,8 +16,8 @@ namespace Konstruktor
 class CommandTransform : public CommandBase
 {
   public:
-	CommandTransform(bool inverse, const ldraw::matrix &matrix, const QSet<int> &selection, ldraw::model *model);	
-	CommandTransform(bool inverse, const QSet<int> &selection, ldraw::model *model);
+	CommandTransform(const ldraw::matrix &matrix, const QSet<int> &selection, ldraw::model *model);	
+	CommandTransform(const QSet<int> &selection, ldraw::model *model);
 	virtual ~CommandTransform();
 
 	bool needUpdateDimension() const;
@@ -26,7 +26,6 @@ class CommandTransform : public CommandBase
 	void undo();
 
   protected:
-	bool inverse_;
 	ldraw::matrix matrix_;
 	std::map<int, ldraw::matrix> oldmatrices_;
 };

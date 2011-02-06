@@ -311,7 +311,7 @@ void Editor::move(const ldraw::vector &vector)
 	ldraw::matrix m;
 	m.set_translation_vector(vector);
 
-	activeStack()->push(new CommandTransform(true, m, *selection_, model_));
+	activeStack()->push(new CommandTransform(m, *selection_, model_));
 
 	emit modified();
 }

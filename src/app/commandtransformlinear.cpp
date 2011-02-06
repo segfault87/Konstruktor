@@ -51,7 +51,7 @@ ldraw::matrix CommandTransformLinear::getRotationMatrix(Editor::Axis axis, float
 }
 
 CommandTransformLinear::CommandTransformLinear(TransformType type, Editor::Axis axis, float delta, const QSet<int> &selection, ldraw::model *model)
-	: CommandTransform(type == Rotation ? false : true, selection, model)
+	: CommandTransform(selection, model)
 {
 	axis_ = axis;
 	type_ = type;

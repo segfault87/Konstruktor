@@ -14,12 +14,11 @@
 namespace Konstruktor
 {
 
-CommandTransform::CommandTransform(bool inverse, const ldraw::matrix &matrix, const QSet<int> &selection, ldraw::model *model)
+CommandTransform::CommandTransform(const ldraw::matrix &matrix, const QSet<int> &selection, ldraw::model *model)
 	: CommandBase(selection, model)
 {
 	setText(i18n("Transform"));
 
-	inverse_ = inverse;
 	matrix_ = matrix;
 
 	for (QSet<int>::ConstIterator it = selection.constBegin(); it != selection.constEnd(); ++it) {
@@ -28,12 +27,10 @@ CommandTransform::CommandTransform(bool inverse, const ldraw::matrix &matrix, co
 	}
 }
 
-CommandTransform::CommandTransform(bool inverse, const QSet<int> &selection, ldraw::model *model)
+CommandTransform::CommandTransform(const QSet<int> &selection, ldraw::model *model)
 	: CommandBase(selection, model)
 {
 	setText(i18n("Transform"));
-
-	inverse_ = inverse;
 
 	for (QSet<int>::ConstIterator it = selection.constBegin(); it != selection.constEnd(); ++it) {
 		if (model->elements()[*it]->get_type() == ldraw::type_ref)
@@ -56,11 +53,7 @@ void CommandTransform::redo()
 	for (QSet<int>::ConstIterator it = selection_.constBegin(); it != selection_.constEnd(); ++it) {
 		if (model_->elements()[*it]->get_type() == ldraw::type_ref) {
 			ldraw::element_ref *r = CAST_AS_REF(model_->elements()[*it]);
-			ldraw::matrix cmat;
-			if (inverse_)
-				cmat = matrix_ * r->get_matrix();
-			else
-				cmat = r->get_matrix() * matrix_;
+			ldraw::matrix cmat = r->get_matrix() * matrix_;
 			
 			for (int i = 0; i < 3; ++i) {
 				for (int j = 0; j < 3; ++j) {
