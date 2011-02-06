@@ -8,6 +8,8 @@
 
 #include <libldr/extension.h>
 
+#define UNDO_LIMIT 50
+
 namespace Konstruktor
 {
 

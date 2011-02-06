@@ -11,23 +11,21 @@
 #include <QPair>
 #include <QVector>
 
-#include <kshortcut.h>
-#include <kxmlguiwindow.h>
+#ifdef KONSTRUKTOR_NO_KDE
+#include "qt/mainwindow.h"
+#else
+#include "kde/mainwindow.h"
+#endif
 
 namespace ldraw 
 {
-class model;
+	class model;
 }
 
 class QAction;
 class QCloseEvent;
 class QModelIndex;
 class QTreeView;
-
-class KActionCollection;
-class KRecentFilesAction;
-class KTabBar;
-class KUrl;
 
 namespace Konstruktor
 {
@@ -39,7 +37,7 @@ class Editor;
 class PartsWidget;
 class RenderWidget;
 
-class MainWindow : public KXmlGuiWindow
+class MainWindow : public Platform::MainWindow
 {
 	Q_OBJECT;
 	
@@ -94,8 +92,6 @@ class MainWindow : public KXmlGuiWindow
 
   private:
 	void closeEvent(QCloseEvent *event);
-
-	QAction* createAction(KActionCollection *ac, const char *actionName, const QString &name, QObject *receiver, const char *slot, const KShortcut &shortcut = KShortcut(), const QString &icon = QString());
 	
 	void initGui();
 	void initObjects();

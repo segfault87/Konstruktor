@@ -1,6 +1,8 @@
 // Konstruktor - An interactive LDraw modeler for KDE
 // Copyright (c)2006-2011 Park "segfault" J. K. <mastermind@planetmono.org>
 
+#include <stdio.h>
+
 #include <cmath>
 
 #include <libldr/model.h>
@@ -19,6 +21,19 @@ CommandTransform::CommandTransform(bool inverse, const ldraw::matrix &matrix, co
 
 	inverse_ = inverse;
 	matrix_ = matrix;
+
+	for (QSet<int>::ConstIterator it = selection.constBegin(); it != selection.constEnd(); ++it) {
+		if (model->elements()[*it]->get_type() == ldraw::type_ref)
+			oldmatrices_[*it] = CAST_AS_CONST_REF(model->elements()[*it])->get_matrix();
+	}
+}
+
+CommandTransform::CommandTransform(bool inverse, const QSet<int> &selection, ldraw::model *model)
+	: CommandBase(selection, model)
+{
+	setText(i18n("Transform"));
+
+	inverse_ = inverse;
 
 	for (QSet<int>::ConstIterator it = selection.constBegin(); it != selection.constEnd(); ++it) {
 		if (model->elements()[*it]->get_type() == ldraw::type_ref)

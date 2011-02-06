@@ -27,6 +27,7 @@
 #include "commandpaste.h"
 #include "commandremove.h"
 #include "commandtransform.h"
+#include "commandtransformlinear.h"
 #include "editor.h"
 #include "objectlist.h"
 #include "utils.h"
@@ -320,10 +321,7 @@ void Editor::moveByXPositive()
 	if (!activeStack() || selection_->empty())
 		return;
 
-	ldraw::matrix m;
-	m.set_translation_vector(ldraw::vector(gridDensity(), 0.0f, 0.0f));
-
-	activeStack()->push(new CommandTransform(true, m, *selection_, model_));
+	activeStack()->push(new CommandTransformLinear(CommandTransformLinear::Position, AxisX, gridDensity(), *selection_, model_));
 
 	emit modified();
 }
@@ -333,10 +331,7 @@ void Editor::moveByXNegative()
 	if (!activeStack() || selection_->empty())
 		return;
 
-	ldraw::matrix m;
-	m.set_translation_vector(ldraw::vector(-gridDensity(), 0.0f, 0.0f));
-
-	activeStack()->push(new CommandTransform(true, m, *selection_, model_));
+	activeStack()->push(new CommandTransformLinear(CommandTransformLinear::Position, AxisX, -gridDensity(), *selection_, model_));
 
 	emit modified();
 }
@@ -346,10 +341,7 @@ void Editor::moveByYPositive()
 	if (!activeStack() || selection_->empty())
 		return;
 
-	ldraw::matrix m;
-	m.set_translation_vector(ldraw::vector(0.0f, gridDensityYAxis(), 0.0f));
-
-	activeStack()->push(new CommandTransform(true, m, *selection_, model_));
+	activeStack()->push(new CommandTransformLinear(CommandTransformLinear::Position, AxisY, gridDensityYAxis(), *selection_, model_));
 
 	emit modified();
 }
@@ -359,10 +351,7 @@ void Editor::moveByYNegative()
 	if (!activeStack() || selection_->empty())
 		return;
 
-	ldraw::matrix m;
-	m.set_translation_vector(ldraw::vector(0.0f, -gridDensityYAxis(), 0.0f));
-
-	activeStack()->push(new CommandTransform(true, m, *selection_, model_));
+	activeStack()->push(new CommandTransformLinear(CommandTransformLinear::Position, AxisY, -gridDensityYAxis(), *selection_, model_));
 
 	emit modified();
 }
@@ -372,10 +361,7 @@ void Editor::moveByZPositive()
 	if (!activeStack() || selection_->empty())
 		return;
 
-	ldraw::matrix m;
-	m.set_translation_vector(ldraw::vector(0.0f, 0.0f, gridDensity()));
-
-	activeStack()->push(new CommandTransform(true, m, *selection_, model_));
+	activeStack()->push(new CommandTransformLinear(CommandTransformLinear::Position, AxisZ, gridDensity(), *selection_, model_));
 
 	emit modified();
 }
@@ -385,10 +371,7 @@ void Editor::moveByZNegative()
 	if (!activeStack() || selection_->empty())
 		return;
 
-	ldraw::matrix m;
-	m.set_translation_vector(ldraw::vector(0.0f, 0.0f, -gridDensity()));
-
-	activeStack()->push(new CommandTransform(true, m, *selection_, model_));
+	activeStack()->push(new CommandTransformLinear(CommandTransformLinear::Position, AxisZ, -gridDensity(), *selection_, model_));
 
 	emit modified();
 }
@@ -398,15 +381,8 @@ void Editor::rotateByXClockwise()
 	if (!activeStack() || selection_->empty())
 		return;
 
-	ldraw::matrix m;
-	float angle = gridDensityAngle();
-	m.value(1, 1) = std::cos(angle);
-	m.value(1, 2) = std::sin(-angle);
-	m.value(2, 1) = std::sin(angle);
-	m.value(2, 2) = std::cos(angle);
-
-	activeStack()->push(new CommandTransform(false, m, *selection_, model_));
-
+	activeStack()->push(new CommandTransformLinear(CommandTransformLinear::Rotation, AxisX, gridDensityAngle(), *selection_, model_));
+	
 	emit modified();
 }
 
@@ -415,14 +391,7 @@ void Editor::rotateByXCounterClockwise()
 	if (!activeStack() || selection_->empty())
 		return;
 
-	ldraw::matrix m;
-	float angle = -gridDensityAngle();
-	m.value(1, 1) = std::cos(angle);
-	m.value(1, 2) = std::sin(-angle);
-	m.value(2, 1) = std::sin(angle);
-	m.value(2, 2) = std::cos(angle);
-
-	activeStack()->push(new CommandTransform(false, m, *selection_, model_));
+	activeStack()->push(new CommandTransformLinear(CommandTransformLinear::Rotation, AxisX, -gridDensityAngle(), *selection_, model_));
 
 	emit modified();
 }
@@ -432,14 +401,7 @@ void Editor::rotateByYClockwise()
 	if (!activeStack() || selection_->empty())
 		return;
 
-	ldraw::matrix m;
-	float angle = gridDensityAngle();
-	m.value(0, 0) = std::cos(angle);
-	m.value(2, 0) = std::sin(-angle);
-	m.value(0, 2) = std::sin(angle);
-	m.value(2, 2) = std::cos(angle);
-
-	activeStack()->push(new CommandTransform(false, m, *selection_, model_));
+	activeStack()->push(new CommandTransformLinear(CommandTransformLinear::Rotation, AxisY, gridDensityAngle(), *selection_, model_));
 
 	emit modified();
 }
@@ -449,14 +411,7 @@ void Editor::rotateByYCounterClockwise()
 	if (!activeStack() || selection_->empty())
 		return;
 
-	ldraw::matrix m;
-	float angle = -gridDensityAngle();
-	m.value(0, 0) = std::cos(angle);
-	m.value(2, 0) = std::sin(-angle);
-	m.value(0, 2) = std::sin(angle);
-	m.value(2, 2) = std::cos(angle);
-
-	activeStack()->push(new CommandTransform(false, m, *selection_, model_));
+	activeStack()->push(new CommandTransformLinear(CommandTransformLinear::Rotation, AxisY, -gridDensityAngle(), *selection_, model_));
 
 	emit modified();
 }
@@ -466,15 +421,8 @@ void Editor::rotateByZClockwise()
 	if (!activeStack() || selection_->empty())
 		return;
 
-	ldraw::matrix m;
-	float angle = gridDensityAngle();
-	m.value(0, 0) = std::cos(angle);
-	m.value(0, 1) = std::sin(-angle);
-	m.value(1, 0) = std::sin(angle);
-	m.value(1, 1) = std::cos(angle);
-
-	activeStack()->push(new CommandTransform(false, m, *selection_, model_));
-
+	activeStack()->push(new CommandTransformLinear(CommandTransformLinear::Rotation, AxisZ, gridDensityAngle(), *selection_, model_));
+	
 	emit modified();
 }
 	
@@ -483,14 +431,7 @@ void Editor::rotateByZCounterClockwise()
 	if (!activeStack() || selection_->empty())
 		return;
 
-	ldraw::matrix m;
-	float angle = -gridDensityAngle();
-	m.value(0, 0) = std::cos(angle);
-	m.value(0, 1) = std::sin(-angle);
-	m.value(1, 0) = std::sin(angle);
-	m.value(1, 1) = std::cos(angle);
-
-	activeStack()->push(new CommandTransform(false, m, *selection_, model_));
+	activeStack()->push(new CommandTransformLinear(CommandTransformLinear::Rotation, AxisZ, -gridDensityAngle(), *selection_, model_));
 
 	emit modified();
 }
@@ -508,8 +449,9 @@ void Editor::insert(const QString &filename, const ldraw::matrix &matrix, const 
 // after changes are made
 void Editor::indexChanged(int index)
 {
-	if (activeStack_ != activeStack() || index > activeStack()->count())
+	if (activeStack_ != activeStack() || index > activeStack()->count()) {
 		return;
+	}
 
 	int s, e;
 	bool redo;
@@ -518,11 +460,16 @@ void Editor::indexChanged(int index)
 		redo = true;
 		s = lastIndex_ + 1;
 		e = index;
-	} else {
+	} else if (lastIndex_ > index) {
 		// Undo
 		redo = false;
 		s = index + 1;
 		e = lastIndex_;
+	} else {
+		// Merge
+		redo = true;
+		s = index;
+		e = index;
 	}
 
 	for (int i = s; i <= e; ++i) {

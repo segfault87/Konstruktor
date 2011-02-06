@@ -2,6 +2,7 @@
 // Copyright (c)2006-2011 Park "segfault" J. K. <mastermind@planetmono.org>
 
 #include <QActionGroup>
+#include <QApplication>
 #include <QClipboard>
 #include <QCloseEvent>
 #include <QDialog>
@@ -11,11 +12,10 @@
 #include <QSplitter>
 #include <QStringList>
 #include <QTreeView>
+#include <QUrl>
 #include <QVBoxLayout>
 
-#include <kaction.h>
 #include <kactioncollection.h>
-#include <kapplication.h>
 #include <kcmdlineargs.h>
 #include <kfiledialog.h>
 #include <kglobal.h>
@@ -23,6 +23,7 @@
 #include <kmessagebox.h>
 #include <krecentfilesaction.h>
 #include <kselectaction.h>
+#include <kshortcut.h>
 #include <kstandardaction.h>
 #include <kstatusbar.h>
 #include <ktabbar.h>
@@ -56,7 +57,7 @@ namespace Konstruktor
 #define EXIT_IF_NO_DOCUMENT if (!activeDocument_) return
 
 MainWindow::MainWindow(QWidget *parent)
-	: KXmlGuiWindow(parent)
+	: Platform::MainWindow(parent)
 {
 	activeDocument_ = 0L;
 	newcnt_ = 1;
@@ -67,8 +68,7 @@ MainWindow::MainWindow(QWidget *parent)
 	initConnections();
 	initActions();
 
-	// standard KXmlGuiWindow initialization
-	setupGUI();
+	setupPlatformGui();
 
 	// to make sure that there is no open models.
 	activeDocumentChanged(-1);
@@ -76,7 +76,7 @@ MainWindow::MainWindow(QWidget *parent)
 	// parse cmd line args
 	KCmdLineArgs *args = KCmdLineArgs::parsedArgs();
 	for (int i = 0; i < args->count(); ++i)
-		openFile(KUrl(args->arg(i)));
+		openFile(QUrl(args->arg(i)));
 
 	activate(false);
 	
@@ -116,7 +116,7 @@ void MainWindow::clipboardChanged()
 {
 	EXIT_IF_NO_DOCUMENT;
 
-	const QMimeData *mimeData = kapp->clipboard()->mimeData(QClipboard::Clipboard);
+	const QMimeData *mimeData = qApp->clipboard()->mimeData(QClipboard::Clipboard);
 
 	if (!mimeData)
 		actionPaste_->setEnabled(false);
@@ -373,7 +373,7 @@ void MainWindow::quit()
 	// FIXME did i miss something?
 
 	if (confirmQuit()) {
-		kapp->quit();
+		qApp->quit();
 	}
 }
 
@@ -553,20 +553,6 @@ void MainWindow::initObjects()
 	editorGroup_ = new Editor(this);
 }
 
-QAction* MainWindow::createAction(KActionCollection *ac, const char *actionName, const QString &name, QObject *receiver, const char *slot, const KShortcut &shortcut, const QString &icon)
-{
-	KAction *action = ac->addAction(actionName);
-	action->setText(name);
-	if (!icon.isEmpty())
-		action->setIcon(KIcon(icon));
-	if (!shortcut.isEmpty())
-		action->setShortcut(shortcut);
-	if (receiver && slot)
-		connect(action, SIGNAL(triggered()), receiver, slot);
-
-	return action;
-}
-
 void MainWindow::initGui()
 {
 	QWidget *sc = new QWidget(this);
@@ -671,27 +657,27 @@ void MainWindow::initActions()
 	actionPaste_ = KStandardAction::paste(editorGroup_, SLOT(paste()), ac);
 	actionPaste_->setEnabled(false);
 
-	actionSelectAll_ = createAction(ac, "select_all", i18n("Select All"), contentList_, SLOT(selectAll()), KShortcut("Ctrl+A"), "edit-select-all");
-	actionSelectNone_ = createAction(ac, "select_none", i18n("Select None"), contentList_, SLOT(clearSelection()), KShortcut("Shift+Ctrl+A"), "edit-delete");
+	actionSelectAll_ = createAction("select_all", i18n("Select All"), contentList_, SLOT(selectAll()), "Ctrl+A", "edit-select-all");
+	actionSelectNone_ = createAction("select_none", i18n("Select None"), contentList_, SLOT(clearSelection()), "Shift+Ctrl+A", "edit-delete");
 	
-	actionHide_ = createAction(ac, "hide", i18n("Hide"), contentList_, SLOT(hideSelected()), KShortcut("Ctrl+H"));
-	actionUnhideAll_ = createAction(ac, "unhide_all", i18n("Unhide All"), contentList_, SLOT(unhideAll()), KShortcut("Shift+Ctrl+H"));
+	actionHide_ = createAction("hide", i18n("Hide"), contentList_, SLOT(hideSelected()), "Ctrl+H");
+	actionUnhideAll_ = createAction("unhide_all", i18n("Unhide All"), contentList_, SLOT(unhideAll()), "Shift+Ctrl+H");
 	
-	actionColor_ = createAction(ac, "select_color", i18n("Select Color"), editorGroup_, SLOT(editColor()), KShortcut("Ctrl+L"), "fill-color");
+	actionColor_ = createAction("select_color", i18n("Select Color"), editorGroup_, SLOT(editColor()), "Ctrl+L", "fill-color");
 
-	actionGridSparse_ = createAction(ac, "grid_sparse", i18n("Thin Grid"), 0L, 0L, KShortcut("Ctrl+1"), "konstruktor-grid1");
+	actionGridSparse_ = createAction("grid_sparse", i18n("Thin Grid"), 0L, 0L, "Ctrl+1", "konstruktor-grid1");
 	actionGridSparse_->setData(Editor::Grid20);
 	actionGridSparse_->setCheckable(true);
 
-	actionGridNormal_ = createAction(ac, "grid_normal", i18n("Medium Grid"), 0L, 0L, KShortcut("Ctrl+2"), "konstruktor-grid2");
+	actionGridNormal_ = createAction("grid_normal", i18n("Medium Grid"), 0L, 0L, "Ctrl+2", "konstruktor-grid2");
 	actionGridNormal_->setData(Editor::Grid10);
 	actionGridNormal_->setCheckable(true);
 
-	actionGridDense_ = createAction(ac, "grid_dense", i18n("Dense Grid"), 0L, 0L, KShortcut("Ctrl+3"), "konstruktor-grid3");
+	actionGridDense_ = createAction("grid_dense", i18n("Dense Grid"), 0L, 0L, "Ctrl+3", "konstruktor-grid3");
 	actionGridDense_->setData(Editor::Grid5);
 	actionGridDense_->setCheckable(true);
 
-	actionGridNone_ = createAction(ac, "grid_none", i18n("Fine Grid"), 0L, 0L, KShortcut("Ctrl+4"), "konstruktor-grid4");
+	actionGridNone_ = createAction("grid_none", i18n("Fine Grid"), 0L, 0L, "Ctrl+4", "konstruktor-grid4");
 	actionGridNone_->setData(Editor::Grid1);
 	actionGridNone_->setCheckable(true);
 
@@ -704,38 +690,38 @@ void MainWindow::initActions()
 	connect(gridActions, SIGNAL(triggered(QAction *)), this, SLOT(gridModeChanged(QAction *)));
 	actionGridNormal_->setChecked(true);
 
-	actionDelete_ = createAction(ac, "delete", i18n("Delete"), editorGroup_, SLOT(deleteSelected()), KShortcut("Delete"), "edit-delete");
+	actionDelete_ = createAction("delete", i18n("Delete"), editorGroup_, SLOT(deleteSelected()), "Delete", "edit-delete");
 
-	actionMoveByXPositive_ = createAction(ac, "move_by_x_positive", i18n("Move -X"), editorGroup_, SLOT(moveByXPositive()), KShortcut("Right"), "konstruktor-move-x-pos");
-	actionMoveByXNegative_ = createAction(ac, "move_by_x_negative", i18n("Move +X"), editorGroup_, SLOT(moveByXNegative()), KShortcut("Left"), "konstruktor-move-x-neg");
-	actionMoveByYPositive_ = createAction(ac, "move_by_y_positive", i18n("Move -Y"), editorGroup_, SLOT(moveByYPositive()), KShortcut("PgDown"), "konstruktor-move-y-neg");
-	actionMoveByYNegative_ = createAction(ac, "move_by_y_negative", i18n("Move +Y"), editorGroup_, SLOT(moveByYNegative()), KShortcut("PgUp"), "konstruktor-move-y-pos");
-	actionMoveByZPositive_ = createAction(ac, "move_by_z_positive", i18n("Move +Z"), editorGroup_, SLOT(moveByZPositive()), KShortcut("Up"), "konstruktor-move-z-pos");
-	actionMoveByZNegative_ = createAction(ac, "move_by_z_negative", i18n("Move -Z"), editorGroup_, SLOT(moveByZNegative()), KShortcut("Down"), "konstruktor-move-z-neg");
+	actionMoveByXPositive_ = createAction("move_by_x_positive", i18n("Move -X"), editorGroup_, SLOT(moveByXPositive()), "Right", "konstruktor-move-x-pos");
+	actionMoveByXNegative_ = createAction("move_by_x_negative", i18n("Move +X"), editorGroup_, SLOT(moveByXNegative()), "Left", "konstruktor-move-x-neg");
+	actionMoveByYPositive_ = createAction("move_by_y_positive", i18n("Move -Y"), editorGroup_, SLOT(moveByYPositive()), "PgDown", "konstruktor-move-y-neg");
+	actionMoveByYNegative_ = createAction("move_by_y_negative", i18n("Move +Y"), editorGroup_, SLOT(moveByYNegative()), "PgUp", "konstruktor-move-y-pos");
+	actionMoveByZPositive_ = createAction("move_by_z_positive", i18n("Move +Z"), editorGroup_, SLOT(moveByZPositive()), "Up", "konstruktor-move-z-pos");
+	actionMoveByZNegative_ = createAction("move_by_z_negative", i18n("Move -Z"), editorGroup_, SLOT(moveByZNegative()), "Down", "konstruktor-move-z-neg");
 
-	actionRotateByXClockwise_ = createAction(ac, "rotate_x_cw", i18n("Rotate +X"), editorGroup_, SLOT(rotateByXClockwise()), KShortcut("Ctrl+Right"), "konstruktor-rotate-x-pos");
-	actionRotateByXCounterClockwise_ = createAction(ac, "rotate_x_ccw", i18n("Rotate -X"), editorGroup_, SLOT(rotateByXCounterClockwise()), KShortcut("Ctrl+Left"), "konstruktor-rotate-x-neg");
-	actionRotateByYClockwise_ = createAction(ac, "rotate_y_cw", i18n("Rotate +Y"), editorGroup_, SLOT(rotateByYClockwise()), KShortcut("Ctrl+Shift+Down"), "konstruktor-rotate-y-pos");
-	actionRotateByYCounterClockwise_ = createAction(ac, "rotate_y_ccw", i18n("Rotate -Y"), editorGroup_, SLOT(rotateByYCounterClockwise()), KShortcut("Ctrl+Shift+Up"), "konstruktor-rotate-y-neg");
-	actionRotateByZClockwise_ = createAction(ac, "rotate_z_cw", i18n("Rotate +Z"), editorGroup_, SLOT(rotateByZClockwise()), KShortcut("Ctrl+Up"), "konstruktor-rotate-z-pos");
-	actionRotateByZCounterClockwise_ = createAction(ac, "rotate_z_ccw", i18n("Rotate -Z"), editorGroup_, SLOT(rotateByZCounterClockwise()), KShortcut("Ctrl+Down"), "konstruktor-rotate-z-neg");
+	actionRotateByXClockwise_ = createAction("rotate_x_cw", i18n("Rotate +X"), editorGroup_, SLOT(rotateByXClockwise()), "Ctrl+Right", "konstruktor-rotate-x-pos");
+	actionRotateByXCounterClockwise_ = createAction("rotate_x_ccw", i18n("Rotate -X"), editorGroup_, SLOT(rotateByXCounterClockwise()), "Ctrl+Left", "konstruktor-rotate-x-neg");
+	actionRotateByYClockwise_ = createAction("rotate_y_cw", i18n("Rotate +Y"), editorGroup_, SLOT(rotateByYClockwise()), "Ctrl+Shift+Down", "konstruktor-rotate-y-pos");
+	actionRotateByYCounterClockwise_ = createAction("rotate_y_ccw", i18n("Rotate -Y"), editorGroup_, SLOT(rotateByYCounterClockwise()), "Ctrl+Shift+Up", "konstruktor-rotate-y-neg");
+	actionRotateByZClockwise_ = createAction("rotate_z_cw", i18n("Rotate +Z"), editorGroup_, SLOT(rotateByZClockwise()), "Ctrl+Up", "konstruktor-rotate-z-pos");
+	actionRotateByZCounterClockwise_ = createAction("rotate_z_ccw", i18n("Rotate -Z"), editorGroup_, SLOT(rotateByZCounterClockwise()), "Ctrl+Down", "konstruktor-rotate-z-neg");
 
 	// View
-	actionResetZoom_ = createAction(ac, "reset_zoom", i18n("Reset &Zoom"), this, SLOT(resetZoom()), KShortcut("R"), "view-restore");
-	actionReset3dView_ = createAction(ac, "reset_3d_view", i18n("Re&set 3D View"), this, SLOT(resetDisplay()));
+	actionResetZoom_ = createAction("reset_zoom", i18n("Reset &Zoom"), this, SLOT(resetZoom()), "R", "view-restore");
+	actionReset3dView_ = createAction("reset_3d_view", i18n("Re&set 3D View"), this, SLOT(resetDisplay()));
 	
 	// Submodel
-	actionNewSubmodel_ = createAction(ac, "submodel_new", i18n("&New Submodel..."), this, SLOT(newSubmodel()), KShortcut(), "document-new");
-	actionDeleteSubmodel_ = createAction(ac, "submodel_delete", i18n("&Delete Submodel..."), this, SLOT(deleteSubmodel()), KShortcut(), "edit-delete");
-	actionModelProperties_ = createAction(ac, "model_properties", i18n("&Model Properties..."), this, SLOT(modelProperties()), KShortcut(), "document-properties");
+	actionNewSubmodel_ = createAction("submodel_new", i18n("&New Submodel..."), this, SLOT(newSubmodel()), QString(), "document-new");
+	actionDeleteSubmodel_ = createAction("submodel_delete", i18n("&Delete Submodel..."), this, SLOT(deleteSubmodel()), QString(), "edit-delete");
+	actionModelProperties_ = createAction("model_properties", i18n("&Model Properties..."), this, SLOT(modelProperties()), QString(), "document-properties");
 	
 	// Render
-	actionRender_ = createAction(ac, "render", i18n("R&ender..."), this, SLOT(render()), KShortcut("Ctrl+F11"), "view-preview");
-	actionRenderSetup_ = createAction(ac, "render_setup", i18n("&Configure Renderer..."), this, SLOT(notImplemented()), KShortcut(), "configure");
+	actionRender_ = createAction("render", i18n("R&ender..."), this, SLOT(render()), "Ctrl+F11", "view-preview");
+	actionRenderSetup_ = createAction("render_setup", i18n("&Configure Renderer..."), this, SLOT(notImplemented()), QString(), "configure");
 
 	/*actionRenderSteps_ = ac->addAction("render_steps");
 	actionRenderSteps_->setText(i18n("Render by &Steps..."));
-	actionRenderSteps_->setShortcut(KShortcut("Ctrl+Shift+F11"));
+	actionRenderSteps_->setShortcut("Ctrl+Shift+F11"));
 	actionRenderSteps_->setIcon(KIcon("view-preview"));*/
 
 	// Settings
@@ -789,7 +775,7 @@ void MainWindow::initConnections()
 	connect(editorGroup_, SIGNAL(modified()), this, SLOT(modelModified()));
 	connect(editorGroup_, SIGNAL(rowsChanged(const QPair<CommandBase::AffectedRow, QSet<int> > &)), contentsModel_, SLOT(rowsChanged(const QPair<CommandBase::AffectedRow, QSet<int> > &)));
 	connect(editorGroup_, SIGNAL(rowsChanged(const QPair<CommandBase::AffectedRow, QSet<int> > &)), contentList_, SLOT(rowsChanged(const QPair<CommandBase::AffectedRow, QSet<int> > &)));
-	connect(kapp->clipboard(), SIGNAL(dataChanged()), this, SLOT(clipboardChanged()));
+	connect(qApp->clipboard(), SIGNAL(dataChanged()), this, SLOT(clipboardChanged()));
 
 	for (int i = 0; i < 4; ++i) {
 		connect(this, SIGNAL(activeModelChanged(ldraw::model *)), renderWidget_[i], SLOT(modelChanged(ldraw::model *)));

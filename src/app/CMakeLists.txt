@@ -5,7 +5,17 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR} ${SQ
 
 # Konstruktor
 
+if(NO_KDE)
+set(konstruktor_platform_SRCS
+)
+else(NO_KDE)
+set(konstruktor_platform_SRCS
+  kde/mainwindow.cpp
+)
+endif(NO_KDE)
+
 set(konstruktor_SRCS
+  ${konstruktor_platform_SRCS}
   application.cpp
   colordialog.cpp
   colormanager.cpp
@@ -15,6 +25,7 @@ set(konstruktor_SRCS
   commandpaste.cpp
   commandremove.cpp
   commandtransform.cpp
+  commandtransformlinear.cpp
   configdialog.cpp
   contentsmodel.cpp
   contentsview.cpp
@@ -73,6 +84,7 @@ set(konstruktor_db_updater_SRCS
 
 kde4_add_kcfg_files(konstruktor_db_updater_SRCS kde/config.kcfgc)
 kde4_add_executable(konstruktor_db_updater ${konstruktor_db_updater_SRCS})
+
 set_target_properties(konstruktor_db_updater PROPERTIES COMPILE_FLAGS -DKONSTRUKTOR_DB_UPDATER)
 target_link_libraries(konstruktor_db_updater libldrawrenderer ${SQLITE_LIBRARIES} ${QT_QTCORE_LIBRARY} ${QT_QTGUI_LIBRARY} ${QT_QTOPENGL_LIBRARY} ${KDE4_KDECORE_LIBRARY} ${KDE4_KDEUI_LIBRARY})
 
