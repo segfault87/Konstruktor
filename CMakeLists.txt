@@ -1,5 +1,12 @@
 project(Konstruktor)
 
+if (MSVC)
+message(STATUS ${CMAKE_CXX_FLAGS})
+endif()
+if (MINGW)
+set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fexceptions")
+endif()
+
 if (UNIX)
 add_definitions(${CMAKE_CXX_FLAGS_DEBUG} -fexceptions)
 endif()
