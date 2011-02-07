@@ -11,7 +11,6 @@
 
 class KActionCollection;
 class KRecentFilesAction;
-class KTabBar;
 class KUrl;
 
 namespace Konstruktor 

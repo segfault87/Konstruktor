@@ -337,23 +337,23 @@ void ContentsModel::rowsChanged(const CommandBase::AffectedRowInfo &/*rowList*/)
 
 void ContentsModel::hideSelected(const QSet<int> &selection)
 {
-	for (QSet<int>::ConstIterator it = selection.constBegin(); it != selection.constEnd(); ++it) {
-		if (model_->elements()[*it]->line_type() == 0)
+	foreach (int i, selection) {
+		if (model_->elements()[i]->line_type() == 0)
 			continue;
 
-		if (!checkTable_->find(*it)) {
-			checkTable_->insert(*it);
-			
-			emit dataChanged(index(*it, 0), index(*it, ColumnCount - 1));
-		}
+		if (!checkTable_->find(i))
+			setData(index(i, 0), QVariant(Qt::Checked), Qt::CheckStateRole);
 	}
 }
 
 void ContentsModel::unhideAll()
 {
-	checkTable_->clear();
+	const std::set<int> sset = checkTable_->set();
 
-	emit dataChanged(index(0, ColumnIndex), index(rowCount() - 1, ColumnIndex));
+	for (std::set<int>::const_iterator it = sset.begin(); it != sset.end(); ++it)
+		setData(index(*it, 0), QVariant(Qt::Unchecked), Qt::CheckStateRole);
+	
+	checkTable_->clear();
 }
 
 void ContentsModel::dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight)

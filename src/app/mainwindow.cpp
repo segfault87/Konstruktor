@@ -11,6 +11,7 @@
 #include <QHeaderView>
 #include <QSplitter>
 #include <QStringList>
+#include <QTabBar>
 #include <QTreeView>
 #include <QUrl>
 #include <QVBoxLayout>
@@ -616,7 +617,7 @@ void MainWindow::initGui()
 
 	Application::self()->initializeRenderer(renderWidget_[0]);
 
-	tabbar_ = new KTabBar(sc);
+	tabbar_ = new QTabBar(sc);
 	tabbar_->setShape(QTabBar::RoundedSouth);
 
 	// main layout

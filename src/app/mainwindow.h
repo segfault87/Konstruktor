@@ -117,7 +117,7 @@ class MainWindow : public Platform::MainWindow
 	QTreeView *submodelList_;
 	ContentsView *contentList_;	
 	RenderWidget *renderWidget_[4];
-	KTabBar *tabbar_;
+	QTabBar *tabbar_;
 
 	/*
 	 * State management
