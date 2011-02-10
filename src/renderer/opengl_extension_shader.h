@@ -7,14 +7,9 @@
 #ifndef _RENDERER_OPENGL_EXTENSION_VSHADER_H_
 #define _RENDERER_OPENGL_EXTENSION_VSHADER_H_
 
-#if defined(WIN32)
-#include <windows.h>
-typedef char GLchar;
-#endif
-#include <GL/gl.h>
-
 #include <libldr/common.h>
 
+#include "opengl.h"
 #include <renderer/opengl_extension.h>
 
 namespace ldraw_renderer
