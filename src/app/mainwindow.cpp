@@ -26,7 +26,6 @@
 #include <kselectaction.h>
 #include <kshortcut.h>
 #include <kstandardaction.h>
-#include <kstatusbar.h>
 #include <ktabbar.h>
 #include <ktemporaryfile.h>
 #include <kurl.h>
@@ -665,6 +664,7 @@ void MainWindow::initActions()
 	actionUnhideAll_ = createAction("unhide_all", i18n("Unhide All"), contentList_, SLOT(unhideAll()), "Shift+Ctrl+H");
 	
 	actionColor_ = createAction("select_color", i18n("Select Color"), editorGroup_, SLOT(editColor()), "Ctrl+L", "fill-color");
+	actionRotationPivot_ = createAction("rotation_pivot", i18n("Rotation Pivot"), editorGroup_, SLOT(rotationPivot()), "Ctrl+Shift+P", "transform-rotate");
 
 	actionGridSparse_ = createAction("grid_sparse", i18n("Thin Grid"), 0L, 0L, "Ctrl+1", "konstruktor-grid1");
 	actionGridSparse_->setData(Editor::Grid20);
@@ -737,6 +737,7 @@ void MainWindow::initActions()
 	stateChangeableActions_.append(actionDeleteSubmodel_);
 	stateChangeableActions_.append(actionModelProperties_);
 	stateChangeableActions_.append(actionUnhideAll_);
+	stateChangeableActions_.append(actionRotationPivot_);
 
 	selectionDependentActions_.append(actionCut_);
 	selectionDependentActions_.append(actionCopy_);

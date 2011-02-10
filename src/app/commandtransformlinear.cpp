@@ -50,17 +50,21 @@ ldraw::matrix CommandTransformLinear::getRotationMatrix(Editor::Axis axis, float
 	return m;
 }
 
-CommandTransformLinear::CommandTransformLinear(TransformType type, Editor::Axis axis, float delta, const QSet<int> &selection, ldraw::model *model)
-	: CommandTransform(selection, model)
+CommandTransformLinear::CommandTransformLinear(TransformType type, Editor::Axis axis, Editor::RotationPivot pivot, float delta, const QSet<int> &selection, ldraw::model *model)
+	: CommandTransform(selection, model, pivot)
 {
 	axis_ = axis;
 	type_ = type;
 	delta_ = delta;
+
+	/* no use for translating 'position' */
+	if (type == Position)
+		pivot_ = Editor::PivotEach;
 	
 	if (type == Rotation)
-		matrix_ = getRotationMatrix(axis_, delta);
+		postmult_ = getRotationMatrix(axis_, delta);
 	else
-		matrix_ = getPositionMatrix(axis_, delta);
+		premult_ = getPositionMatrix(axis_, delta);
 }
 
 CommandTransformLinear::~CommandTransformLinear()
@@ -87,6 +91,7 @@ int CommandTransformLinear::id() const
 {
 	int axis;
 	int type;
+	int pivot;
 
 	if (axis_ == Editor::AxisX)
 		axis = 0;
@@ -104,7 +109,16 @@ int CommandTransformLinear::id() const
 	else
 		return -1;
 
-	return COMMAND_ID_TRANSFORM_LINEAR << 3 | axis << 1 | type;
+	if (pivot_ == Editor::PivotEach)
+		pivot = 0;
+	else if (pivot_ == Editor::PivotCenter)
+		pivot = 1;
+	else if (pivot_ == Editor::PivotManual)
+		pivot = 2;
+	else
+		return -1;
+
+	return COMMAND_ID_TRANSFORM_LINEAR << 5 | pivot << 3 | axis << 1 | type;
 }
 
 bool CommandTransformLinear::mergeWith(const QUndoCommand *command)
@@ -120,9 +134,9 @@ bool CommandTransformLinear::mergeWith(const QUndoCommand *command)
 	delta_ += ctl->delta();
 	
 	if (type_ == Position)
-		matrix_ = getPositionMatrix(axis_, delta_);
+		premult_ = getPositionMatrix(axis_, delta_);
 	else
-		matrix_ = getRotationMatrix(axis_, delta_);
+		postmult_ = getRotationMatrix(axis_, delta_);
 
 	return true;
 }

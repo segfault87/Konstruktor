@@ -23,14 +23,14 @@ class LIBLDR_EXPORT renderer_opengl_retained : public renderer_opengl
   public:
 	~renderer_opengl_retained();
 	
-	void render(ldraw::model *m, const render_filter *filter);
+	void render(ldraw::model *m, const ldraw::filter *filter);
 	void render_bounding_box(const ldraw::metrics &metrics);
 	void render_bounding_box_filled(const ldraw::metrics &metrics);
 
-	void render_bounding_boxes(ldraw::model *m, const render_filter *filter);
+	void render_bounding_boxes(ldraw::model *m, const ldraw::filter *filter);
 
-	bool hit_test(float *projection_matrix, float *modelview_matrix, int x, int y, int w, int h, ldraw::model *m, const render_filter *filter);
-	selection_list select(float *projection_matrix, float *modelview_matrix, int x, int y, int w, int h, ldraw::model *m, const render_filter *filter);
+	bool hit_test(float *projection_matrix, float *modelview_matrix, int x, int y, int w, int h, ldraw::model *m, const ldraw::filter *filter);
+	selection_list select(float *projection_matrix, float *modelview_matrix, int x, int y, int w, int h, ldraw::model *m, const ldraw::filter *filter);
 	
   private:
 	friend class renderer_opengl_factory;
@@ -40,7 +40,7 @@ class LIBLDR_EXPORT renderer_opengl_retained : public renderer_opengl
 	void init_shader();
 	void init_vbuffer();
 	
-	void render_recursive(ldraw::model *m, const render_filter *filter, int depth = 0);
+	void render_recursive(ldraw::model *m, const ldraw::filter *filter, int depth = 0);
 
 	static const float m_bbox_lines[];
 	static const float m_bbox_filled[];

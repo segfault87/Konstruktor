@@ -9,6 +9,7 @@
 #include <libldr/math.h>
 
 #include "commandbase.h"
+#include "editor.h"
 
 namespace Konstruktor
 {
@@ -16,8 +17,8 @@ namespace Konstruktor
 class CommandTransform : public CommandBase
 {
   public:
-	CommandTransform(const ldraw::matrix &matrix, const QSet<int> &selection, ldraw::model *model);	
-	CommandTransform(const QSet<int> &selection, ldraw::model *model);
+	CommandTransform(const ldraw::matrix &premult, const ldraw::matrix &postmult, const QSet<int> &selection, ldraw::model *model, Editor::RotationPivot pivot = Editor::PivotEach);
+	CommandTransform(const QSet<int> &selection, ldraw::model *model, Editor::RotationPivot pivot = Editor::PivotEach);
 	virtual ~CommandTransform();
 
 	bool needUpdateDimension() const;
@@ -26,8 +27,12 @@ class CommandTransform : public CommandBase
 	void undo();
 
   protected:
-	ldraw::matrix matrix_;
+	Editor::RotationPivot pivot_;
+	ldraw::matrix premult_;
+	ldraw::matrix postmult_;
+	ldraw::vector pivotpoint_;
 	std::map<int, ldraw::matrix> oldmatrices_;
+	bool inverse_;
 };
 
 }

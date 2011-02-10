@@ -7,6 +7,8 @@
 #include <QSet>
 #include <QUndoCommand>
 
+#include <libldr/filter.h>
+
 namespace ldraw
 {
     class model;
@@ -30,10 +32,23 @@ class CommandBase : public QUndoCommand
 
 	const QSet<int>& selection() const { return selection_; }
 	ldraw::model* model() { return model_; }
+	const ldraw::model* model() const { return model_; }
 
   protected:
 	QSet<int> selection_;
 	ldraw::model *model_;
+};
+
+class CommandSelectionFilter : public ldraw::filter
+{
+  public:
+	CommandSelectionFilter(const CommandBase *cmd);
+
+	bool query(const ldraw::model *m, int index, int depth) const;
+
+  private:
+	const ldraw::model *model_;
+	const QSet<int> &selection_;
 };
 
 }

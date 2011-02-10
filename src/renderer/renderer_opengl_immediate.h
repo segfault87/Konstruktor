@@ -47,16 +47,16 @@ class LIBLDR_EXPORT renderer_opengl_immediate : public renderer_opengl
 	
 	const statistics* get_stats() const { return &m_stats; }
 
-	void render(ldraw::model *m, const render_filter *filter);
+	void render(ldraw::model *m, const ldraw::filter *filter);
 	void render_bounding_box(const ldraw::metrics &metrics);
 	
-	bool hit_test(float *projection_matrix, float *modelview_matrix, int x, int y, int w, int h, ldraw::model *m, const render_filter *filter);
-	selection_list select(float *projection_matrix, float *modelview_matrix, int x, int y, int w, int h, ldraw::model *m, const render_filter *filter);
+	bool hit_test(float *projection_matrix, float *modelview_matrix, int x, int y, int w, int h, ldraw::model *m, const ldraw::filter *filter);
+	selection_list select(float *projection_matrix, float *modelview_matrix, int x, int y, int w, int h, ldraw::model *m, const ldraw::filter *filter);
 	
   protected:
-	void draw_model_full(const ldraw::model_multipart *base, ldraw::model *m, int depth, const render_filter *filter);
-	void draw_model_edges(const ldraw::model_multipart *base, const ldraw::model *m, int depth, const render_filter *filter);
-	void draw_model_bounding_boxes(const ldraw::model_multipart *base, const ldraw::model *m, int depth, const render_filter *filter);
+	void draw_model_full(const ldraw::model_multipart *base, ldraw::model *m, int depth, const ldraw::filter *filter);
+	void draw_model_edges(const ldraw::model_multipart *base, const ldraw::model *m, int depth, const ldraw::filter *filter);
+	void draw_model_bounding_boxes(const ldraw::model_multipart *base, const ldraw::model *m, int depth, const ldraw::filter *filter);
 
 	void render_filled_bounding_box(const ldraw::metrics &metrics);
 	void render_line(const ldraw::element_line &l);

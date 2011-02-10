@@ -12,6 +12,8 @@
       <Action name="select_none" />
       <Action name="hide" />
       <Action name="unhide_all" />
+      <Separator />
+      <Action name="rotation_pivot" />
     </Menu>
     
     <Menu name="model">
@@ -44,6 +46,7 @@
   <ToolBar name="editBar">
     <text>Edit</text>
     <Action name="select_color" />
+    <Action name="rotation_pivot" />
     <Separator />
     <Action name="grid_sparse" group="grid" />
     <Action name="grid_normal" group="grid" />

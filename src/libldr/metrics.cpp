@@ -5,6 +5,7 @@
  * Author: (c)2006-2008 Park "segfault" J. K. <mastermind_at_planetmono_dot_org>     */
 
 #include "elements.h"
+#include "filter.h"
 #include "model.h"
 #include "utils.h"
 
@@ -38,6 +39,11 @@ metrics& metrics::operator=(const metrics &rhs)
 
 void metrics::update() 
 {
+	update(0L);
+}
+
+void metrics::update(const filter *filter)
+{
 	std::stack<matrix> modelview_matrix;
 
 	// set dimension as arbitrary initial value
@@ -48,12 +54,19 @@ void metrics::update()
 	modelview_matrix.push(matrix());
 	
 	// Recurse!
-	do_recursive(m_model, &modelview_matrix);
+	do_recursive(m_model, &modelview_matrix, filter);
 }
 
-void metrics::do_recursive(const model *m, std::stack<matrix> *modelview_matrix, bool orthogonal)
+void metrics::do_recursive(const model *m, std::stack<matrix> *modelview_matrix, const filter *filter, bool orthogonal, int depth)
 {
+	int idx = 0;
+	
 	for (model::const_iterator it = m->elements().begin(); it != m->elements().end(); ++it) {
+		if (filter && !filter->query(m, idx, depth)) {
+			++idx;
+			continue;
+		}
+
 		type elemtype = (*it)->get_type();
 		
 		if (elemtype == type_line) {
@@ -89,13 +102,15 @@ void metrics::do_recursive(const model *m, std::stack<matrix> *modelview_matrix,
 
 						dimension_test(modelview_matrix->top(), *m->custom_data<metrics>());
 					} else {
-						do_recursive(m, modelview_matrix, false);
+						do_recursive(m, modelview_matrix, filter, false, depth + 1);
 					}
 				}
 
 				modelview_matrix->pop();
 			}
 		}
+
+		++idx;
 	}
 }
 

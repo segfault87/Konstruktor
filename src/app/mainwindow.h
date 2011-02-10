@@ -151,6 +151,7 @@ class MainWindow : public Platform::MainWindow
 	QAction *actionHide_;
 	QAction *actionUnhideAll_;
 	QAction *actionColor_;
+	QAction *actionRotationPivot_;
 	QAction *actionGridSparse_;
 	QAction *actionGridNormal_;
 	QAction *actionGridDense_;

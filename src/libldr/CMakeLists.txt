@@ -20,6 +20,7 @@ set(libldr_HEADERS
   elements.h
   exception.h
   extension.h
+  filter.h
   math.h
   metrics.h
   model.h

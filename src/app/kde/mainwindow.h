@@ -5,6 +5,7 @@
 #define _MAINWINDOW_KDE_H_
 
 #include <kshortcut.h>
+#include <kstatusbar.h>
 #include <kxmlguiwindow.h>
 
 #include "mainwindow.h"

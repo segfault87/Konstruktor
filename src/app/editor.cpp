@@ -14,8 +14,8 @@
 #include <kactioncollection.h>
 #include <kapplication.h>
 #include <kicon.h>
-#include <kmenu.h>
 #include <klocalizedstring.h>
+#include <kmenu.h>
 #include <kstandardaction.h>
 #include <kstandardshortcut.h>
 
@@ -57,6 +57,7 @@ Editor::Editor(QObject *parent)
 	: QUndoGroup(parent)
 {
 	gridMode_ = Grid10;
+	pivot_ = PivotEach;
 	
 	activeStack_ = 0L;
 	lastIndex_ = 0;
@@ -303,6 +304,42 @@ void Editor::editColor()
 	}
 }
 
+void Editor::rotationPivot()
+{
+	KMenu menu(i18n("Rotation Pivot"));
+
+	QAction *a1 = menu.addAction(i18n("Each parts"));
+	QAction *a2 = menu.addAction(i18n("Center"));
+	QAction *a3 = menu.addAction(i18n("Manual (if exists)"));
+
+	a1->setCheckable(true);
+	a2->setCheckable(true);
+	a3->setCheckable(true);
+
+	QActionGroup ag(&menu);
+	ag.addAction(a1);
+	ag.addAction(a2);
+	ag.addAction(a3);
+	ag.setExclusive(true);
+
+	if (pivot_ == PivotEach)
+		a1->setChecked(true);
+	else if (pivot_ == PivotCenter)
+		a2->setChecked(true);
+	else if (pivot_ == PivotManual)
+		a3->setChecked(true);
+
+	a3->setEnabled(false);
+
+	QAction *result = menu.exec(QCursor::pos());
+	if (result == a1)
+		pivot_ = PivotEach;
+	else if (result == a2)
+		pivot_ = PivotCenter;
+	else if (result == a3)
+		pivot_ = PivotManual;
+}
+
 void Editor::move(const ldraw::vector &vector)
 {
 	if (!activeStack() || selection_->empty())
@@ -311,7 +348,7 @@ void Editor::move(const ldraw::vector &vector)
 	ldraw::matrix m;
 	m.set_translation_vector(vector);
 
-	activeStack()->push(new CommandTransform(m, *selection_, model_));
+	activeStack()->push(new CommandTransform(m, ldraw::matrix(), *selection_, model_));
 
 	emit modified();
 }
@@ -321,7 +358,7 @@ void Editor::moveByXPositive()
 	if (!activeStack() || selection_->empty())
 		return;
 
-	activeStack()->push(new CommandTransformLinear(CommandTransformLinear::Position, AxisX, gridDensity(), *selection_, model_));
+	activeStack()->push(new CommandTransformLinear(CommandTransformLinear::Position, AxisX, pivot_, gridDensity(), *selection_, model_));
 
 	emit modified();
 }
@@ -331,7 +368,7 @@ void Editor::moveByXNegative()
 	if (!activeStack() || selection_->empty())
 		return;
 
-	activeStack()->push(new CommandTransformLinear(CommandTransformLinear::Position, AxisX, -gridDensity(), *selection_, model_));
+	activeStack()->push(new CommandTransformLinear(CommandTransformLinear::Position, AxisX, pivot_, -gridDensity(), *selection_, model_));
 
 	emit modified();
 }
@@ -341,7 +378,7 @@ void Editor::moveByYPositive()
 	if (!activeStack() || selection_->empty())
 		return;
 
-	activeStack()->push(new CommandTransformLinear(CommandTransformLinear::Position, AxisY, gridDensityYAxis(), *selection_, model_));
+	activeStack()->push(new CommandTransformLinear(CommandTransformLinear::Position, AxisY, pivot_, gridDensityYAxis(), *selection_, model_));
 
 	emit modified();
 }
@@ -351,7 +388,7 @@ void Editor::moveByYNegative()
 	if (!activeStack() || selection_->empty())
 		return;
 
-	activeStack()->push(new CommandTransformLinear(CommandTransformLinear::Position, AxisY, -gridDensityYAxis(), *selection_, model_));
+	activeStack()->push(new CommandTransformLinear(CommandTransformLinear::Position, AxisY, pivot_, -gridDensityYAxis(), *selection_, model_));
 
 	emit modified();
 }
@@ -361,7 +398,7 @@ void Editor::moveByZPositive()
 	if (!activeStack() || selection_->empty())
 		return;
 
-	activeStack()->push(new CommandTransformLinear(CommandTransformLinear::Position, AxisZ, gridDensity(), *selection_, model_));
+	activeStack()->push(new CommandTransformLinear(CommandTransformLinear::Position, AxisZ, pivot_, gridDensity(), *selection_, model_));
 
 	emit modified();
 }
@@ -371,7 +408,7 @@ void Editor::moveByZNegative()
 	if (!activeStack() || selection_->empty())
 		return;
 
-	activeStack()->push(new CommandTransformLinear(CommandTransformLinear::Position, AxisZ, -gridDensity(), *selection_, model_));
+	activeStack()->push(new CommandTransformLinear(CommandTransformLinear::Position, AxisZ, pivot_, -gridDensity(), *selection_, model_));
 
 	emit modified();
 }
@@ -381,7 +418,7 @@ void Editor::rotateByXClockwise()
 	if (!activeStack() || selection_->empty())
 		return;
 
-	activeStack()->push(new CommandTransformLinear(CommandTransformLinear::Rotation, AxisX, gridDensityAngle(), *selection_, model_));
+	activeStack()->push(new CommandTransformLinear(CommandTransformLinear::Rotation, AxisX, pivot_, gridDensityAngle(), *selection_, model_));
 	
 	emit modified();
 }
@@ -391,7 +428,7 @@ void Editor::rotateByXCounterClockwise()
 	if (!activeStack() || selection_->empty())
 		return;
 
-	activeStack()->push(new CommandTransformLinear(CommandTransformLinear::Rotation, AxisX, -gridDensityAngle(), *selection_, model_));
+	activeStack()->push(new CommandTransformLinear(CommandTransformLinear::Rotation, AxisX, pivot_, -gridDensityAngle(), *selection_, model_));
 
 	emit modified();
 }
@@ -401,7 +438,7 @@ void Editor::rotateByYClockwise()
 	if (!activeStack() || selection_->empty())
 		return;
 
-	activeStack()->push(new CommandTransformLinear(CommandTransformLinear::Rotation, AxisY, gridDensityAngle(), *selection_, model_));
+	activeStack()->push(new CommandTransformLinear(CommandTransformLinear::Rotation, AxisY, pivot_, gridDensityAngle(), *selection_, model_));
 
 	emit modified();
 }
@@ -411,7 +448,7 @@ void Editor::rotateByYCounterClockwise()
 	if (!activeStack() || selection_->empty())
 		return;
 
-	activeStack()->push(new CommandTransformLinear(CommandTransformLinear::Rotation, AxisY, -gridDensityAngle(), *selection_, model_));
+	activeStack()->push(new CommandTransformLinear(CommandTransformLinear::Rotation, AxisY, pivot_, -gridDensityAngle(), *selection_, model_));
 
 	emit modified();
 }
@@ -421,7 +458,7 @@ void Editor::rotateByZClockwise()
 	if (!activeStack() || selection_->empty())
 		return;
 
-	activeStack()->push(new CommandTransformLinear(CommandTransformLinear::Rotation, AxisZ, gridDensityAngle(), *selection_, model_));
+	activeStack()->push(new CommandTransformLinear(CommandTransformLinear::Rotation, AxisZ, pivot_, gridDensityAngle(), *selection_, model_));
 	
 	emit modified();
 }
@@ -431,7 +468,7 @@ void Editor::rotateByZCounterClockwise()
 	if (!activeStack() || selection_->empty())
 		return;
 
-	activeStack()->push(new CommandTransformLinear(CommandTransformLinear::Rotation, AxisZ, -gridDensityAngle(), *selection_, model_));
+	activeStack()->push(new CommandTransformLinear(CommandTransformLinear::Rotation, AxisZ, pivot_, -gridDensityAngle(), *selection_, model_));
 
 	emit modified();
 }

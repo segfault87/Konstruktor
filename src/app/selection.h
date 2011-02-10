@@ -12,16 +12,15 @@
 
 #include <QSet>
 
+#include <libldr/filter.h>
 #include <libldr/math.h>
-
-#include <renderer/renderer_opengl.h>
 
 namespace Konstruktor
 {
 
 class VisibilityExtension;
 
-class Selection : public ldraw_renderer::render_filter
+class Selection : public ldraw::filter
 {
   public:
 	Selection();
@@ -51,7 +50,7 @@ class Selection : public ldraw_renderer::render_filter
 	bool inversed_;
 };
 
-class IntermediateSelection : public ldraw_renderer::render_filter
+class IntermediateSelection : public ldraw::filter
 {
   public:
 	IntermediateSelection(Selection *currentSelection);

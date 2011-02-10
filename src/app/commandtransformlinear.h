@@ -22,7 +22,7 @@ class CommandTransformLinear : public CommandTransform
 
 	enum TransformType { Position, Rotation };
 
-	CommandTransformLinear(TransformType type, Editor::Axis axis, float delta, const QSet<int> &selection, ldraw::model *model);
+	CommandTransformLinear(TransformType type, Editor::Axis axis, Editor::RotationPivot pivot, float delta, const QSet<int> &selection, ldraw::model *model);
 	~CommandTransformLinear();
 
 	float delta() const;

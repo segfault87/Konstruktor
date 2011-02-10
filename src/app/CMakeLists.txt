@@ -43,6 +43,7 @@ set(konstruktor_SRCS
   povrayexporter.cpp
   povrayrenderparameters.cpp
   povrayrenderwidget.cpp
+  pivotextension.cpp
   pixmapextension.cpp
   pixmaprenderer.cpp
   refobject.cpp
