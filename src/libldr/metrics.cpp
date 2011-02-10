@@ -18,12 +18,15 @@ metrics::metrics(model *m, void *arg)
 	: extension(m, arg)
 {
 	m_null = true;
+	m_started = false;
 }
 
 metrics::metrics(const vector &min, const vector &max)
 	: extension(0L, 0L)
 {
 	m_null = false;
+	m_started = false;
+	
 	m_min = min;
 	m_max = max;
 }
@@ -45,6 +48,8 @@ void metrics::update()
 void metrics::update(const filter *filter)
 {
 	std::stack<matrix> modelview_matrix;
+
+	m_started = true;
 
 	// set dimension as arbitrary initial value
 	m_min = vector(0.0f, 0.0f, 0.0f);
@@ -116,6 +121,13 @@ void metrics::do_recursive(const model *m, std::stack<matrix> *modelview_matrix,
 
 void metrics::dimension_test(const vector &v)
 {
+	if (m_started) {
+		m_min = v;
+		m_max = v;
+
+		m_started = false;
+	}
+	
 	if (v.x() < m_min.x())
 		m_min.x() = v.x();
 	if (v.x() > m_max.x())

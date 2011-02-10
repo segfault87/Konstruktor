@@ -45,6 +45,7 @@ class LIBLDR_EXPORT metrics : public extension
 	bool m_null;
 	vector m_min;
 	vector m_max;
+	bool m_started;
 };
 
 }

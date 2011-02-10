@@ -1,8 +1,6 @@
 // Konstruktor - An interactive LDraw modeler for KDE
 // Copyright (c)2006-2011 Park "segfault" J. K. <mastermind@planetmono.org>
 
-#include <stdio.h>
-
 #include <cmath>
 
 #include <libldr/metrics.h>
@@ -80,11 +78,11 @@ void CommandTransform::redo()
 				continue;
 			
 			if (pivot_ != Editor::PivotEach) {
-				ldraw::matrix ptrans;
-				ptrans.set_translation_vector(-pivotpoint_);
+				ldraw::matrix pretrans, posttrans;
+				pretrans.set_translation_vector(pivotpoint_);
+				posttrans.set_translation_vector(-pivotpoint_);
 				
-				cmat = premult_ * postmult_ * ptrans * r->get_matrix();
-				cmat.set_translation_vector(cmat.get_translation_vector() + pivotpoint_);
+				cmat = pretrans * premult_ * postmult_ * posttrans * r->get_matrix();
 			} else {
 				cmat = premult_ * r->get_matrix() * postmult_;
 			}
