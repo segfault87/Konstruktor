@@ -4,15 +4,12 @@
  *                                                                                   *
  * Author: (c)2006-2010 Park "segfault" J. K. <mastermind_at_planetmono_dot_org>     */
 
-#if defined(WIN32)
-#include <windows.h>
-#endif
-#include <GL/gl.h>
 
 #include <libldr/elements.h>
 #include <libldr/model.h>
 #include <libldr/utils.h>
 
+#include "opengl.h"
 #include "normal_extension.h"
 #include "opengl_extension_shader.h"
 #include "opengl_extension_vbo.h"

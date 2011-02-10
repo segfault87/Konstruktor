@@ -4,18 +4,10 @@
  *                                                                                   *
  * Author: (c)2006-2008 Park "segfault" J. K. <mastermind_at_planetmono_dot_org>     */
 
-#if defined(WIN32)
-#include <windows.h>
-#endif
-
-#define GL_GLEXT_PROTOTYPES
-#include <GL/gl.h>
-#include <GL/glu.h>
-#include <GL/glext.h>
-
 #include <libldr/filter.h>
 #include <libldr/model.h>
 
+#include "opengl.h"
 #include "opengl_extension_vbo.h"
 #include "opengl_extension_shader.h"
 #include "vbuffer_extension.h"

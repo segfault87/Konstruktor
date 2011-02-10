@@ -1,4 +1,4 @@
-/* LDRrenderer: LDraw model rendering library which based on libLDR                  *
+ /* LDRrenderer: LDraw model rendering library which based on libLDR                  *
  * To obtain more information about LDraw, visit http://www.ldraw.org                *
  * Distributed in terms of the General Public License v2                             *
  *                                                                                   *
@@ -6,18 +6,7 @@
 
 #include <cstring>
 
-#if defined(WIN32)
-#include <windows.h>
-#endif
-
-#include <GL/gl.h>
-
-#if defined(WIN32)
-#include <wingdi.h>
-#else
-#include <GL/glx.h>
-#endif
-
+#include "opengl.h"
 #include "opengl_extension.h"
 
 namespace ldraw_renderer
