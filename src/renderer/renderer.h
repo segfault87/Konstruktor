@@ -17,6 +17,7 @@
 
 namespace ldraw
 {
+	class filter;
 	class model;
 	class color_entity;
 }
@@ -47,11 +48,11 @@ class LIBLDRAWRENDERER_EXPORT renderer
 	void set_base_color(const ldraw::color &c);
 	void set_selection_type(selection s);
 
-	virtual void render(ldraw::model *m, const render_filter *filter = 0L) = 0;
+	virtual void render(ldraw::model *m, const ldraw::filter *filter = 0L) = 0;
 	virtual void render_bounding_box(const ldraw::metrics &metrics) = 0;
 	
-	virtual bool hit_test(float *projection_matrix, float *modelview_matrix, int x, int y, int w, int h, ldraw::model *m, const render_filter *hit_filter) = 0;
-	virtual selection_list select(float *projection_matrix, float *modelview_matrix, int x, int y, int wh, int h, ldraw::model *m, const render_filter *skip_filter) = 0;
+	virtual bool hit_test(float *projection_matrix, float *modelview_matrix, int x, int y, int w, int h, ldraw::model *m, const ldraw::filter *hit_filter) = 0;
+	virtual selection_list select(float *projection_matrix, float *modelview_matrix, int x, int y, int wh, int h, ldraw::model *m, const ldraw::filter *skip_filter) = 0;
 
 	virtual void setup();
 

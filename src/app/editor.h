@@ -46,6 +46,7 @@ class Editor : public QUndoGroup
 	
   public:
 	enum GridMode { Grid20, Grid10, Grid5, Grid1 };
+	enum RotationPivot { PivotEach, PivotCenter, PivotManual };
 	enum Axis { AxisX, AxisY, AxisZ };	
 	
 	Editor(QObject *parent = 0L);
@@ -84,6 +85,7 @@ class Editor : public QUndoGroup
 	void paste();
 	void deleteSelected();
 	void editColor();
+	void rotationPivot();
 	void move(const ldraw::vector &vector);
 	void moveByXPositive();
 	void moveByXNegative();
@@ -104,6 +106,7 @@ class Editor : public QUndoGroup
 
   private:
 	GridMode gridMode_;
+	RotationPivot pivot_;
 
 	// Stacks
 	QUndoStack *activeStack_;

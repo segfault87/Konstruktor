@@ -13,6 +13,7 @@
 #include <GL/glu.h>
 #include <GL/glext.h>
 
+#include <libldr/filter.h>
 #include <libldr/model.h>
 
 #include "opengl_extension_vbo.h"
@@ -132,7 +133,7 @@ renderer_opengl_retained::~renderer_opengl_retained()
 }
 
 /* render filter works properly only with PARTS, PRIMITIVE mode. */
-void renderer_opengl_retained::render(ldraw::model *m, const render_filter *filter)
+void renderer_opengl_retained::render(ldraw::model *m, const ldraw::filter *filter)
 {
 	opengl_extension_shader *shader = opengl_extension_shader::self();
 	opengl_extension_vbo *vbo = opengl_extension_vbo::self();
@@ -229,7 +230,7 @@ void renderer_opengl_retained::render_bounding_box_filled(const ldraw::metrics &
 #endif
 }
 
-void renderer_opengl_retained::render_bounding_boxes(ldraw::model *m, const render_filter *filter)
+void renderer_opengl_retained::render_bounding_boxes(ldraw::model *m, const ldraw::filter *filter)
 {
 	int i = 0;
 	for (ldraw::model::const_iterator it = m->elements().begin(); it != m->elements().end(); ++it) {
@@ -253,7 +254,7 @@ void renderer_opengl_retained::render_bounding_boxes(ldraw::model *m, const rend
 	}
 }
 
-bool renderer_opengl_retained::hit_test(float *projection_matrix, float *modelview_matrix, int x, int y, int w, int h, ldraw::model *m, const render_filter *skip_filter)
+bool renderer_opengl_retained::hit_test(float *projection_matrix, float *modelview_matrix, int x, int y, int w, int h, ldraw::model *m, const ldraw::filter *skip_filter)
 {
 	GLint viewport[4];
 	GLuint selectionBuffer[4];
@@ -329,7 +330,7 @@ bool renderer_opengl_retained::hit_test(float *projection_matrix, float *modelvi
 		return false;
 }
 
-selection_list renderer_opengl_retained::select(float *projection_matrix, float *modelview_matrix, int x, int y, int w, int h, ldraw::model *m, const render_filter *skip_filter)
+selection_list renderer_opengl_retained::select(float *projection_matrix, float *modelview_matrix, int x, int y, int w, int h, ldraw::model *m, const ldraw::filter *skip_filter)
 {
 	GLint hits, viewport[4];
 	GLuint selectionBuffer[4096];
@@ -508,7 +509,7 @@ void renderer_opengl_retained::init_vbuffer()
 	}
 }
 
-void renderer_opengl_retained::render_recursive(ldraw::model *m, const render_filter *filter, int depth)
+void renderer_opengl_retained::render_recursive(ldraw::model *m, const ldraw::filter *filter, int depth)
 {
 	if (!m)
 		return;

@@ -35,26 +35,22 @@ int ContentsView::uniqueSelection() const
 
 void ContentsView::hide(const QModelIndex &index)
 {
-	if (selectedIndices_.contains(index.row())) {
-		hiddenIndices_->insert(index.row());
+	if (selectedIndices_.contains(index.row()))
 		selectedIndices_.remove(index.row());
 
-		emit selectionChanged(selectedIndices_);
-	}
+	selectionModel()->clearSelection();
 
-	clearSelection();
+	emit selectionChanged(selectedIndices_);
+
+	update();
 }
 
 void ContentsView::unhide(const QModelIndex &index)
 {
-	if (hiddenIndices_->find(index.row()) != hiddenIndices_->end()) {
-		hiddenIndices_->erase(index.row());
+	selectionModel()->clearSelection();
+	selectionModel()->select(QItemSelection(index, index.model()->index(index.row(), index.model()->columnCount() - 1)), QItemSelectionModel::Select);
 
-		if (selectionModel()->isSelected(index))
-			selectedIndices_.insert(index.row());
-
-		emit selectionChanged(selectedIndices_);
-	}
+	emit selectionChanged(selectedIndices_);
 
 	update();
 }
@@ -80,13 +76,11 @@ void ContentsView::selectionChanged(const QItemSelection &selected, const QItemS
 		if ((*it).column() == 0 && (*it).isValid() && selectedIndices_.contains((*it).row())) {
 			if (selectedIndices_.contains((*it).row()))
 				selectedIndices_.remove((*it).row());
-			else if (hiddenIndices_->find((*it).row()) != hiddenIndices_->end())
-				hiddenIndices_->erase((*it).row());
 
 			++affected;
 		}
 	}
-	
+
 	if (affected)
 		emit selectionChanged(selectedIndices_);
 }
@@ -95,8 +89,6 @@ void ContentsView::hideSelected()
 {
 	dynamic_cast<ContentsModel *>(model())->hideSelected(selectedIndices_);
 
-	for (QSet<int>::ConstIterator it = selectedIndices_.constBegin(); it != selectedIndices_.constEnd(); ++it)
-		hiddenIndices_->insert(*it);
 	selectedIndices_.clear();
 
 	emit selectionChanged(selectedIndices_);
@@ -106,13 +98,18 @@ void ContentsView::hideSelected()
 
 void ContentsView::unhideAll()
 {
+	const std::set<int> hset = *hiddenIndices_;
+	
 	dynamic_cast<ContentsModel *>(model())->unhideAll();
 
 	selectedIndices_.clear();
-	hiddenIndices_->clear();
-	QModelIndexList selection = selectionModel()->selection().indexes();
-	for (QModelIndexList::Iterator it = selection.begin(); it != selection.end(); ++it)
-		selectedIndices_.insert((*it).row());
+	for (std::set<int>::const_iterator it = hset.begin(); it != hset.end(); ++it) {
+		QModelIndex start = model()->index(*it, 0);
+		QModelIndex end = model()->index(*it, model()->columnCount() - 1);
+		
+		selectionModel()->select(QItemSelection(start, end), QItemSelectionModel::Select);
+		selectedIndices_.insert(*it);
+	}
 
 	emit selectionChanged(selectedIndices_);
 }

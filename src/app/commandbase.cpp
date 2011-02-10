@@ -8,6 +8,19 @@
 namespace Konstruktor
 {
 
+CommandSelectionFilter::CommandSelectionFilter(const CommandBase *cmd)
+	: model_(cmd->model()), selection_(cmd->selection())
+{
+}
+
+bool CommandSelectionFilter::query(const ldraw::model *m, int index, int depth) const
+{
+	if (depth != 0 || model_ != m)
+		return true;
+
+	return selection_.contains(index);
+}
+
 CommandBase::CommandBase(const QSet<int> &selection, ldraw::model *model)
 	: QUndoCommand(0L)
 {

@@ -1,3 +1,10 @@
+konstruktor (0.9-beta1-2) unstable; urgency=low
+
+  * repackaged for Ubuntu Lucid
+  * added toolbar icons
+
+ -- Park Joon-Kyu <mastermind@planetmono.org>  Sun, 06 Feb 2011 18:26:46 +0900
+
 konstruktor (0.9-beta1-1) unstable; urgency=low
 
   * Initial beta release. 

@@ -1,24 +1,57 @@
 // Konstruktor - An interactive LDraw modeler for KDE
 // Copyright (c)2006-2011 Park "segfault" J. K. <mastermind@planetmono.org>
 
+#include <stdio.h>
+
 #include <cmath>
 
+#include <libldr/metrics.h>
 #include <libldr/model.h>
 
 #include <klocalizedstring.h>
+
+#include "pivotextension.h"
 
 #include "commandtransform.h"
 
 namespace Konstruktor
 {
 
-CommandTransform::CommandTransform(bool inverse, const ldraw::matrix &matrix, const QSet<int> &selection, ldraw::model *model)
+CommandTransform::CommandTransform(const ldraw::matrix &premult, const ldraw::matrix &postmult, const QSet<int> &selection, ldraw::model *model, Editor::RotationPivot pivot)
 	: CommandBase(selection, model)
 {
 	setText(i18n("Transform"));
 
-	inverse_ = inverse;
-	matrix_ = matrix;
+	premult_ = premult;
+	postmult_ = postmult;
+	pivot_ = pivot;
+
+	bool center = false;
+	if (pivot_ == Editor::PivotCenter)
+		center = true;
+
+	CommandSelectionFilter csf(this);
+	pivotpoint_ = PivotExtension::queryPivot(model_, center, &csf);
+
+	for (QSet<int>::ConstIterator it = selection.constBegin(); it != selection.constEnd(); ++it) {
+		if (model->elements()[*it]->get_type() == ldraw::type_ref)
+			oldmatrices_[*it] = CAST_AS_CONST_REF(model->elements()[*it])->get_matrix();
+	}
+}
+
+CommandTransform::CommandTransform(const QSet<int> &selection, ldraw::model *model, Editor::RotationPivot pivot)
+	: CommandBase(selection, model)
+{
+	setText(i18n("Transform"));
+
+	pivot_ = pivot;
+
+	bool center = false;
+	if (pivot_ == Editor::PivotCenter)
+		center = true;
+
+	CommandSelectionFilter csf(this);
+	pivotpoint_ = PivotExtension::queryPivot(model_, center, &csf);
 
 	for (QSet<int>::ConstIterator it = selection.constBegin(); it != selection.constEnd(); ++it) {
 		if (model->elements()[*it]->get_type() == ldraw::type_ref)
@@ -42,10 +75,19 @@ void CommandTransform::redo()
 		if (model_->elements()[*it]->get_type() == ldraw::type_ref) {
 			ldraw::element_ref *r = CAST_AS_REF(model_->elements()[*it]);
 			ldraw::matrix cmat;
-			if (inverse_)
-				cmat = matrix_ * r->get_matrix();
-			else
-				cmat = r->get_matrix() * matrix_;
+
+			if (!r->get_model())
+				continue;
+			
+			if (pivot_ != Editor::PivotEach) {
+				ldraw::matrix ptrans;
+				ptrans.set_translation_vector(-pivotpoint_);
+				
+				cmat = premult_ * postmult_ * ptrans * r->get_matrix();
+				cmat.set_translation_vector(cmat.get_translation_vector() + pivotpoint_);
+			} else {
+				cmat = premult_ * r->get_matrix() * postmult_;
+			}
 			
 			for (int i = 0; i < 3; ++i) {
 				for (int j = 0; j < 3; ++j) {

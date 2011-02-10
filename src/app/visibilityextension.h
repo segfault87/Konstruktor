@@ -8,13 +8,12 @@
 #include <string>
 
 #include <libldr/extension.h>
-
-#include <renderer/renderer.h>
+#include <libldr/filter.h>
 
 namespace Konstruktor
 {
 
-class VisibilityExtension : public ldraw::extension, public ldraw_renderer::render_filter
+class VisibilityExtension : public ldraw::extension, public ldraw::filter
 {
   public:
 	VisibilityExtension(ldraw::model *m, void *arg = 0L);

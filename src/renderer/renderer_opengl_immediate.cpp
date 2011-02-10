@@ -16,6 +16,7 @@
 
 #include <libldr/color.h>
 #include <libldr/elements.h>
+#include <libldr/filter.h>
 #include <libldr/math.h>
 #include <libldr/metrics.h>
 #include <libldr/utils.h>
@@ -37,7 +38,7 @@ renderer_opengl_immediate::~renderer_opengl_immediate()
 {
 }
 
-void renderer_opengl_immediate::render(ldraw::model *m, const render_filter *filter)
+void renderer_opengl_immediate::render(ldraw::model *m, const ldraw::filter *filter)
 {
 	std::memset(&m_stats, 0, sizeof(statistics));
 	
@@ -55,7 +56,7 @@ void renderer_opengl_immediate::render(ldraw::model *m, const render_filter *fil
 }
 
 // rendering code
-void renderer_opengl_immediate::draw_model_full(const ldraw::model_multipart *base, ldraw::model *m, int depth, const render_filter *filter)
+void renderer_opengl_immediate::draw_model_full(const ldraw::model_multipart *base, ldraw::model *m, int depth, const ldraw::filter *filter)
 {
 	bool culling = true;
 	bool invertnext = false;
@@ -248,7 +249,7 @@ void renderer_opengl_immediate::draw_model_full(const ldraw::model_multipart *ba
 	}
 }
 
-void renderer_opengl_immediate::draw_model_edges(const ldraw::model_multipart *base, const ldraw::model *m, int depth, const render_filter *filter)
+void renderer_opengl_immediate::draw_model_edges(const ldraw::model_multipart *base, const ldraw::model *m, int depth, const ldraw::filter *filter)
 {
 	// Obtain current ldraw::modelview ldraw::matrix for conditional line calculation
 	float *tmp = new float[16];
@@ -303,7 +304,7 @@ void renderer_opengl_immediate::draw_model_edges(const ldraw::model_multipart *b
 }
 
 /* Renders bounding box recursively */
-void renderer_opengl_immediate::draw_model_bounding_boxes(const ldraw::model_multipart *, const ldraw::model *m, int, const render_filter *filter)
+void renderer_opengl_immediate::draw_model_bounding_boxes(const ldraw::model_multipart *, const ldraw::model *m, int, const ldraw::filter *filter)
 {
 	// Iterate!
 	int i = 0;
@@ -344,7 +345,7 @@ void renderer_opengl_immediate::draw_model_bounding_boxes(const ldraw::model_mul
 	}
 }
 
-bool renderer_opengl_immediate::hit_test(float *projection_matrix, float *modelview_matrix, int x, int y, int w, int h, ldraw::model *m, const render_filter *skip_filter)
+bool renderer_opengl_immediate::hit_test(float *projection_matrix, float *modelview_matrix, int x, int y, int w, int h, ldraw::model *m, const ldraw::filter *skip_filter)
 {
 	GLint viewport[4];
 	GLuint selectionBuffer[4];
@@ -412,7 +413,7 @@ bool renderer_opengl_immediate::hit_test(float *projection_matrix, float *modelv
 }
 
 // Get selection
-selection_list renderer_opengl_immediate::select(float *projection_matrix, float *modelview_matrix, int x, int y, int w, int h, ldraw::model *m, const render_filter *skip_filter)
+selection_list renderer_opengl_immediate::select(float *projection_matrix, float *modelview_matrix, int x, int y, int w, int h, ldraw::model *m, const ldraw::filter *skip_filter)
 {
 	GLint hits, viewport[4];
 	GLuint selectionBuffer[1024];

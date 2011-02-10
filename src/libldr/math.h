@@ -70,7 +70,9 @@ class LIBLDR_EXPORT matrix
 	matrix(float *m);
 	matrix(const matrix &m);
 	~matrix() {}
-	
+
+	matrix operator+ (const matrix &m) const;
+	matrix operator- (const matrix &m) const;
 	matrix operator* (const matrix &m) const; // 4x4 * 4x4
 	vector operator* (const vector &v) const; // 4x4 * 4x1
 	matrix operator* (const int &f) const; // Scalar multiplication

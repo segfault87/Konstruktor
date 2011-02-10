@@ -107,6 +107,27 @@ matrix::matrix(const matrix &m)
 	memcpy((float *)&m_matrix[0][0], (float *)m.get_pointer(), sizeof(float)*16);
 }
 
+matrix matrix::operator+ (const matrix &m) const
+{
+	matrix out;
+	
+	for (int i = 0; i < 4; ++i)
+		for (int j = 0; j < 4; ++j)
+			out.value(i, j) = value(i, j) + m.value(i, j);
+
+	return out;	
+}
+
+matrix matrix::operator- (const matrix &m) const
+{
+	matrix out;
+
+	for (int i = 0; i < 4; ++i)
+		for (int j = 0; j < 4; ++j)
+			out.value(i, j) = value(i, j) - m.value(i, j);
+
+	return out;
+}
 
 // Matrix-by-matrix Multiplication
 matrix matrix::operator* (const matrix &m) const
