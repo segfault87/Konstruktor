@@ -196,6 +196,8 @@ void vbuffer_extension::update()
 
 		delete m_condparams;
 		m_condparams = 0L;
+#else
+		m_isvbo = false;
 #endif
 	} else {
 		m_isvbo = false;
