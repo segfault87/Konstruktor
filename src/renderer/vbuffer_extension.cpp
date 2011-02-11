@@ -56,9 +56,8 @@ vbuffer_extension::vbuffer_extension(ldraw::model *m, void *arg)
 
 vbuffer_extension::~vbuffer_extension()
 {
-	delete m_params;
-
 	clear();
+	delete m_params;
 }
 
 int vbuffer_extension::s_memory_usage = 0;
