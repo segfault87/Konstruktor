@@ -4,8 +4,8 @@
  *                                                                                   *
  * Author: (c)2006-2010 Park "segfault" J. K. <mastermind_at_planetmono_dot_org>     */
 
-#ifndef _RENDERER_OPENGL_H_
-#define _RENDERER_OPENGL_H_
+#ifndef _SRC_OPENGL_H_
+#define _SRC_OPENGL_H_
 
 #if defined(WIN32)
 #include <windows.h>
@@ -19,6 +19,6 @@ typedef char GLchar;
 #if !defined(WIN32)
 #include <GL/glx.h>
 #endif
-#include <GL/glext.h>
+#include "../3rdparty/GL/glext.h"
 
 #endif

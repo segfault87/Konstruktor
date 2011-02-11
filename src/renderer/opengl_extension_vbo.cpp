@@ -23,10 +23,10 @@ opengl_extension_vbo::opengl_extension_vbo()
 	: opengl_extension("GL_ARB_vertex_buffer_object")
 {
 	if (m_supported) {
-		m_glgenbuffers = (void (*)(GLsizei, GLuint *))get_glext_proc("glGenBuffersARB");
-		m_gldeletebuffers = (void (*)(GLsizei, const GLuint *))get_glext_proc("glDeleteBuffersARB");
-		m_glbindbuffer = (void (*)(GLenum, GLuint))get_glext_proc("glBindBufferARB");
-		m_glbufferdata = (void (*)(GLenum, GLsizei, const void *, GLenum))get_glext_proc("glBufferDataARB");
+		m_glgenbuffers = (PFNGLGENBUFFERSPROC) get_glext_proc("glGenBuffersARB");
+		m_gldeletebuffers = (PFNGLDELETEBUFFERSPROC) get_glext_proc("glDeleteBuffersARB");
+		m_glbindbuffer = (PFNGLBINDBUFFERPROC) get_glext_proc("glBindBufferARB");
+		m_glbufferdata = (PFNGLBUFFERDATAPROC) get_glext_proc("glBufferDataARB");
 	}
 }
 
