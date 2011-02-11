@@ -18,7 +18,7 @@ find_package(Qt4 4.5.0 COMPONENTS QtCore QtGui QtOpenGL REQUIRED)
 find_package(KDE4)
 find_package(Sqlite REQUIRED)
 
-if (WIN32)
+if (KDE4_FOUND AND WIN32)
 find_package(Kdewin REQUIRED)
 endif()
 
