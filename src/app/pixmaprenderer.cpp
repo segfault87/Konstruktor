@@ -36,14 +36,19 @@ PixmapRenderer::PixmapRenderer(int width, int height, QGLWidget *shareWidget)
 	buffer_->makeCurrent();	
 	
 	// Initialize GL
+	ldraw_renderer::renderer_opengl_factory::rendering_mode rmode;
 #ifndef KONSTRUKTOR_DB_UPDATER
 	params_ = new ldraw_renderer::parameters(*Application::self()->renderer_params());
+	rmode = ldraw_renderer::renderer_opengl_factory::mode_vbo;
 #else
 	params_ = new ldraw_renderer::parameters();
 	params_->set_stud_rendering_mode(ldraw_renderer::parameters::stud_regular);
+	params_->set_vbuffer_criteria(ldraw_renderer::parameters::vbuffer_everything);
+	params_->set_shading(true);
+	rmode = ldraw_renderer::renderer_opengl_factory::mode_varray;
 #endif
 	
-	ldraw_renderer::renderer_opengl_factory ro(params_, ldraw_renderer::renderer_opengl_factory::mode_vbo);
+	ldraw_renderer::renderer_opengl_factory ro(params_, rmode);
 	renderer_ = ro.create_renderer();
 	renderer_->set_base_color(ldraw::color(7));
 	renderer_->setup();

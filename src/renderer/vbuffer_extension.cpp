@@ -4,7 +4,6 @@
  *                                                                                   *
  * Author: (c)2006-2010 Park "segfault" J. K. <mastermind_at_planetmono_dot_org>     */
 
-
 #include <libldr/elements.h>
 #include <libldr/model.h>
 #include <libldr/utils.h>
@@ -103,10 +102,9 @@ void vbuffer_extension::clear()
 				delete (*it).second[i];
 		}
 
-		for (std::map<ldraw::color, GLuint *>::iterator it = m_vbo_precolored.begin(); it != m_vbo_precolored.end(); ++it) {
+		for (std::map<ldraw::color, GLuint *>::iterator it = m_vbo_precolored.begin(); it != m_vbo_precolored.end(); ++it)
 			vboext->glDeleteBuffers(4, (*it).second);
-		}
-
+		
 		m_colorfixed = false;
 		
 		m_isnull = true;
@@ -156,7 +154,7 @@ void vbuffer_extension::update()
 
 	opengl_extension_vbo *vbo = opengl_extension_vbo::self();
 	if (!m_params->force_vbuffer && vbo->is_supported()) {
-#if !defined(GL_VERSION_1_1)
+#if defined(GL_VERSION_1_5)
 		m_isvbo = true;
 
 		// Create VBO and upload static data to VRAM if needed
@@ -432,7 +430,7 @@ void vbuffer_extension::fork_color(const ldraw::color &c)
 		}
 	}
 	if (m_isvbo) {
-#if !defined(GL_VERSION_1_1)
+#if defined(GL_VERSION_1_5)
 		GLuint *vbobuf = new GLuint[4];
 		vbo->glGenBuffers(4, vbobuf);
 		
