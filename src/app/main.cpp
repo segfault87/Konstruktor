@@ -27,6 +27,9 @@ int main(int argc, char *argv[])
 	about.addCredit(ki18nc("@info:credit", "Nathaniel Titane"),
 					ki18nc("@info:credit", "Testing"),
 					"nathaniel.titane@gmail.com");
+	about.addCredit(ki18nc("@info:credit", "Ralf Habacker"),
+					ki18nc("@info:credit", "Windows port"),
+					"ralf.habacker@freenet.de");
 	
 	KCmdLineArgs::init(argc, argv, &about);
 
