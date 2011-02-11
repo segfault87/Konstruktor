@@ -19,6 +19,6 @@ typedef char GLchar;
 #if !defined(WIN32)
 #include <GL/glx.h>
 #endif
-#include "../3rdparty/GL/glext.h"
+#include <GL/glext.h>
 
 #endif

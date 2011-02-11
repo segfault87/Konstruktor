@@ -9,7 +9,7 @@
 #include <libldr/reader.h>
 #include <libldr/utils.h>
 
-#include <opengl.h>
+#include <renderer/opengl.h>
 #include <renderer/normal_extension.h>
 #include <renderer/opengl_extension_vbo.h>
 #include <renderer/vbuffer_extension.h>

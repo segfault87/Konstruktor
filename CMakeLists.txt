@@ -37,5 +37,7 @@ if(DEBUG_PROFILE)
 add_definitions(-pg)
 endif(DEBUG_PROFILE)
 
+add_definitions(-I${CMAKE_SOURCE_DIR}/3rdparty)
+
 subdirs(src)
 

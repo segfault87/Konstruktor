@@ -103,6 +103,18 @@ void CommandTransform::redo()
 				}
 			}
 
+			for (int i = 0; i < 3; ++i) {
+				float v = cmat.value(i, 3);
+				float fmod = std::fmod(v, 1.0f);
+				
+				if (std::fabs(fmod) < LDR_EPSILON) {
+					if (fmod < 0.0f)
+						cmat.value(i, 3) = std::ceil(v);
+					else
+						cmat.value(i, 3) = std::floor(v);
+				}
+			}
+
 			r->set_matrix(cmat);
 		}
 	}

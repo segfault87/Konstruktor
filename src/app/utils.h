@@ -17,7 +17,6 @@ class Utils
 	~Utils() {}
 	
   public:
-	static float floatModulo(float dividend, float divisor);
 	static int maximum(const QSet<int> &set);
 };
 

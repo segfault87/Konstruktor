@@ -1,6 +1,15 @@
 // Konstruktor - An interactive LDraw modeler for KDE
 // Copyright (c)2006-2011 Park "segfault" J. K. <mastermind@planetmono.org>
 
+#include <QAction>
+#include <QActionGroup>
+#include <QFontMetrics>
+#include <QMenu>
+#include <QMouseEvent>
+#include <QPainter>
+#include <QTextStream>
+#include <QUrl>
+
 #include <limits.h>
 
 #include <cmath>
@@ -9,13 +18,6 @@
 #include <libldr/utils.h>
 
 #include <renderer/opengl_extension_vbo.h>
-
-#include <QAction>
-#include <QActionGroup>
-#include <QFontMetrics>
-#include <QMenu>
-#include <QMouseEvent>
-#include <QPainter>
 
 #include <klocale.h>
 #include <kmessagebox.h>

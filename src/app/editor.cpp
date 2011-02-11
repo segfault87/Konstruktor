@@ -115,7 +115,7 @@ KAction* Editor::createUndoAction(KActionCollection *actionCollection)
 
 float Editor::snap(float v) const
 {
-	float mod = Utils::floatModulo(std::fabs(v), gridDensity());
+	float mod = std::fmod(std::fabs(v), gridDensity());
 	
 	if (v >= 0.0f)
 		return v - mod;
@@ -125,7 +125,7 @@ float Editor::snap(float v) const
 
 float Editor::snapYAxis(float v) const
 {
-	float mod = Utils::floatModulo(std::fabs(v), gridDensityYAxis());
+	float mod = std::fmod(std::fabs(v), gridDensityYAxis());
 	
 	if (v >= 0.0f)
 		return v - mod;
