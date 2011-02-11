@@ -10,6 +10,10 @@
 #include <exception>
 #include <string>
 
+#ifndef __func__
+#define __func__ __FUNCTION__
+#endif
+
 namespace ldraw {
 
 class LIBLDR_EXPORT exception : public std::exception

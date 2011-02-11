@@ -20,7 +20,7 @@ namespace ldraw
 namespace ldraw_renderer
 {
 
-class LIBLDR_EXPORT normal_extension : public ldraw::extension
+class LIBLDRAWRENDERER_EXPORT normal_extension : public ldraw::extension
 {
   public:
 	normal_extension(ldraw::model *m, void *arg);

@@ -7,16 +7,15 @@
 #ifndef _RENDERER_OPENGL_EXTENSION_VSHADER_H_
 #define _RENDERER_OPENGL_EXTENSION_VSHADER_H_
 
-#include <GL/gl.h>
-
+#include "opengl.h"
 #include <libldr/common.h>
 
-#include <renderer/opengl_extension.h>
+#include "opengl_extension.h"
 
 namespace ldraw_renderer
 {
 
-class LIBLDR_EXPORT opengl_extension_shader : public opengl_extension
+class LIBLDRAWRENDERER_EXPORT opengl_extension_shader : public opengl_extension
 {
   public:
 	static opengl_extension_shader* self();
@@ -63,42 +62,42 @@ class LIBLDR_EXPORT opengl_extension_shader : public opengl_extension
   private:
 	static opengl_extension_shader *m_instance;
 
-	GLuint (*m_glcreateshader)(GLenum);
-	void (*m_gldeleteshader)(GLuint);
-	void (*m_glshadersource)(GLuint, GLsizei, const GLchar **, const GLint *);
-	void (*m_glcompileshader)(GLuint);
+	PFNGLCREATESHADERPROC m_glcreateshader;
+	PFNGLDELETESHADERPROC m_gldeleteshader;
+	PFNGLSHADERSOURCEPROC m_glshadersource;
+	PFNGLCOMPILESHADERPROC m_glcompileshader;
 
-	GLuint (*m_glcreateprogram)();
-	void (*m_gldeleteprogram)(GLuint);
-	void (*m_gllinkprogram)(GLuint);
-	void (*m_gluseprogram)(GLuint);
-	void (*m_glattachshader)(GLuint, GLuint);
-	void (*m_gldetachshader)(GLuint, GLuint);
+	PFNGLCREATEPROGRAMPROC m_glcreateprogram;
+	PFNGLDELETEPROGRAMPROC m_gldeleteprogram;
+	PFNGLLINKPROGRAMPROC m_gllinkprogram;
+	PFNGLUSEPROGRAMPROC m_gluseprogram;
+	PFNGLATTACHSHADERPROC m_glattachshader;
+	PFNGLDETACHSHADERPROC m_gldetachshader;
 
-	GLint (*m_glgetuniformlocation)(GLuint, const GLchar *);
-	GLint (*m_glgetattriblocation)(GLuint, const GLchar *);
+	PFNGLGETUNIFORMLOCATIONPROC m_glgetuniformlocation;
+	PFNGLGETATTRIBLOCATIONPROC m_glgetattriblocation;
 
-	void (*m_glvertexattribpointer)(GLuint, GLint, GLenum, GLboolean, GLsizei, const GLvoid *);
-	void (*m_glbindattriblocation)(GLuint, GLuint, const GLchar *);
-	void (*m_glenablevertexattribarray)(GLuint);
-	void (*m_gldisablevertexattribarray)(GLuint);
+	PFNGLVERTEXATTRIBPOINTERPROC m_glvertexattribpointer;
+	PFNGLBINDATTRIBLOCATIONPROC m_glbindattriblocation;
+	PFNGLENABLEVERTEXATTRIBARRAYPROC m_glenablevertexattribarray;
+	PFNGLDISABLEVERTEXATTRIBARRAYPROC m_gldisablevertexattribarray;
 
-	void (*m_gluniform1f)(GLint, GLfloat);
-	void (*m_gluniform2f)(GLint, GLfloat, GLfloat);
-	void (*m_gluniform3f)(GLint, GLfloat, GLfloat, GLfloat);
-	void (*m_gluniform4f)(GLint, GLfloat, GLfloat, GLfloat, GLfloat);
-	void (*m_gluniform1i)(GLint, GLint);
-	void (*m_gluniform2i)(GLint, GLint, GLint);
-	void (*m_gluniform3i)(GLint, GLint, GLint, GLint);
-	void (*m_gluniform4i)(GLint, GLint, GLint, GLint, GLint);
-	void (*m_gluniform1fv)(GLint, GLsizei, const GLfloat *);
-	void (*m_gluniform2fv)(GLint, GLsizei, const GLfloat *);
-	void (*m_gluniform3fv)(GLint, GLsizei, const GLfloat *);
-	void (*m_gluniform4fv)(GLint, GLsizei, const GLfloat *);
-	void (*m_gluniform1iv)(GLint, GLsizei, const GLint *);
-	void (*m_gluniform2iv)(GLint, GLsizei, const GLint *);
-	void (*m_gluniform3iv)(GLint, GLsizei, const GLint *);
-	void (*m_gluniform4iv)(GLint, GLsizei, const GLint *);
+	PFNGLUNIFORM1FPROC m_gluniform1f;
+	PFNGLUNIFORM2FPROC m_gluniform2f;
+	PFNGLUNIFORM3FPROC m_gluniform3f;
+	PFNGLUNIFORM4FPROC m_gluniform4f;
+	PFNGLUNIFORM1IPROC m_gluniform1i;
+	PFNGLUNIFORM2IPROC m_gluniform2i;
+	PFNGLUNIFORM3IPROC m_gluniform3i;
+	PFNGLUNIFORM4IPROC m_gluniform4i;
+	PFNGLUNIFORM1FVPROC m_gluniform1fv;
+	PFNGLUNIFORM2FVPROC m_gluniform2fv;
+	PFNGLUNIFORM3FVPROC m_gluniform3fv;
+	PFNGLUNIFORM4FVPROC m_gluniform4fv;
+	PFNGLUNIFORM1IVPROC m_gluniform1iv;
+	PFNGLUNIFORM2IVPROC m_gluniform2iv;
+	PFNGLUNIFORM3IVPROC m_gluniform3iv;
+	PFNGLUNIFORM4IVPROC m_gluniform4iv;
 };
 
 }

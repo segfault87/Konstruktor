@@ -12,7 +12,7 @@
 namespace ldraw_renderer
 {
 
-class LIBLDR_EXPORT parameters
+class LIBLDRAWRENDERER_EXPORT parameters
 {
   public:
 	enum stud_rendering_mode { stud_regular, stud_line, stud_square };

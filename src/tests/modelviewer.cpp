@@ -1,9 +1,6 @@
 #include <cmath>
 #include <iostream>
 
-#include <GL/gl.h>
-#include <GL/glu.h>
-
 #include <libldr/bfc.h>
 #include <libldr/color.h>
 #include <libldr/metrics.h>
@@ -12,6 +9,7 @@
 #include <libldr/reader.h>
 #include <libldr/utils.h>
 
+#include <opengl.h>
 #include <renderer/normal_extension.h>
 #include <renderer/opengl_extension_vbo.h>
 #include <renderer/vbuffer_extension.h>

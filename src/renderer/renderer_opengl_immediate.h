@@ -21,7 +21,7 @@ namespace ldraw
 {
     class bfc_state_tracker;
     class color;
-    struct color_entity;
+    class color_entity;
     class metrics;
 }
 
@@ -40,7 +40,7 @@ class parameters;
 
 /* OpenGL immediate mode rendering path (now deprecated) */
 
-class LIBLDR_EXPORT renderer_opengl_immediate : public renderer_opengl
+class LIBLDRAWRENDERER_EXPORT renderer_opengl_immediate : public renderer_opengl
 {
   public:
 	~renderer_opengl_immediate();

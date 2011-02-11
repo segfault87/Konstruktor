@@ -283,6 +283,9 @@ QModelIndex ContentsModel::index(int row, int column, const QModelIndex &parent)
 	if (parent.isValid()) {
 		return QModelIndex();
 	} else {
+		// not sure if this is correct
+		if (!model_)
+			return createIndex(row, column); 
 		if (column == ColumnCheck)
 			return createIndex(row, column, (void *)model_->elements()[row]);
 		else

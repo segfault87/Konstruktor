@@ -4,8 +4,7 @@
  *                                                                                   *
  * Author: (c)2006-2010 Park "segfault" J. K. <mastermind_at_planetmono_dot_org>     */
 
-#include <GL/gl.h>
-
+#include "opengl.h"
 #include "opengl_extension_vbo.h"
 #include "parameters.h"
 #include "renderer_opengl_immediate.h"

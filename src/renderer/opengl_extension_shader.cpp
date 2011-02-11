@@ -23,39 +23,38 @@ opengl_extension_shader::opengl_extension_shader()
 	: opengl_extension("GL_ARB_vertex_shader")
 {
 	if (m_supported) {
-		m_glcreateshader = (GLuint (*)(GLenum))get_glext_proc("glCreateShaderObjectARB");
-		m_gldeleteshader = (void (*)(GLuint))get_glext_proc("glDeleteObjectARB");
-		m_glshadersource = (void (*)(GLuint, GLsizei, const GLchar **, const GLint *))get_glext_proc("glShaderSourceARB");
-		m_glcompileshader = (void (*)(GLuint))get_glext_proc("glCompileShaderARB");
-		m_glcreateprogram = (GLuint (*)())get_glext_proc("glCreateProgramObjectARB");
-		m_gldeleteprogram = (void (*)(GLuint))get_glext_proc("glDeleteObjectARB");
-		m_gllinkprogram = (void (*)(GLuint))get_glext_proc("glLinkProgramARB");
-		m_gluseprogram = (void (*)(GLuint))get_glext_proc("glUseProgramObjectARB");
-		m_glattachshader = (void (*)(GLuint, GLuint))get_glext_proc("glAttachObjectARB");
-		m_gldetachshader = (void (*)(GLuint, GLuint))get_glext_proc("glDetachObjectARB");
-		m_glgetuniformlocation = (GLint (*)(GLuint, const GLchar *))get_glext_proc("glGetUniformLocationARB");
-		m_glgetattriblocation = (GLint (*)(GLuint, const GLchar *))get_glext_proc("glGetAttribLocationARB");
-		m_glvertexattribpointer = (void (*)(GLuint, GLint, GLenum, GLboolean, GLsizei, const GLvoid *))get_glext_proc("glVertexAttribPointerARB");
-		m_glbindattriblocation = (void (*)(GLuint, GLuint, const GLchar *))get_glext_proc("glBindAttribLocationARB");
-		m_glenablevertexattribarray = (void (*)(GLuint))get_glext_proc("glEnableVertexAttribArrayARB");
-		m_gldisablevertexattribarray = (void (*)(GLuint))get_glext_proc("glDisableVertexAttribArrayARB");
-		m_gluniform1f = (void (*)(GLint, GLfloat))get_glext_proc("glUniform1fARB");
-		m_gluniform2f = (void (*)(GLint, GLfloat, GLfloat))get_glext_proc("glUniform2fARB");
-		m_gluniform3f = (void (*)(GLint, GLfloat, GLfloat, GLfloat))get_glext_proc("glUniform3fARB");
-		m_gluniform4f = (void (*)(GLint, GLfloat, GLfloat, GLfloat, GLfloat))get_glext_proc("glUniform4fARB");
-		m_gluniform1i = (void (*)(GLint, GLint))get_glext_proc("glUniform1iARB");
-		m_gluniform2i = (void (*)(GLint, GLint, GLint))get_glext_proc("glUniform2iARB");
-		m_gluniform3i = (void (*)(GLint, GLint, GLint, GLint))get_glext_proc("glUniform3iARB");
-		m_gluniform4i = (void (*)(GLint, GLint, GLint, GLint, GLint))get_glext_proc("glUniform4iARB");
-		m_gluniform1fv = (void (*)(GLint, GLsizei, const GLfloat *))get_glext_proc("glUniform1fvARB");
-		m_gluniform2fv = (void (*)(GLint, GLsizei, const GLfloat *))get_glext_proc("glUniform2fvARB");
-		m_gluniform3fv = (void (*)(GLint, GLsizei, const GLfloat *))get_glext_proc("glUniform3fvARB");
-		m_gluniform4fv = (void (*)(GLint, GLsizei, const GLfloat *))get_glext_proc("glUniform4fvARB");
-		m_gluniform1iv = (void (*)(GLint, GLsizei, const GLint *))get_glext_proc("glUniform1ivARB");
-		m_gluniform2iv = (void (*)(GLint, GLsizei, const GLint *))get_glext_proc("glUniform2ivARB");
-		m_gluniform3iv = (void (*)(GLint, GLsizei, const GLint *))get_glext_proc("glUniform3ivARB");
-		m_gluniform4iv = (void (*)(GLint, GLsizei, const GLint *))get_glext_proc("glUniform4ivARB");
-		
+		m_glcreateshader = (PFNGLCREATESHADERPROC) get_glext_proc("glCreateShaderObjectARB");
+		m_gldeleteshader = (PFNGLDELETESHADERPROC) get_glext_proc("glDeleteObjectARB");
+		m_glshadersource = (PFNGLSHADERSOURCEPROC) get_glext_proc("glShaderSourceARB");
+		m_glcompileshader = (PFNGLCOMPILESHADERPROC) get_glext_proc("glCompileShaderARB");
+		m_glcreateprogram = (PFNGLCREATEPROGRAMPROC) get_glext_proc("glCreateProgramObjectARB");
+		m_gldeleteprogram = (PFNGLDELETEPROGRAMPROC) get_glext_proc("glDeleteObjectARB");
+		m_gllinkprogram = (PFNGLLINKPROGRAMPROC) get_glext_proc("glLinkProgramARB");
+		m_gluseprogram = (PFNGLUSEPROGRAMPROC) get_glext_proc("glUseProgramObjectARB");
+		m_glattachshader = (PFNGLATTACHSHADERPROC) get_glext_proc("glAttachObjectARB");
+		m_gldetachshader = (PFNGLDETACHSHADERPROC) get_glext_proc("glDetachObjectARB");
+		m_glgetuniformlocation = (PFNGLGETUNIFORMLOCATIONPROC) get_glext_proc("glGetUniformLocationARB");
+		m_glgetattriblocation = (PFNGLGETATTRIBLOCATIONPROC) get_glext_proc("glGetAttribLocationARB");
+		m_glvertexattribpointer = (PFNGLVERTEXATTRIBPOINTERPROC) get_glext_proc("glVertexAttribPointerARB");
+		m_glbindattriblocation = (PFNGLBINDATTRIBLOCATIONPROC) get_glext_proc("glBindAttribLocationARB");
+		m_glenablevertexattribarray = (PFNGLENABLEVERTEXATTRIBARRAYPROC) get_glext_proc("glEnableVertexAttribArrayARB");
+		m_gldisablevertexattribarray = (PFNGLDISABLEVERTEXATTRIBARRAYPROC) get_glext_proc("glDisableVertexAttribArrayARB");
+		m_gluniform1f = (PFNGLUNIFORM1FPROC) get_glext_proc("glUniform1fARB");
+		m_gluniform2f = (PFNGLUNIFORM2FPROC) get_glext_proc("glUniform2fARB");
+		m_gluniform3f = (PFNGLUNIFORM3FPROC) get_glext_proc("glUniform3fARB");
+		m_gluniform4f = (PFNGLUNIFORM4FPROC) get_glext_proc("glUniform4fARB");
+		m_gluniform1i = (PFNGLUNIFORM1IPROC) get_glext_proc("glUniform1iARB");
+		m_gluniform2i = (PFNGLUNIFORM2IPROC) get_glext_proc("glUniform2iARB");
+		m_gluniform3i = (PFNGLUNIFORM3IPROC) get_glext_proc("glUniform3iARB");
+		m_gluniform4i = (PFNGLUNIFORM4IPROC) get_glext_proc("glUniform4iARB");
+		m_gluniform1fv = (PFNGLUNIFORM1FVPROC) get_glext_proc("glUniform1fvARB");
+		m_gluniform2fv = (PFNGLUNIFORM2FVPROC) get_glext_proc("glUniform2fvARB");
+		m_gluniform3fv = (PFNGLUNIFORM3FVPROC) get_glext_proc("glUniform3fvARB");
+		m_gluniform4fv = (PFNGLUNIFORM4FVPROC) get_glext_proc("glUniform4fvARB");
+		m_gluniform1iv = (PFNGLUNIFORM1IVPROC) get_glext_proc("glUniform1ivARB");
+		m_gluniform2iv = (PFNGLUNIFORM2IVPROC) get_glext_proc("glUniform2ivARB");
+		m_gluniform3iv = (PFNGLUNIFORM3IVPROC) get_glext_proc("glUniform3ivARB");
+		m_gluniform4iv = (PFNGLUNIFORM4IVPROC) get_glext_proc("glUniform4ivARB");
 	}
 }
 

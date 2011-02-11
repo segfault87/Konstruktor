@@ -1,4 +1,4 @@
-/* LDRrenderer: LDraw model rendering library which based on libLDR                  *
+ /* LDRrenderer: LDraw model rendering library which based on libLDR                  *
  * To obtain more information about LDraw, visit http://www.ldraw.org                *
  * Distributed in terms of the General Public License v2                             *
  *                                                                                   *
@@ -6,14 +6,7 @@
 
 #include <cstring>
 
-#include <GL/gl.h>
-
-#if defined(WIN32)
-#include <wingdi.h>
-#else
-#include <GL/glx.h>
-#endif
-
+#include "opengl.h"
 #include "opengl_extension.h"
 
 namespace ldraw_renderer
@@ -42,7 +35,7 @@ bool opengl_extension::is_supported() const
 opengl_extension::func_ptr opengl_extension::get_glext_proc(const char *procname)
 {
 #if defined(WIN32)
-	return wglGetProcAddress(procname);
+	return (opengl_extension::func_ptr) wglGetProcAddress(procname);
 #else
 	return glXGetProcAddress((const GLubyte *)procname);
 #endif

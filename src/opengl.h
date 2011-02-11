@@ -4,29 +4,21 @@
  *                                                                                   *
  * Author: (c)2006-2010 Park "segfault" J. K. <mastermind_at_planetmono_dot_org>     */
 
-#ifndef _RENDERER_OPENGL_EXTENSION_H_
-#define _RENDERER_OPENGL_EXTENSION_H_
+#ifndef _SRC_OPENGL_H_
+#define _SRC_OPENGL_H_
 
-#include <libldr/common.h>
+#if defined(WIN32)
+#include <windows.h>
+#include <wingdi.h>
+typedef char GLchar;
+#endif
 
-namespace ldraw_renderer
-{
-
-class LIBLDRAWRENDERER_EXPORT opengl_extension
-{
-  public:
-	typedef void (*func_ptr)();
-	
-	opengl_extension(const char *name);
-
-	bool is_supported() const;
-
-  protected:
-	bool m_supported;
-
-	func_ptr get_glext_proc(const char *procname);
-};
-
-}
+#define GL_GLEXT_PROTOTYPES
+#include <GL/gl.h>
+#include <GL/glu.h>
+#if !defined(WIN32)
+#include <GL/glx.h>
+#endif
+#include "../3rdparty/GL/glext.h"
 
 #endif

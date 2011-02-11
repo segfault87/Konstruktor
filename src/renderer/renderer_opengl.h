@@ -17,7 +17,7 @@ namespace ldraw_renderer
 class parameters;
 class renderer;
 
-class LIBLDR_EXPORT renderer_opengl : public renderer
+class LIBLDRAWRENDERER_EXPORT renderer_opengl : public renderer
 {
   public:
 	renderer_opengl(const parameters *params);
@@ -26,7 +26,7 @@ class LIBLDR_EXPORT renderer_opengl : public renderer
 	virtual void setup();
 };
 
-class LIBLDR_EXPORT renderer_opengl_factory
+class LIBLDRAWRENDERER_EXPORT renderer_opengl_factory
 {
   public:
 	enum rendering_mode { mode_immediate, mode_varray, mode_vbo };

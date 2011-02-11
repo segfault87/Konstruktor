@@ -2,6 +2,9 @@
 #include <cstring>
 #include <iostream>
 
+#if defined(WIN32)
+#include <windows.h>
+#endif
 #include <GL/glut.h>
 #include <GL/freeglut_ext.h>
 

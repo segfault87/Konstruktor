@@ -29,11 +29,13 @@ set(libldr_HEADERS
   utils.h
   writer.h
 )
+include_directories(${KDEWIN_INCLUDES})
+add_definitions(-DMAKE_LIBLDR_LIB)
 
 add_library(libldr SHARED ${libldr_SOURCES})
 set_target_properties(libldr PROPERTIES OUTPUT_NAME ldraw)
 set_target_properties(libldr PROPERTIES VERSION 0.5.0 SOVERSION 1)
-
+target_link_libraries(libldr ${KDEWIN_LIBRARIES})
 # install
 install(TARGETS libldr DESTINATION ${INSTALL_TARGETS_DEFAULT_ARGS})
 install(FILES ${libldr_HEADERS} DESTINATION ${INCLUDE_INSTALL_DIR}/libldr)

@@ -8,11 +8,25 @@
 #define _LIBLDR_COMMON_H_
 
 #ifdef WIN32
+#ifdef MAKE_LIBLDR_LIB
 #define LIBLDR_EXPORT __declspec(dllexport)
+#else
+#define LIBLDR_EXPORT __declspec(dllimport)
+#endif
 #define DIRECTORY_SEPARATOR "\\"
 #else
 #define LIBLDR_EXPORT __attribute__ ((visibility("default")))
 #define DIRECTORY_SEPARATOR "/"
+#endif
+
+#ifdef WIN32
+#ifdef MAKE_LIBLDRAWRENDERER_LIB
+#define LIBLDRAWRENDERER_EXPORT __declspec(dllexport)
+#else
+#define LIBLDRAWRENDERER_EXPORT __declspec(dllimport)
+#endif
+#else
+#define LIBLDRAWRENDERER_EXPORT __attribute__ ((visibility("default")))
 #endif
 
 #include "exception.h"

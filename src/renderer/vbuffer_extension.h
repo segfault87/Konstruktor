@@ -24,7 +24,7 @@ namespace ldraw
 namespace ldraw_renderer
 {
 
-class LIBLDR_EXPORT vbuffer_extension : public ldraw::extension
+class LIBLDRAWRENDERER_EXPORT vbuffer_extension : public ldraw::extension
 {
   public:
 	enum buffer_type
