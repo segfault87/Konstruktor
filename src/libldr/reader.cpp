@@ -119,10 +119,11 @@ bool reader::parse_stream(model *m, std::istream &stream, bool multipart, std::s
 	
 	while(!stream.eof()) {
 		getline(stream, line);
-		long llen = line.length();
 		line = utils::trim_string(line);
+		long llen = line.length();
 		++lines;
-		
+		if (llen == 0)
+			continue;
 		// Returns true when more subpart(s) available. returns false otherwise.
 		if (multipart && llen > 7 && line.substr(0, 6) == "0 FILE") {
 			if (lines == 1) {
@@ -176,11 +177,15 @@ element_base* reader::parse_line(const std::string &command, model *m)
 {
 	std::string line = utils::trim_string(command);
 		
+	if (line.length() == 0)
+		return 0;
 	if (line[0] == '0') {
 		// parse line type 0
 
 		std::string cont = utils::trim_string(line.substr(1, line.length()-1));
 		std::string contlc = utils::translate_string(cont);
+		if (cont.length() == 0)
+			return 0;
 		
 		if (cont[0] == '!') {
 			// header data
