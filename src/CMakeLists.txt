@@ -1,7 +1,3 @@
-include_directories(
-    . 
-    ../3rdparty
-)
 
 subdirs(libldr)
 subdirs(renderer)

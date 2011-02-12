@@ -11,6 +11,8 @@ if (UNIX)
 add_definitions(${CMAKE_CXX_FLAGS_DEBUG} -fexceptions)
 endif()
 
+# 3rdparty must be included first to avoid using wrong opengl header
+include_directories(${CMAKE_SOURCE_DIR}/3rdparty)
 include_directories(${CMAKE_SOURCE_DIR}/src)
 
 find_package(OpenGL REQUIRED)
@@ -36,8 +38,6 @@ endif()
 if(DEBUG_PROFILE)
 add_definitions(-pg)
 endif(DEBUG_PROFILE)
-
-add_definitions(-I${CMAKE_SOURCE_DIR}/3rdparty)
 
 subdirs(src)
 
