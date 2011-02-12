@@ -5,7 +5,6 @@
 #define _PIXMAPRENDERER_H_
 
 #include <QGLFormat>
-#include <QGLPixelBuffer>
 
 #include <renderer/renderer_opengl.h>
 
@@ -14,6 +13,7 @@ class QGLWidget;
 
 namespace Konstruktor
 {
+class RendererPixelBuffer;
 
 class PixmapRenderer
 {
@@ -32,7 +32,7 @@ class PixmapRenderer
 	int width_;
 	int height_;
 	
-	QGLPixelBuffer *buffer_;
+	RendererPixelBuffer *buffer_;
 	QGLWidget *shareWidget_;
 };
 
