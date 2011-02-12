@@ -553,7 +553,7 @@ void renderer_opengl_retained::render_recursive(ldraw::model *m, const ldraw::fi
 			cptr = c.get_entity()->rgba;
 			shader->glUniform4f(m_vs_color_location_rgba, cptr[0] / 255.0f, cptr[1] / 255.0f, cptr[2] / 255.0f, cptr[3] / 255.0f);
 			cptr = c.get_entity()->complement;
-			glUniform4f(m_vs_color_location_complement, cptr[0] / 255.0f, cptr[1] / 255.0f, cptr[2] / 255.0f, cptr[3] / 255.0f);
+			shader->glUniform4f(m_vs_color_location_complement, cptr[0] / 255.0f, cptr[1] / 255.0f, cptr[2] / 255.0f, cptr[3] / 255.0f);
 #endif
 		}
 
