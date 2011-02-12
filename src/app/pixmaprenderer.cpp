@@ -30,10 +30,19 @@ public:
     {
 		qDebug() << shareWidget;
         if (QGLPixelBuffer::hasOpenGLPbuffers())
-            buffer = new QGLPixelBuffer(width, height, format, shareWidget);
+		{
+			buffer = new QGLPixelBuffer(width, height, format, shareWidget);
+			if (!buffer->isValid())
+			{
+				delete buffer;
+				buffer = 0;
+				ownWidget = new QGLWidget(shareWidget);
+				shareWidget = ownWidget;
+			}
+		}	
 		else //if (!shareWidget)
 		{	
-			ownWidget = new QGLWidget;
+			ownWidget = new QGLWidget(shareWidget);
 			shareWidget = ownWidget;
 		}
     }
