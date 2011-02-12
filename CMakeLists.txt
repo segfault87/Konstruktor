@@ -1,11 +1,7 @@
 project(Konstruktor)
 
-if (MINGW)
+if (MINGW OR UNIX)
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fexceptions")
-endif()
-
-if (UNIX)
-add_definitions(${CMAKE_CXX_FLAGS_DEBUG} -fexceptions)
 endif()
 
 # 3rdparty must be included first to avoid using wrong opengl header
