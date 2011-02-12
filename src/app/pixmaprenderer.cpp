@@ -26,10 +26,10 @@ namespace Konstruktor
 
 class RendererPixelBuffer {
 public:
-    RendererPixelBuffer ( int width, int height, const QGLFormat & format = QGLFormat::defaultFormat(), QGLWidget * shareWidget_ = 0 ) : buffer(0), shareWidget(shareWidget_), ownWidget(0)
-    {
+	RendererPixelBuffer ( int width, int height, const QGLFormat & format = QGLFormat::defaultFormat(), QGLWidget * shareWidget_ = 0 ) : buffer(0), shareWidget(shareWidget_), ownWidget(0)
+	{
 		qDebug() << shareWidget;
-        if (QGLPixelBuffer::hasOpenGLPbuffers())
+		if (QGLPixelBuffer::hasOpenGLPbuffers())
 		{
 			buffer = new QGLPixelBuffer(width, height, format, shareWidget);
 			if (!buffer->isValid())
@@ -45,53 +45,53 @@ public:
 			ownWidget = new QGLWidget(shareWidget);
 			shareWidget = ownWidget;
 		}
-    }
-    
-    ~RendererPixelBuffer()
-    {
-        delete buffer;
+	}
+	
+	~RendererPixelBuffer()
+	{
+		delete buffer;
 		delete ownWidget;
-    }
+	}
 
-    bool makeCurrent()
+	bool makeCurrent()
    {
-        if (buffer)
-            return buffer->makeCurrent();
-        else if (shareWidget)
-        {
-            shareWidget->makeCurrent();            
-            return true;
-        }
-        else 
-            return false;
-    }
-    
-    bool doneCurrent()
-    {
-        if (buffer)
-            return buffer->doneCurrent();
-        else if (shareWidget)
-        {
-            shareWidget->doneCurrent();            
-            return true;
-        }
-        else 
-            return false;
-    }
-        
-    QPixmap toPixmap(int x, int y, int width, int height)
-    {
-        if (buffer)
-            return QPixmap::fromImage(buffer->toImage().copy(x, y, width, height));
-        else if (shareWidget)
-            return shareWidget->renderPixmap(width,height);            
-        else 
-            return QPixmap();
-    }
+		if (buffer)
+			return buffer->makeCurrent();
+		else if (shareWidget)
+		{
+			shareWidget->makeCurrent();			
+			return true;
+		}
+		else 
+			return false;
+	}
+	
+	bool doneCurrent()
+	{
+		if (buffer)
+			return buffer->doneCurrent();
+		else if (shareWidget)
+		{
+			shareWidget->doneCurrent();			
+			return true;
+		}
+		else 
+			return false;
+	}
+		
+	QPixmap toPixmap(int x, int y, int width, int height)
+	{
+		if (buffer)
+			return QPixmap::fromImage(buffer->toImage().copy(x, y, width, height));
+		else if (shareWidget)
+			return shareWidget->renderPixmap(width,height);			
+		else 
+			return QPixmap();
+	}
 private: 
-    QGLPixelBuffer *buffer;
-    QGLWidget *shareWidget;
-    QGLWidget *ownWidget;
+	QGLPixelBuffer *buffer;
+	QGLWidget *shareWidget;
+	QGLWidget *ownWidget;
 };
 
 PixmapRenderer::PixmapRenderer(int width, int height, QGLWidget *shareWidget)
