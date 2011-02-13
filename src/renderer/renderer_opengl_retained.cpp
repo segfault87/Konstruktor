@@ -144,10 +144,8 @@ void renderer_opengl_retained::render(ldraw::model *m, const ldraw::filter *filt
 		
 		if (m_shader)
 			shader->glDisableVertexAttribArray(m_vs_color_location_verttype);
-#if defined(GL_VERSION_1_5)
 		if (m_vbo)
 			vbo->glBindBuffer(GL_ARRAY_BUFFER_ARB, 0);
-#endif
 		glDisableClientState(GL_COLOR_ARRAY);
 	}
 	
@@ -170,11 +168,9 @@ void renderer_opengl_retained::render_bounding_box(const ldraw::metrics &metrics
 
 	const float *bbox = 0L;
 	
-#if defined(GL_VERSION_1_5)
 	if (m_vbo)
 		vbo->glBindBuffer(GL_ARRAY_BUFFER_ARB, m_vbo_bbox_lines);
 	else
-#endif
 		bbox = m_bbox_lines;
 	glVertexPointer(3, GL_FLOAT, 0, bbox);
 
@@ -182,10 +178,8 @@ void renderer_opengl_retained::render_bounding_box(const ldraw::metrics &metrics
 
 	glPopMatrix();
 
-#if defined(GL_VERSION_1_5)
 	if (m_vbo)
 		vbo->glBindBuffer(GL_ARRAY_BUFFER_ARB, 0);
-#endif
 }
 
 void renderer_opengl_retained::render_bounding_box_filled(const ldraw::metrics &metrics)
@@ -204,11 +198,9 @@ void renderer_opengl_retained::render_bounding_box_filled(const ldraw::metrics &
 
 	const float *bbox = 0L;
 	
-#if defined(GL_VERSION_1_5)
 	if (m_vbo)
 		vbo->glBindBuffer(GL_ARRAY_BUFFER_ARB, m_vbo_bbox_filled);
 	else
-#endif
 		bbox = m_bbox_filled;
 	glVertexPointer(3, GL_FLOAT, 0, bbox);
 
@@ -216,10 +208,8 @@ void renderer_opengl_retained::render_bounding_box_filled(const ldraw::metrics &
 
 	glPopMatrix();
 
-#if defined(GL_VERSION_1_5)
 	if (m_vbo)
 		vbo->glBindBuffer(GL_ARRAY_BUFFER_ARB, 0);
-#endif
 }
 
 void renderer_opengl_retained::render_bounding_boxes(ldraw::model *m, const ldraw::filter *filter)
@@ -251,10 +241,8 @@ bool renderer_opengl_retained::hit_test(float *projection_matrix, float *modelvi
 	GLint viewport[4];
 	GLuint selectionBuffer[4];
 
-#if defined(GL_VERSION_1_5)
 	if (m_vbo)
 		opengl_extension_vbo::self()->glBindBuffer(GL_ARRAY_BUFFER_ARB, 0);
-#endif
 	
 	if (w == 0)
 		w = 1;
@@ -309,10 +297,8 @@ bool renderer_opengl_retained::hit_test(float *projection_matrix, float *modelvi
 		++i;
 	}
 
-#if defined(GL_VERSION_1_5)
 	if (m_vbo)
 		opengl_extension_vbo::self()->glBindBuffer(GL_ARRAY_BUFFER_ARB, 0);
-#endif
 	if (i == 0)
 		return false;
 
@@ -327,10 +313,8 @@ selection_list renderer_opengl_retained::select(float *projection_matrix, float 
 	GLint hits, viewport[4];
 	GLuint selectionBuffer[4096];
 
-#if defined(GL_VERSION_1_5)
 	if (m_vbo)
 		opengl_extension_vbo::self()->glBindBuffer(GL_ARRAY_BUFFER_ARB, 0);
-#endif
 	if (w == 0)
 		w = 1;
 	else if (w < 0)
@@ -451,7 +435,6 @@ void renderer_opengl_retained::init_shader()
 	opengl_extension_shader *shader = opengl_extension_shader::self();
 
 	if (shader->is_supported()) {
-#if defined(GL_VERSION_1_5)
 		m_shader = true;
 
 		m_vs_color_program = shader->glCreateProgram();
@@ -471,7 +454,6 @@ void renderer_opengl_retained::init_shader()
 		m_vs_color_location_rgba = shader->glGetUniformLocation(m_vs_color_program, "rgba");
 		m_vs_color_location_complement = shader->glGetUniformLocation(m_vs_color_program, "complement");
 		m_vs_color_location_verttype = shader->glGetAttribLocation(m_vs_color_program, "verttype");
-#endif
 	} else {
 		m_shader = false;
 	}
@@ -482,7 +464,7 @@ void renderer_opengl_retained::init_vbuffer()
 	opengl_extension_vbo *vbo = opengl_extension_vbo::self();
 	
 	if (vbo->is_supported()) {
-#if defined(GL_VERSION_1_5)
+#if defined(_GL_VERSION_1_5)
 		m_vbo = true;
 		
 		vbo->glGenBuffers(1, &m_vbo_bbox_lines);
@@ -542,7 +524,7 @@ void renderer_opengl_retained::render_recursive(ldraw::model *m, const ldraw::fi
 		opengl_extension_shader *shader = opengl_extension_shader::self();
 		
 		if (m_shader) {
-#if defined(GL_VERSION_1_5)
+#if defined(_GL_VERSION_1_5)
 			shader->glUseProgram(m_vs_color_program);
 			ldraw::color c(0);
 			if (m_colorstack.size() > 0)
@@ -561,13 +543,13 @@ void renderer_opengl_retained::render_recursive(ldraw::model *m, const ldraw::fi
 		
 		/* lines */
 		if (ve->count(vbuffer_extension::type_lines) > 0) {
-#if defined(GL_VERSION_1_5)
+#if defined(_GL_VERSION_1_5)
 			if (m_vbo)
 				vbo->glBindBuffer(GL_ARRAY_BUFFER_ARB, ve->get_vbo_vertices(vbuffer_extension::type_lines));
 #endif
 			glVertexPointer(3, GL_FLOAT, 0, ve->get_vertex_array(vbuffer_extension::type_lines));
 			if (m_vbo) {
-#if defined(GL_VERSION_1_5)
+#if defined(_GL_VERSION_1_5)
 				if (m_shader)
 					vbo_color = ve->get_vbo_colors(vbuffer_extension::type_lines);
 				else
@@ -604,20 +586,20 @@ void renderer_opengl_retained::render_recursive(ldraw::model *m, const ldraw::fi
 			
 			/* triangles */
 			if (ve->count(vbuffer_extension::type_triangles) > 0) {
-#if defined(GL_VERSION_1_5)
+#if defined(_GL_VERSION_1_5)
 				if (m_vbo)
 					vbo->glBindBuffer(GL_ARRAY_BUFFER_ARB, ve->get_vbo_vertices(vbuffer_extension::type_triangles));
 #endif
 				glVertexPointer(3, GL_FLOAT, 0, ve->get_vertex_array(vbuffer_extension::type_triangles));
 				if (shading) {
-#if defined(GL_VERSION_1_5)
+#if defined(_GL_VERSION_1_5)
 					if (m_vbo)
 						vbo->glBindBuffer(GL_ARRAY_BUFFER_ARB, ve->get_vbo_normals(vbuffer_extension::type_triangles));
 #endif
 					glNormalPointer(GL_FLOAT, 0, ve->get_normal_array(vbuffer_extension::type_triangles));
 				}
 				
-#if defined(GL_VERSION_1_5)
+#if defined(_GL_VERSION_1_5)
 				if (m_vbo) {
 					if (m_shader)
 						vbo_color = ve->get_vbo_colors(vbuffer_extension::type_triangles);
@@ -636,19 +618,19 @@ void renderer_opengl_retained::render_recursive(ldraw::model *m, const ldraw::fi
 			
 			/* quads */
 			if (ve->count(vbuffer_extension::type_quads) > 0) {
-#if defined(GL_VERSION_1_5)
+#if defined(_GL_VERSION_1_5)
 				if (m_vbo)
 					vbo->glBindBuffer(GL_ARRAY_BUFFER_ARB, ve->get_vbo_vertices(vbuffer_extension::type_quads));
 #endif
 				glVertexPointer(3, GL_FLOAT, 0, ve->get_vertex_array(vbuffer_extension::type_quads));
 				if (shading) {
-#if defined(GL_VERSION_1_5)
+#if defined(_GL_VERSION_1_5)
 					if (m_vbo)
 						vbo->glBindBuffer(GL_ARRAY_BUFFER_ARB, ve->get_vbo_normals(vbuffer_extension::type_quads));
 #endif
 					glNormalPointer(GL_FLOAT, 0, ve->get_normal_array(vbuffer_extension::type_quads));
 				}
-#if defined(GL_VERSION_1_5)
+#if defined(_GL_VERSION_1_5)
 				if (m_vbo) {
 					if (m_shader)
 						vbo_color = ve->get_vbo_colors(vbuffer_extension::type_quads);

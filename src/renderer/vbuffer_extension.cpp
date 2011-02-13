@@ -154,7 +154,6 @@ void vbuffer_extension::update()
 
 	opengl_extension_vbo *vbo = opengl_extension_vbo::self();
 	if (!m_params->force_vbuffer && vbo->is_supported()) {
-#if defined(GL_VERSION_1_5)
 		m_isvbo = true;
 
 		// Create VBO and upload static data to VRAM if needed
@@ -194,9 +193,6 @@ void vbuffer_extension::update()
 
 		delete m_condparams;
 		m_condparams = 0L;
-#else
-		m_isvbo = false;
-#endif
 	} else {
 		m_isvbo = false;
 	}
@@ -430,7 +426,6 @@ void vbuffer_extension::fork_color(const ldraw::color &c)
 		}
 	}
 	if (m_isvbo) {
-#if defined(GL_VERSION_1_5)
 		GLuint *vbobuf = new GLuint[4];
 		vbo->glGenBuffers(4, vbobuf);
 		
@@ -449,7 +444,6 @@ void vbuffer_extension::fork_color(const ldraw::color &c)
 			delete b;
 		}
 		m_vbo_precolored[c] = vbobuf;
-#endif
 	} else {
 		if (m_precolored_buf.find(c) != m_precolored_buf.end()) {
 			float **b = m_precolored_buf[c];
