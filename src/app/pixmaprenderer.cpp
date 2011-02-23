@@ -33,11 +33,30 @@ PixmapRenderer::PixmapRenderer(int width, int height, QGLWidget *shareWidget)
 	}
 	
 	buffer_ = new QGLPixelBuffer(width_, height_, fmt, shareWidget_);
+
+	if (!buffer_->isValid()) {
+		delete buffer_;
+		buffer_ = new QGLPixelBuffer(width_, height_, QGLFormat::defaultFormat(), shareWidget_);
+	}
+	
 	buffer_->makeCurrent();	
 	
 	// Initialize GL
 	ldraw_renderer::renderer_opengl_factory::rendering_mode rmode;
 #ifndef KONSTRUKTOR_DB_UPDATER
+	switch (Application::self()->config()->renderingMode()) {
+		case Config::EnumRenderingMode::VBO:
+		default:
+			rmode = ldraw_renderer::renderer_opengl_factory::mode_vbo;
+			break;
+		case Config::EnumRenderingMode::VArray:
+			rmode = ldraw_renderer::renderer_opengl_factory::mode_varray;
+			break;
+		case Config::EnumRenderingMode::Immediate:
+			rmode = ldraw_renderer::renderer_opengl_factory::mode_immediate;
+			break;
+	}
+	
 	params_ = new ldraw_renderer::parameters(*Application::self()->renderer_params());
 	rmode = ldraw_renderer::renderer_opengl_factory::mode_vbo;
 #else

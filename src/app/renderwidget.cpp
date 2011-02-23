@@ -70,9 +70,23 @@ RenderWidget::RenderWidget(MainWindow *mainwindow, Document **document, Viewport
 	gridVbo_[1] = 0;
 
 	makeCurrent();
+
+	ldraw_renderer::renderer_opengl_factory::rendering_mode rm;
+	switch (Application::self()->config()->renderingMode()) {
+		case Config::EnumRenderingMode::VBO:
+		default:
+			rm = ldraw_renderer::renderer_opengl_factory::mode_vbo;
+			break;
+		case Config::EnumRenderingMode::VArray:
+			rm = ldraw_renderer::renderer_opengl_factory::mode_varray;
+			break;
+		case Config::EnumRenderingMode::Immediate:
+			rm = ldraw_renderer::renderer_opengl_factory::mode_immediate;
+			break;
+	}
 	
 	params_ = new ldraw_renderer::parameters(*Application::self()->renderer_params());
-	renderer_ = ldraw_renderer::renderer_opengl_factory(params_, ldraw_renderer::renderer_opengl_factory::mode_vbo).create_renderer();
+	renderer_ = ldraw_renderer::renderer_opengl_factory(params_, rm).create_renderer();
 
 	reapplyConfigurations();
 

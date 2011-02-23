@@ -6,6 +6,7 @@
 
 #include <QSet>
 #include <QString>
+#include <QUrl>
 
 namespace Konstruktor
 {
@@ -18,6 +19,7 @@ class Utils
 	
   public:
 	static int maximum(const QSet<int> &set);
+	static QString urlFileName(const QUrl &url);
 };
 
 }

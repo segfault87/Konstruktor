@@ -17,6 +17,8 @@ class KUrl;
 namespace Konstruktor 
 {
 
+class Document;
+
 namespace Platform
 {
 
@@ -28,6 +30,11 @@ class MainWindow : public KXmlGuiWindow
 	virtual ~MainWindow();
 
   protected:
+	void platformOpenFile();
+	void platformOpenFile(const QUrl &url);
+	QString platformSaveFileDialog(Document *document);
+	bool platformSaveFile(const QString &url, bool isMultipart);
+	
 	void setupPlatformGui();
 	
 	QAction* createAction(const char *actionName, const QString &name, QObject *receiver, const char *slot, const QString &shortcut = QString(), const QString &icon = QString());

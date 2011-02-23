@@ -1,6 +1,5 @@
 // Konstruktor - An interactive LDraw modeler for KDE
 // Copyright (c)2006-2011 Park "segfault" J. K. <mastermind@planetmono.org>
-
 #include <QActionGroup>
 #include <QApplication>
 #include <QClipboard>
@@ -48,6 +47,7 @@
 #include "renderwidget.h"
 #include "submodelmodel.h"
 #include "submodelwidget.h"
+#include "utils.h"
 
 #include "mainwindow.h"
 
@@ -217,14 +217,14 @@ void MainWindow::openFile()
 }
 
 
-void MainWindow::openFile(const KUrl &url)
+void MainWindow::openFile(const QUrl &url)
 {
-	KUrl aurl = url;
-	if ((url.protocol().isEmpty() || url.isLocalFile()) && url.isRelative()) {
-		aurl = KUrl(QDir::currentPath() + "/").resolved(url);
+	QUrl aurl = url;
+	if ((url.scheme().isEmpty() || url.scheme() == "file") && url.isRelative()) {
+		aurl = QUrl(QDir::currentPath() + "/").resolved(url);
 	}		
 	
-	QString strUrl = aurl.prettyUrl();
+	QString strUrl = aurl.toLocalFile();
 	
 	if (openedUrls_.contains(strUrl)) {
 		for (int i = 0; i < documents_.size(); ++i) {
@@ -240,7 +240,7 @@ void MainWindow::openFile(const KUrl &url)
 		QString tmploc;
 		
 		if (!KIO::NetAccess::download(aurl, tmploc, 0L)) {
-			KMessageBox::error(this, i18n("Could not open document '%1'.", aurl.prettyUrl()));
+			KMessageBox::error(this, i18n("Could not open document '%1'.", aurl.toLocalFile()));
 			return;
 		}
 		
@@ -255,7 +255,7 @@ void MainWindow::openFile(const KUrl &url)
 		// append into document list, tab bar
 		openedUrls_.insert(strUrl);
 		documents_.append(QPair<QString, Document *>(strUrl, document));
-		int tabidx = tabbar_->addTab(url.fileName());
+		int tabidx = tabbar_->addTab(Utils::urlFileName(url));
 		tabbar_->setTabIcon(tabidx, KIcon("text-plain"));
 		tabbar_->setCurrentIndex(tabidx);
 
@@ -269,7 +269,7 @@ void MainWindow::openFile(const KUrl &url)
 		KMessageBox::error(this, i18n("Could not open a file: %1", e.details().c_str()));
 	}
 
-	setStatusMessage(i18n("Document '%1' opened.", aurl.fileName()));
+	setStatusMessage(i18n("Document '%1' opened.", aurl.path()));
 }
 
 void MainWindow::closeFile()
@@ -277,7 +277,7 @@ void MainWindow::closeFile()
 	EXIT_IF_NO_DOCUMENT;
 
 	if (activeDocument_->canSave()) {
-		switch (KMessageBox::warningYesNoCancel(this, i18n("The document \"%1\" has been modified. Do you want to save it?", activeDocument_->location().fileName()), QString(), KStandardGuiItem::save(), KStandardGuiItem::discard())) {
+		switch (KMessageBox::warningYesNoCancel(this, i18n("The document \"%1\" has been modified. Do you want to save it?", Utils::urlFileName(activeDocument_->location())), QString(), KStandardGuiItem::save(), KStandardGuiItem::discard())) {
 			case KMessageBox::Yes:
 				if (!doSave(activeDocument_, false))
 					return;
@@ -289,7 +289,7 @@ void MainWindow::closeFile()
 
 	Document *t = activeDocument_;
 	int ci = tabbar_->currentIndex();
-	openedUrls_.remove(t->location().prettyUrl());
+	openedUrls_.remove(t->location().toString());
 	documents_.remove(ci);
 	tabbar_->removeTab(ci);
 
@@ -609,10 +609,22 @@ void MainWindow::initGui()
 	if (Application::self()->config()->multisampling())
 		format.setSampleBuffers(true);
 
-	renderWidget_[0] = new RenderWidget(this, &activeDocument_, RenderWidget::Top, new QGLContext(format), 0L, srh1);
-	renderWidget_[1] = new RenderWidget(this, &activeDocument_, RenderWidget::Left, new QGLContext(format), renderWidget_[0], srh1);
-	renderWidget_[2] = new RenderWidget(this, &activeDocument_, RenderWidget::Front, new QGLContext(format), renderWidget_[0], srh2);
-	renderWidget_[3] = new RenderWidget(this, &activeDocument_, RenderWidget::Free, new QGLContext(format), renderWidget_[0], srh2);
+	QGLContext *ctx[4];
+	for (int i = 0; i < 4; ++i)
+		ctx[i] = new QGLContext(format);
+	
+	if (!ctx[0]->isValid()) {
+		/* fallback if antialiasing is not supported */
+		for (int i = 0; i < 4; ++i) {
+			delete ctx[i];
+			ctx[i] = new QGLContext(QGLFormat::defaultFormat());
+		}
+	}
+
+	renderWidget_[0] = new RenderWidget(this, &activeDocument_, RenderWidget::Top, ctx[0], 0L, srh1);
+	renderWidget_[1] = new RenderWidget(this, &activeDocument_, RenderWidget::Left, ctx[1], renderWidget_[0], srh1);
+	renderWidget_[2] = new RenderWidget(this, &activeDocument_, RenderWidget::Front, ctx[2], renderWidget_[0], srh2);
+	renderWidget_[3] = new RenderWidget(this, &activeDocument_, RenderWidget::Free, ctx[3], renderWidget_[0], srh2);
 
 	Application::self()->initializeRenderer(renderWidget_[0]);
 
@@ -793,7 +805,7 @@ bool MainWindow::confirmQuit()
 	QVector<QPair<QString, Document *> >::iterator it;
 	for (it = documents_.begin(); it != documents_.end(); ++it) {
 		if ((*it).second->canSave()) {
-			switch (KMessageBox::warningYesNoCancel(this, i18n("The document \"%1\" has been modified. Do you want to save it?", (*it).second->location().fileName()), QString(), KStandardGuiItem::save(), KStandardGuiItem::discard())) {
+			switch (KMessageBox::warningYesNoCancel(this, i18n("The document \"%1\" has been modified. Do you want to save it?", (*it).second->location().toLocalFile()), QString(), KStandardGuiItem::save(), KStandardGuiItem::discard())) {
 				case KMessageBox::Yes:
 					if (!doSave((*it).second, false))
 						return false;
@@ -817,52 +829,30 @@ bool MainWindow::doSave(Document *document, bool newname)
 	if (document->location().isEmpty())
 		newname = true;
 	
-	KUrl url;
+	QString location;
+	QUrl url;
 	bool multipart;
 	if (newname) {
-		KFileDialog dialog(KUrl(), QString(), this);
-		dialog.setCaption(i18n("Save document"));
-		dialog.setOperationMode(KFileDialog::Saving);
-		QStringList mimes;
+		location = platformSaveFileDialog(document);
 
-		bool isSubmodelEmpty = !document->contents()->submodel_list().size();
-		if (isSubmodelEmpty)
-			mimes << "application/x-ldraw";
-		mimes << "application/x-multi-part-ldraw";
-		
-		dialog.setMimeFilter(mimes, isSubmodelEmpty ? "application/x-ldraw" : "application/x-multi-part-ldraw");
-		dialog.exec();
+		url = QUrl(location);
 
-		url = dialog.selectedUrl();
-		if (url.isEmpty())
+		if (location.isEmpty())
 			return false;
-
-		if (!url.fileName().contains(".")) {
-			if (dialog.currentMimeFilter() == "application/x-multi-part-ldraw")
-				url.setFileName(url.fileName() + ".mpd");
-			else
-				url.setFileName(url.fileName() + ".ldr");
-		}
-
-		if (dialog.currentMimeFilter() == "application/x-multi-part-ldraw")
-			multipart = true;
-		else
-			multipart = false;
+		
 	} else {
 		url = document->location();
-
-		if (url.fileName().endsWith(".mpd", Qt::CaseInsensitive))
-			multipart = true;
-		else
-			multipart = false;
+		location = url.toString();
 	}
+
+	multipart = location.endsWith(".mpd", Qt::CaseInsensitive);
 
 	KTemporaryFile fwriter;
 	QString tfilename;
 	fwriter.setSuffix(".ldr");
 
 	if (newname)
-		document->contents()->main_model()->set_name(url.fileName().toLocal8Bit().data());
+		document->contents()->main_model()->set_name(Utils::urlFileName(url).toLocal8Bit().data());
 
 	if (!fwriter.open()) {
 		KMessageBox::error(this, i18n("Could not open temporary file '%1' for writing.", fwriter.fileName()));
@@ -873,7 +863,7 @@ bool MainWindow::doSave(Document *document, bool newname)
 	fwriter.flush();
 
 	if (!KIO::NetAccess::upload(tfilename, url, this)) {
-		KMessageBox::error(this, i18n("Could not write file '%1'.", url.prettyUrl()));
+		KMessageBox::error(this, i18n("Could not write file '%1'.", url.toString()));
 		return false;
 	}
 
@@ -884,10 +874,10 @@ bool MainWindow::doSave(Document *document, bool newname)
 	// Relocate
 	if (newname) {
 		int newidx = -1;
-		QString fname = url.fileName();
+		QString fname = Utils::urlFileName(url);
 		
 		if (!document->location().isEmpty())
-			openedUrls_.remove(document->location().prettyUrl());
+			openedUrls_.remove(document->location().toString());
 		for (int i = 0; i < documents_.size(); ++i) {
 			if (documents_[i].second == document) {
 				newidx = i;
@@ -899,8 +889,8 @@ bool MainWindow::doSave(Document *document, bool newname)
 			tabbar_->setTabText(newidx, fname);
 			tabbar_->setTabIcon(newidx, KIcon("text-plain"));
 		}
-		openedUrls_.insert(url.prettyUrl());
-		document->setLocation(url);	
+		openedUrls_.insert(url.toString());
+		document->setLocation(QUrl(url));	
 	} else {
 		int i = 0;
 		for (QVector<QPair<QString, Document *> >::ConstIterator it = documents_.constBegin(); it != documents_.constEnd(); ++it) {
@@ -916,7 +906,7 @@ bool MainWindow::doSave(Document *document, bool newname)
 
 	fwriter.close();
 
-	setStatusMessage(i18n("Document '%1' saved.", url.fileName()));
+	setStatusMessage(i18n("Document '%1' saved.", Utils::urlFileName(url)));
 
 	return true;
 }

@@ -144,6 +144,15 @@
     </entry>
   </group>
   <group name="Renderer">
+    <entry name="RenderingMode" type="Enum">
+      <label>Default rendering mode</label>
+      <choices>
+	<choice name="VBO" />
+	<choice name="VArray" />
+	<choice name="Immediate" />
+      </choices>
+      <default>VBO</default>
+    </entry>
     <entry name="Multisampling" type="Bool">
       <label>Antialiased rendering</label>
       <default>true</default>

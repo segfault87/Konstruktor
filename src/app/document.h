@@ -48,10 +48,10 @@ class Document : public QObject
 	bool setActiveModel(ldraw::model *m);
 	bool setActiveModel(const std::string &key);
 	
-	const KUrl& location() const { return location_; }
+	const QUrl& location() const { return location_; }
 	bool canSave() const { return canSave_; }
 	
-	void setLocation(const KUrl &u) { location_ = u; }
+	void setLocation(const QUrl &u) { location_ = u; }
 	void setSaveable(bool s);
 
 	SubmodelModel* model() { return model_; }
@@ -90,7 +90,7 @@ class Document : public QObject
 	ldraw_renderer::mouse_rotation rotation_;
 	ldraw::vector center_, length_;
 	
-	KUrl location_;
+	QUrl location_;
 	
 	bool canSave_;
 	

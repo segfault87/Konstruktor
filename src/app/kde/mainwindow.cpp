@@ -3,6 +3,10 @@
 
 #include <kaction.h>
 #include <kactioncollection.h>
+#include <kfiledialog.h>
+#include <klocalizedstring.h>
+
+#include "document.h"
 
 #include "mainwindow.h"
 
@@ -21,6 +25,45 @@ MainWindow::MainWindow(QWidget *parent)
 MainWindow::~MainWindow()
 {
 	
+}
+
+QString MainWindow::platformSaveFileDialog(Document *document)
+{
+	KFileDialog dialog(KUrl(), QString(), this);
+	dialog.setCaption(i18n("Save document"));
+	dialog.setOperationMode(KFileDialog::Saving);
+	QStringList mimes;
+
+	bool isSubmodelEmpty = !document->contents()->submodel_list().size();
+	if (isSubmodelEmpty)
+		mimes << "application/x-ldraw";
+	mimes << "application/x-multi-part-ldraw";
+	
+	dialog.setMimeFilter(mimes, isSubmodelEmpty ? "application/x-ldraw" : "application/x-multi-part-ldraw");
+
+	dialog.exec();
+
+	KUrl url = dialog.selectedUrl();
+	bool isMultipart = dialog.currentMimeFilter() == "application/x-multi-part-ldraw";
+
+	if (url.isEmpty())
+		return QString();
+
+	QString localFileName = url.toLocalFile();
+	
+	if (!url.fileName().contains(".")) {
+		if (isMultipart)
+			localFileName += ".mpd";
+		else
+			localFileName += ".ldr";
+	}
+
+	return localFileName;
+}
+
+bool MainWindow::platformSaveFile(const QString &url, bool isMultipart)
+{
+	return false;
 }
 
 void MainWindow::setupPlatformGui()

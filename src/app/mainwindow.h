@@ -9,6 +9,7 @@
 #include <QList>
 #include <QSet>
 #include <QPair>
+#include <QUrl>
 #include <QVector>
 
 #ifdef KONSTRUKTOR_NO_KDE
@@ -61,7 +62,7 @@ class MainWindow : public Platform::MainWindow
 	
 	void newFile();
 	void openFile();
-	void openFile(const KUrl &url);
+	void openFile(const QUrl &url);
 	void closeFile();
 	void saveFile();
 	void saveFileAs();
