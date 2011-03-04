@@ -11,6 +11,9 @@
 #include <renderer/parameters.h>
 #include <renderer/mouse_rotation.h>
 
+#include <QGLPixelBuffer>
+#include <QtDebug>
+
 #ifndef KONSTRUKTOR_DB_UPDATER
 #include "application.h"
 #endif
@@ -18,8 +21,145 @@
 
 #include "pixmaprenderer.h"
 
+
 namespace Konstruktor
 {
+
+class RendererPixelBuffer {
+public:
+	RendererPixelBuffer ( int width, int height, const QGLFormat & format = QGLFormat::defaultFormat(), QGLWidget * shareWidget_ = 0 ) : buffer(0), context(0)
+	{
+		if (QGLPixelBuffer::hasOpenGLPbuffers())
+		{
+			buffer = new QGLPixelBuffer(width, height, format, shareWidget_);
+			if (buffer->isValid())
+				return;
+			else
+				qDebug() << "Pixelbuffer instantiation failed - uses non accelerated implementation";
+		}
+		else 
+			qDebug() << "no Pixelbuffer support - uses non accelerated implementation";
+
+		context = new QGLContext(format);
+		if (!context->create()) 
+		{
+			qDebug() << "could not create QGLContext - there may no display" ;
+			delete context;
+			context = 0;
+		}
+	}
+	
+	~RendererPixelBuffer()
+	{
+		delete buffer;
+		delete context;
+	}
+
+	bool isValid()
+	{
+		return buffer || context;
+	}
+
+	bool makeCurrent()
+   {
+		if (buffer)
+			return buffer->makeCurrent();
+		else if (context)
+		{
+			context->makeCurrent();
+			return true;
+		}
+		else 
+			return false;
+	}
+	
+	bool doneCurrent()
+	{
+		if (buffer)
+			return buffer->doneCurrent();
+		else if (context)
+		{
+			context->doneCurrent();
+			return true;
+		}
+		else 
+			return false;
+	}
+		
+	QPixmap toPixmap(int x, int y, int width, int height)
+	{
+		if (buffer)
+			return QPixmap::fromImage(buffer->toImage().copy(x, y, width, height));
+		else if (context)
+		{
+			context->makeCurrent();
+			QImage img = qt_gl_read_framebuffer(QSize(width,height), context->format().alpha(), true);
+			glReadPixels(x, y, width, height, GL_RGBA, GL_UNSIGNED_BYTE, img.bits());
+			context->doneCurrent();
+			convertFromGLImage(img, width, height, context->format().alpha(), true);
+			return QPixmap::fromImage(img);
+		}
+		else 
+			return QPixmap();
+	}
+private: 
+	QGLPixelBuffer *buffer;
+	QGLContext *context;
+
+	static void convertFromGLImage(QImage &img, int w, int h, bool alpha_format, bool include_alpha)
+	{
+		if (QSysInfo::ByteOrder == QSysInfo::BigEndian) {
+			// OpenGL gives RGBA; Qt wants ARGB
+			uint *p = (uint*)img.bits();
+			uint *end = p + w*h;
+			if (alpha_format && include_alpha) {
+				while (p < end) {
+					uint a = *p << 24;
+					*p = (*p >> 8) | a;
+					p++;
+				}
+			} else {
+				// This is an old legacy fix for PowerPC based Macs, which
+				// we shouldn't remove
+				while (p < end) {
+					*p = 0xff000000 | (*p>>8);
+					++p;
+				}
+			}
+		} else {
+			// OpenGL gives ABGR (i.e. RGBA backwards); Qt wants ARGB
+			for (int y = 0; y < h; y++) {
+				uint *q = (uint*)img.scanLine(y);
+				for (int x=0; x < w; ++x) {
+					const uint pixel = *q;
+					if (alpha_format && include_alpha) {
+						*q = ((pixel << 16) & 0xff0000) | ((pixel >> 16) & 0xff)
+							 | (pixel & 0xff00ff00);
+					} else {
+						*q = 0xff000000 | ((pixel << 16) & 0xff0000)
+							 | ((pixel >> 16) & 0xff) | (pixel & 0x00ff00);
+					}
+
+					q++;
+				}
+			}
+
+		}
+		img = img.mirrored();
+	}
+
+	QImage qt_gl_read_framebuffer(const QSize &size, bool alpha_format, bool include_alpha)
+	{
+		QImage img(size, (alpha_format && include_alpha) ? QImage::Format_ARGB32
+														 : QImage::Format_RGB32);
+		int w = size.width();
+		int h = size.height();
+		glReadPixels(0, 0, w, h, GL_RGBA, GL_UNSIGNED_BYTE, img.bits());
+		convertFromGLImage(img, w, h, alpha_format, include_alpha);
+		return img;
+	}
+
+};
 
 PixmapRenderer::PixmapRenderer(int width, int height, QGLWidget *shareWidget)
 	: width_(width), height_(height), shareWidget_(shareWidget)
@@ -28,17 +168,7 @@ PixmapRenderer::PixmapRenderer(int width, int height, QGLWidget *shareWidget)
 	fmt.setAlpha(true);
 	fmt.setSampleBuffers(true);
 
-	if (!QGLPixelBuffer::hasOpenGLPbuffers()) {
-		throw std::runtime_error("OpenGL Pbuffer extension required.");
-	}
-	
-	buffer_ = new QGLPixelBuffer(width_, height_, fmt, shareWidget_);
-
-	if (!buffer_->isValid()) {
-		delete buffer_;
-		buffer_ = new QGLPixelBuffer(width_, height_, QGLFormat::defaultFormat(), shareWidget_);
-	}
-	
+	buffer_ = new RendererPixelBuffer(width_, height_, fmt, shareWidget_);
 	buffer_->makeCurrent();	
 	
 	// Initialize GL
@@ -95,7 +225,7 @@ void PixmapRenderer::setNewSize(int width, int height)
 	height_ = height;
 	
 	delete buffer_;
-	buffer_ = new QGLPixelBuffer(width_, height_, QGLFormat::defaultFormat(), shareWidget_);
+	buffer_ = new RendererPixelBuffer(width_, height_, QGLFormat::defaultFormat(), shareWidget_);
 	
 	buffer_->makeCurrent();
 	glViewport(0, 0, width_, height_);
@@ -215,9 +345,8 @@ QPixmap PixmapRenderer::renderToPixmap(ldraw::model *m, bool crop)
 		} else {
 			h = height_;
 			w = (int)(height_ * (xl/yl));
-		}
-		
-		return QPixmap::fromImage(buffer_->toImage().copy(width_/2 - w/2, height_/2 - h/2, w, h));
+		}		
+		return buffer_->toPixmap(width_/2 - w/2, height_/2 - h/2, w, h);
 	} else {
 		QPixmap np = QPixmap(16, 16);
 		np.fill(Qt::transparent);
