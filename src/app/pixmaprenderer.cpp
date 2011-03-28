@@ -34,25 +34,31 @@ public:
 			buffer = new QGLPixelBuffer(width, height, format, shareWidget_);
 			if (buffer->isValid())
 				return;
-			else
+			else {
 				qDebug() << "Pixelbuffer instantiation failed - uses non accelerated implementation";
+				delete buffer;
+				buffer = 0L;
+			}
 		}
 		else 
 			qDebug() << "no Pixelbuffer support - uses non accelerated implementation";
 
 		context = new QGLContext(format);
-		if (!context->create()) 
-		{
+		if (!context->create()) {
 			qDebug() << "could not create QGLContext - there may no display" ;
+			
 			delete context;
-			context = 0;
+			context = 0L;
 		}
 	}
 	
 	~RendererPixelBuffer()
 	{
-		delete buffer;
-		delete context;
+		if (buffer)
+			delete buffer;
+
+		if (context)
+			delete context;
 	}
 
 	bool isValid()
@@ -88,19 +94,19 @@ public:
 		
 	QPixmap toPixmap(int x, int y, int width, int height)
 	{
-		if (buffer)
+		if (buffer) {
 			return QPixmap::fromImage(buffer->toImage().copy(x, y, width, height));
-		else if (context)
-		{
+		} else if (context) {
 			context->makeCurrent();
 			QImage img = qt_gl_read_framebuffer(QSize(width,height), context->format().alpha(), true);
 			glReadPixels(x, y, width, height, GL_RGBA, GL_UNSIGNED_BYTE, img.bits());
 			context->doneCurrent();
 			convertFromGLImage(img, width, height, context->format().alpha(), true);
 			return QPixmap::fromImage(img);
-		}
-		else 
+		} else {
+			printf("null\n");
 			return QPixmap();
+		}
 	}
 private: 
 	QGLPixelBuffer *buffer;
@@ -169,6 +175,22 @@ PixmapRenderer::PixmapRenderer(int width, int height, QGLWidget *shareWidget)
 	fmt.setSampleBuffers(true);
 
 	buffer_ = new RendererPixelBuffer(width_, height_, fmt, shareWidget_);
+	if (!buffer_->isValid()) {
+		/* first fallback */
+		delete buffer_;
+
+		QGLFormat fmt = QGLFormat::defaultFormat();
+		fmt.setAlpha(true);
+		buffer_ = new RendererPixelBuffer(width_, height_, fmt, shareWidget_);
+
+		if (!buffer_->isValid()) {
+			/* second fallback */
+			delete buffer_;
+
+			buffer_ = new RendererPixelBuffer(width_, height_, QGLFormat::defaultFormat(), shareWidget_);
+		}
+	}
+	
 	buffer_->makeCurrent();	
 	
 	// Initialize GL
