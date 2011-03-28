@@ -89,7 +89,7 @@ RenderWidget::RenderWidget(MainWindow *mainwindow, Document **document, Viewport
 	renderer_ = ldraw_renderer::renderer_opengl_factory(params_, rm).create_renderer();
 
 	reapplyConfigurations();
-
+	
 	params_->set_rendering_mode(renderMode_);
 
 	/* init actions */
@@ -196,6 +196,27 @@ int RenderWidget::depthAxis() const
 			return 0; // x-axis
 		default:
 			return -1;
+	}
+}
+
+RenderWidget::ViewportMode RenderWidget::getViewportMode(int idx)
+{
+	switch (idx) {
+		case 0:
+			return RenderWidget::Top;
+		case 1:
+			return RenderWidget::Bottom;
+		case 2:
+			return RenderWidget::Front;
+		case 3:
+			return RenderWidget::Back;
+		case 4:
+			return RenderWidget::Left;
+		case 5:
+			return RenderWidget::Right;
+		case 6:
+		default:
+			return RenderWidget::Free;
 	}
 }
 
@@ -513,6 +534,7 @@ void RenderWidget::initializeGridVbo()
 void RenderWidget::initializeGL()
 {
 	// libldr_renderer initialize proc
+	makeCurrent();
 	renderer_->setup();
 	
 	glDepthFunc(GL_LEQUAL);
@@ -520,13 +542,20 @@ void RenderWidget::initializeGL()
 	// Set default color and depth
 	qglClearColor(Application::self()->config()->backgroundColor());
 	glClearDepth(1.0f);
+
+	doneCurrent();
 }
 
 void RenderWidget::paintGL()
 {
 	makeCurrent();
-
+	
 	glPushAttrib(GL_ALL_ATTRIB_BITS);
+
+	glMatrixMode(GL_PROJECTION);
+	glPushMatrix();
+	glMatrixMode(GL_MODELVIEW);
+	glPushMatrix();
 	
 	/* disable shading if not free view */
 	if (viewportMode_ != Free)
@@ -632,6 +661,11 @@ void RenderWidget::paintGL()
 			renderGrid(gridResolution_, gridResolution_, gridRows_, gridColumns_, gridX_, gridY_, gridZ_);
 	}
 
+	glMatrixMode(GL_PROJECTION);
+	glPopMatrix();
+	glMatrixMode(GL_MODELVIEW);
+	glPopMatrix();
+
 	glPopAttrib();
 }
 
@@ -652,16 +686,18 @@ void RenderWidget::paintEvent(QPaintEvent *event)
 
 	makeCurrent();
 
+	p.setRenderHint(QPainter::Antialiasing);
+
+	initializeGL();
 	if (!initialized_) {
-		initializeGL();
 		resizeGL(width(), height());
 
 		initialized_ = true;
 	}
 
 	paintGL();
-	
-	p.setRenderHint(QPainter::Antialiasing);
+
+	glDisable(GL_DEPTH_TEST);
 	
 	// Viewport name
 	if (behavior_ == Dragging) {

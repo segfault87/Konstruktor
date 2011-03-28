@@ -57,6 +57,8 @@ class RenderWidget : public QGLWidget
 	QPoint globalCoordinate(const ldraw::vector &vec) const;
 	int depthAxis() const;
 
+	static ViewportMode getViewportMode(int idx);
+
   signals:
 	void objectDropped(const QString &filename, const ldraw::matrix &matrix, const ldraw::color &color);
 	void madeSelection(const std::list<int> &selection, RenderWidget::SelectionMethod method = Normal);

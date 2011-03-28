@@ -603,10 +603,12 @@ void MainWindow::initGui()
 	QSplitter *srv = new QSplitter(Qt::Horizontal, sc);
 	QSplitter *srh1 = new QSplitter(Qt::Vertical, srv);
 	QSplitter *srh2 = new QSplitter(Qt::Vertical, srv);
+
+	Config *cfg = Application::self()->config();
 	
 	QGLFormat format = QGLFormat::defaultFormat();
 	format.setAlpha(true);
-	if (Application::self()->config()->multisampling())
+	if (cfg->multisampling())
 		format.setSampleBuffers(true);
 
 	QGLContext *ctx[4];
@@ -621,10 +623,10 @@ void MainWindow::initGui()
 		}
 	}
 
-	renderWidget_[0] = new RenderWidget(this, &activeDocument_, RenderWidget::Top, ctx[0], 0L, srh1);
-	renderWidget_[1] = new RenderWidget(this, &activeDocument_, RenderWidget::Left, ctx[1], renderWidget_[0], srh1);
-	renderWidget_[2] = new RenderWidget(this, &activeDocument_, RenderWidget::Front, ctx[2], renderWidget_[0], srh2);
-	renderWidget_[3] = new RenderWidget(this, &activeDocument_, RenderWidget::Free, ctx[3], renderWidget_[0], srh2);
+	renderWidget_[0] = new RenderWidget(this, &activeDocument_, RenderWidget::getViewportMode((int)cfg->viewportTopLeft()), ctx[0], 0L, srh1);
+	renderWidget_[1] = new RenderWidget(this, &activeDocument_, RenderWidget::getViewportMode((int)cfg->viewportBottomLeft()), ctx[1], renderWidget_[0], srh1);
+	renderWidget_[2] = new RenderWidget(this, &activeDocument_, RenderWidget::getViewportMode((int)cfg->viewportTopRight()), ctx[2], renderWidget_[0], srh2);
+	renderWidget_[3] = new RenderWidget(this, &activeDocument_, RenderWidget::getViewportMode((int)cfg->viewportBottomRight()), ctx[3], renderWidget_[0], srh2);
 
 	Application::self()->initializeRenderer(renderWidget_[0]);
 
@@ -707,17 +709,17 @@ void MainWindow::initActions()
 
 	actionMoveByXPositive_ = createAction("move_by_x_positive", i18n("Move -X"), editorGroup_, SLOT(moveByXPositive()), "Right", "konstruktor-move-x-pos");
 	actionMoveByXNegative_ = createAction("move_by_x_negative", i18n("Move +X"), editorGroup_, SLOT(moveByXNegative()), "Left", "konstruktor-move-x-neg");
-	actionMoveByYPositive_ = createAction("move_by_y_positive", i18n("Move -Y"), editorGroup_, SLOT(moveByYPositive()), "PgDown", "konstruktor-move-y-neg");
-	actionMoveByYNegative_ = createAction("move_by_y_negative", i18n("Move +Y"), editorGroup_, SLOT(moveByYNegative()), "PgUp", "konstruktor-move-y-pos");
+	actionMoveByYPositive_ = createAction("move_by_y_positive", i18n("Move -Y"), editorGroup_, SLOT(moveByYPositive()), "PgUp", "konstruktor-move-y-neg");
+	actionMoveByYNegative_ = createAction("move_by_y_negative", i18n("Move +Y"), editorGroup_, SLOT(moveByYNegative()), "PgDown", "konstruktor-move-y-pos");
 	actionMoveByZPositive_ = createAction("move_by_z_positive", i18n("Move +Z"), editorGroup_, SLOT(moveByZPositive()), "Up", "konstruktor-move-z-pos");
 	actionMoveByZNegative_ = createAction("move_by_z_negative", i18n("Move -Z"), editorGroup_, SLOT(moveByZNegative()), "Down", "konstruktor-move-z-neg");
 
-	actionRotateByXClockwise_ = createAction("rotate_x_cw", i18n("Rotate +X"), editorGroup_, SLOT(rotateByXClockwise()), "Ctrl+Right", "konstruktor-rotate-x-pos");
-	actionRotateByXCounterClockwise_ = createAction("rotate_x_ccw", i18n("Rotate -X"), editorGroup_, SLOT(rotateByXCounterClockwise()), "Ctrl+Left", "konstruktor-rotate-x-neg");
-	actionRotateByYClockwise_ = createAction("rotate_y_cw", i18n("Rotate +Y"), editorGroup_, SLOT(rotateByYClockwise()), "Ctrl+Shift+Down", "konstruktor-rotate-y-pos");
-	actionRotateByYCounterClockwise_ = createAction("rotate_y_ccw", i18n("Rotate -Y"), editorGroup_, SLOT(rotateByYCounterClockwise()), "Ctrl+Shift+Up", "konstruktor-rotate-y-neg");
-	actionRotateByZClockwise_ = createAction("rotate_z_cw", i18n("Rotate +Z"), editorGroup_, SLOT(rotateByZClockwise()), "Ctrl+Up", "konstruktor-rotate-z-pos");
-	actionRotateByZCounterClockwise_ = createAction("rotate_z_ccw", i18n("Rotate -Z"), editorGroup_, SLOT(rotateByZCounterClockwise()), "Ctrl+Down", "konstruktor-rotate-z-neg");
+	actionRotateByXClockwise_ = createAction("rotate_x_cw", i18n("Rotate +X"), editorGroup_, SLOT(rotateByXClockwise()), "Ctrl+Up", "konstruktor-rotate-x-pos");
+	actionRotateByXCounterClockwise_ = createAction("rotate_x_ccw", i18n("Rotate -X"), editorGroup_, SLOT(rotateByXCounterClockwise()), "Ctrl+Down", "konstruktor-rotate-x-neg");
+	actionRotateByYClockwise_ = createAction("rotate_y_cw", i18n("Rotate +Y"), editorGroup_, SLOT(rotateByYClockwise()), "Ctrl+Right", "konstruktor-rotate-y-pos");
+	actionRotateByYCounterClockwise_ = createAction("rotate_y_ccw", i18n("Rotate -Y"), editorGroup_, SLOT(rotateByYCounterClockwise()), "Ctrl+Left", "konstruktor-rotate-y-neg");
+	actionRotateByZClockwise_ = createAction("rotate_z_cw", i18n("Rotate +Z"), editorGroup_, SLOT(rotateByZClockwise()), "Ctrl+Shift+Right", "konstruktor-rotate-z-pos");
+	actionRotateByZCounterClockwise_ = createAction("rotate_z_ccw", i18n("Rotate -Z"), editorGroup_, SLOT(rotateByZCounterClockwise()), "Ctrl+Shift+Left", "konstruktor-rotate-z-neg");
 
 	// View
 	actionResetZoom_ = createAction("reset_zoom", i18n("Reset &Zoom"), this, SLOT(resetZoom()), "R", "view-restore");

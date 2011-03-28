@@ -114,7 +114,7 @@
 	<choice name="Right" />
 	<choice name="ThreeD" />
       </choices>
-      <default>Front</default>
+      <default>ThreeD</default>
     </entry>
     <entry name="ViewportBottomLeft" type="Enum">
       <label>Viewport of bottom-left compartment</label>
@@ -127,7 +127,7 @@
 	<choice name="Right" />
 	<choice name="ThreeD" />
       </choices>
-      <default>Left</default>
+      <default>Front</default>
     </entry>
     <entry name="ViewportBottomRight" type="Enum">
       <label>Viewport of bottom-right compartment</label>
@@ -140,7 +140,7 @@
 	<choice name="Right" />
 	<choice name="ThreeD" />
       </choices>
-      <default>ThreeD</default>
+      <default>Right</default>
     </entry>
   </group>
   <group name="Renderer">

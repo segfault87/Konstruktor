@@ -241,6 +241,11 @@ QPixmap PixmapRenderer::renderToPixmap(ldraw::model *m, bool crop)
 	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
 
 	Viewport dvp;
+	dvp.left   = 1e30;
+	dvp.right  = -1e30;
+	dvp.top    = 1e30;
+	dvp.bottom = -1e30;
+	
 	if (m) {
 		// Setup viewport
 		// TODO reuse code
