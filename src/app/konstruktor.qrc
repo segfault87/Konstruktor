@@ -1,0 +1,21 @@
+<!DOCTYPE RCC>
+<RCC version="1.0">
+  <qresource>
+    <file>icons/grid1.png</file>
+    <file>icons/grid2.png</file>
+    <file>icons/grid3.png</file>
+    <file>icons/grid4.png</file>
+    <file>icons/move-x-pos.png</file>
+    <file>icons/move-x-neg.png</file>
+    <file>icons/move-y-pos.png</file>
+    <file>icons/move-y-neg.png</file>
+    <file>icons/move-z-pos.png</file>
+    <file>icons/move-z-neg.png</file>
+    <file>icons/rotate-x-pos.png</file>
+    <file>icons/rotate-x-neg.png</file>
+    <file>icons/rotate-y-pos.png</file>
+    <file>icons/rotate-y-neg.png</file>
+    <file>icons/rotate-z-pos.png</file>
+    <file>icons/rotate-z-neg.png</file>
+  </qresource>
+</RCC>
