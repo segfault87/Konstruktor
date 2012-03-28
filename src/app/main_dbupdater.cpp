@@ -1,47 +1,62 @@
 // Konstruktor - An interactive LDraw modeler for KDE
 // Copyright (c)2006-2011 Park "segfault" J. K. <mastermind@planetmono.org>
 
+#include <iostream>
 #include <stdexcept>
+#include <string>
 
+#include <QApplication>
 #include <QMessageBox>
-
-#include <kaboutdata.h>
-#include <kapplication.h>
-#include <kcmdlineargs.h>
-#include <klocale.h>
 
 #include "dbupdater.h"
 
+void usage(const char *progname)
+{
+  std::cerr << "Usage: " << progname << " [-rescan] path-to-ldraw" << std::endl;
+}
+
 int main(int argc, char *argv[])
 {
-	const KAboutData about(
-		"konstruktor", "konstruktor",
-		ki18n("Part database updater for Konstruktor"), "0.9.0-beta1",
-		ki18n("Updates the part database. Must be called internally by Konstruktor."),
-		KAboutData::License_GPL_V3,
-		ki18n("(c)2006-2011, Park \"segfault\" Joon-Kyu"));
-	
-	KCmdLineArgs::init(argc, argv, &about);
+  QApplication app(argc, argv);
+  QStringList args = app.arguments();
+  std::string path;
+  bool rescan;
 
-	KCmdLineOptions options;
-	options.add("+[location]", ki18n("Path to LDraw part library"));
-	options.add("rescan", ki18n("Rescan the entire library"));
-	KCmdLineArgs::addCmdLineOptions(options);
-	
-	KApplication app;
+  QCoreApplication::setOrganizationName("Influx");
+  QCoreApplication::setOrganizationDomain("influx.kr");
+  QCoreApplication::setApplicationName("Konstruktor");
 
-	int status;
-	try {
-		Konstruktor::DBUpdater updater;
-		
-		status = updater.start();
-	} catch (const std::runtime_error &e) {
-		QMessageBox::critical(0L, i18n("Error"), QString(e.what()));
+  for (int i = 1; i < args.count(); ++i) {
+    const QString &arg = args[i];
 
-		status = -1;
-	}
-	
-	app.exit(status);
+    if (arg == "-rescan") {
+      rescan = true;
+    } else if (arg.startsWith("-")) {
+      std::cerr << "Unrecognized option: " << arg.toLocal8Bit().data() << std::endl;
+      usage(argv[0]);
+      return 1;
+    } else {
+      path = arg.toLocal8Bit().data();
+    }
+  }
 
-	return status;
+  if (path.empty()) {
+    usage(argv[0]);
+    return 1;
+  }
+  
+  int status;
+  try {
+    Konstruktor::DBUpdater updater(path, rescan);
+    
+    status = updater.start();
+  } catch (const std::runtime_error &e) {
+    QMessageBox::critical(0L, QObject::tr("Error"), QString(e.what()));
+    
+    status = -1;
+  }
+  
+  app.exit(status);
+  
+  return status;
 }

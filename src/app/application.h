@@ -14,18 +14,18 @@
 
 namespace ldraw
 {
-	class model;
-	class part_library;
+  class model;
+  class part_library;
 }
 
 namespace ldraw_renderer
 {
-	class parameters;
+  class parameters;
 }
 
 class QGLWidget;
-class KProgressDialog;
-class KProcess;
+class QProgressDialog;
+class QProcess;
 
 namespace Konstruktor
 {
@@ -38,57 +38,57 @@ class PixmapRenderer;
 // Main application entrypoint
 class Application : public QObject
 {
-	Q_OBJECT;
-	
-  public:
-	Application(QObject *parent = 0L);
-	~Application();
-	
-	bool initialize();
-	void startDBUpdater();
-	void startup();
-	
-	static Application* self() { return instance_; }
-	
-	void testPovRay(bool overrideconfig = false);
-	void initializeRenderer(QGLWidget *glBase);
-	
-	QString saveLocation(const QString &directory);
-	
-	ldraw::part_library* library() { return library_; }
-	ldraw_renderer::parameters* renderer_params() { return params_; }
-	Config* config() { return config_; }
-	DBManager* database() { return db_; }
-	ColorManager* colorManager() { return colorManager_; }
-	PixmapRenderer* pixmapRenderer() { return renderer_; }
-	QWidget* rootWindow();
-	bool hasPovRay() const { return hasPovRay_; }
+  Q_OBJECT;
+  
+ public:
+  Application(QObject *parent = 0L);
+  ~Application();
+  
+  bool initialize();
+  void startDBUpdater();
+  void startup();
+  
+  static Application* self() { return instance_; }
+  
+  void testPovRay(bool overrideconfig = false);
+  void initializeRenderer(QGLWidget *glBase);
+  
+  QString saveLocation(const QString &directory);
+  
+  ldraw::part_library* library() { return library_; }
+  ldraw_renderer::parameters* renderer_params() { return params_; }
+  Config* config() { return config_; }
+  DBManager* database() { return db_; }
+  ColorManager* colorManager() { return colorManager_; }
+  PixmapRenderer* pixmapRenderer() { return renderer_; }
+  QWidget* rootWindow();
+  bool hasPovRay() const { return hasPovRay_; }
 
-  public slots:
-	void configUpdated();
-
-  private slots:
-	void dbUpdateStatus();
-	void dbUpdateFinished(int, QProcess::ExitStatus);
-	void dbUpdateError(QProcess::ProcessError);
-		
-  private:
-	static Application *instance_;
-
-	MainWindow *window_;
-	PixmapRenderer *renderer_;
-	
-	Config *config_;
-	ldraw::part_library *library_;
-	ldraw_renderer::parameters *params_;
-	DBManager *db_;
-	ColorManager *colorManager_;
-
-	KProgressDialog *dbDialog_;
-	KProcess *dbUpdater_;
-	
-	QMutex globalDirsMutex_;
-	bool hasPovRay_;
+ public slots:
+  void configUpdated();
+                      
+ private slots:
+  void dbUpdateStatus();
+  void dbUpdateFinished(int, QProcess::ExitStatus);
+  void dbUpdateError(QProcess::ProcessError);
+  
+ private:
+  static Application *instance_;
+  
+  MainWindow *window_;
+  PixmapRenderer *renderer_;
+  
+  Config *config_;
+  ldraw::part_library *library_;
+  ldraw_renderer::parameters *params_;
+  DBManager *db_;
+  ColorManager *colorManager_;
+  
+  QProgressDialog *dbDialog_;
+  QProcess *dbUpdater_;
+  
+  QMutex globalDirsMutex_;
+  bool hasPovRay_;
 };
 
 }

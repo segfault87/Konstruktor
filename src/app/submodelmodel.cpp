@@ -5,8 +5,6 @@
 #include <QMimeData>
 #include <QPixmap>
 
-#include <klocalizedstring.h>
-
 #include <libldr/model.h>
 
 #include "application.h"
@@ -88,7 +86,7 @@ QVariant SubmodelModel::data(const QModelIndex &index, int role) const
 {
 	if (role == Qt::DisplayRole) {
 		if (index.row() == 0) {
-			return i18n("Base model");
+			return tr("Base model");
 		} else {
 			return QString("%1\n%2").arg(submodelList_[index.row() - 1].first.c_str(), submodelList_[index.row() - 1].second->desc().c_str());
 		}
@@ -176,7 +174,7 @@ QModelIndex SubmodelModel::index(int row, int column, const QModelIndex &parent)
 QVariant SubmodelModel::headerData(int, Qt::Orientation orientation, int role) const
 {
 	if (orientation == Qt::Horizontal && role == Qt::DisplayRole)
-		return i18n("Submodel");
+		return tr("Submodel");
 	else
 		return QVariant();
 }

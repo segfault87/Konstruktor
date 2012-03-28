@@ -117,6 +117,8 @@ class LIBLDRAWRENDERER_EXPORT vbuffer_extension : public ldraw::extension
 
 	std::map<ldraw::color, float **> m_precolored_buf;
 	std::map<ldraw::color, GLuint *> m_vbo_precolored;
+	std::map<ldraw::color, GLuint> m_display_lists;
+	GLuint m_display_list;
 };	
 
 }

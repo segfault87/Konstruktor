@@ -464,9 +464,8 @@ void renderer_opengl_retained::init_vbuffer()
 	opengl_extension_vbo *vbo = opengl_extension_vbo::self();
 	
 	if (vbo->is_supported()) {
-#if defined(_GL_VERSION_1_5)
 		m_vbo = true;
-		
+
 		vbo->glGenBuffers(1, &m_vbo_bbox_lines);
 		vbo->glGenBuffers(1, &m_vbo_bbox_filled);
 
@@ -477,7 +476,6 @@ void renderer_opengl_retained::init_vbuffer()
 		vbo->glBufferData(GL_ARRAY_BUFFER_ARB, sizeof(m_bbox_filled), m_bbox_filled, GL_STATIC_DRAW_ARB);
 
 		vbo->glBindBuffer(GL_ARRAY_BUFFER_ARB, 0);
-#endif
 	} else {
 		m_vbo = false;
 	}
@@ -524,7 +522,6 @@ void renderer_opengl_retained::render_recursive(ldraw::model *m, const ldraw::fi
 		opengl_extension_shader *shader = opengl_extension_shader::self();
 		
 		if (m_shader) {
-#if defined(_GL_VERSION_1_5)
 			shader->glUseProgram(m_vs_color_program);
 			ldraw::color c(0);
 			if (m_colorstack.size() > 0)
@@ -536,26 +533,21 @@ void renderer_opengl_retained::render_recursive(ldraw::model *m, const ldraw::fi
 			shader->glUniform4f(m_vs_color_location_rgba, cptr[0] / 255.0f, cptr[1] / 255.0f, cptr[2] / 255.0f, cptr[3] / 255.0f);
 			cptr = c.get_entity()->complement;
 			shader->glUniform4f(m_vs_color_location_complement, cptr[0] / 255.0f, cptr[1] / 255.0f, cptr[2] / 255.0f, cptr[3] / 255.0f);
-#endif
 		}
 
 		glDisable(GL_LIGHTING);
 		
 		/* lines */
 		if (ve->count(vbuffer_extension::type_lines) > 0) {
-#if defined(_GL_VERSION_1_5)
 			if (m_vbo)
 				vbo->glBindBuffer(GL_ARRAY_BUFFER_ARB, ve->get_vbo_vertices(vbuffer_extension::type_lines));
-#endif
 			glVertexPointer(3, GL_FLOAT, 0, ve->get_vertex_array(vbuffer_extension::type_lines));
 			if (m_vbo) {
-#if defined(_GL_VERSION_1_5)
 				if (m_shader)
 					vbo_color = ve->get_vbo_colors(vbuffer_extension::type_lines);
 				else
 					vbo_color = ve->get_vbo_precolored(vbuffer_extension::type_lines, m_colorstack.top());
 				vbo->glBindBuffer(GL_ARRAY_BUFFER_ARB, vbo_color);
-#endif
 			}
 			if (m_shader)
 				color = ve->get_color_array(vbuffer_extension::type_lines);
@@ -586,20 +578,15 @@ void renderer_opengl_retained::render_recursive(ldraw::model *m, const ldraw::fi
 			
 			/* triangles */
 			if (ve->count(vbuffer_extension::type_triangles) > 0) {
-#if defined(_GL_VERSION_1_5)
 				if (m_vbo)
 					vbo->glBindBuffer(GL_ARRAY_BUFFER_ARB, ve->get_vbo_vertices(vbuffer_extension::type_triangles));
-#endif
 				glVertexPointer(3, GL_FLOAT, 0, ve->get_vertex_array(vbuffer_extension::type_triangles));
 				if (shading) {
-#if defined(_GL_VERSION_1_5)
 					if (m_vbo)
 						vbo->glBindBuffer(GL_ARRAY_BUFFER_ARB, ve->get_vbo_normals(vbuffer_extension::type_triangles));
-#endif
 					glNormalPointer(GL_FLOAT, 0, ve->get_normal_array(vbuffer_extension::type_triangles));
 				}
 				
-#if defined(_GL_VERSION_1_5)
 				if (m_vbo) {
 					if (m_shader)
 						vbo_color = ve->get_vbo_colors(vbuffer_extension::type_triangles);
@@ -607,7 +594,6 @@ void renderer_opengl_retained::render_recursive(ldraw::model *m, const ldraw::fi
 						vbo_color = ve->get_vbo_precolored(vbuffer_extension::type_triangles, m_colorstack.top());
 					vbo->glBindBuffer(GL_ARRAY_BUFFER_ARB, vbo_color);
 				}
-#endif
 				if (m_shader)
 					color = ve->get_color_array(vbuffer_extension::type_triangles);
 				else
@@ -618,19 +604,14 @@ void renderer_opengl_retained::render_recursive(ldraw::model *m, const ldraw::fi
 			
 			/* quads */
 			if (ve->count(vbuffer_extension::type_quads) > 0) {
-#if defined(_GL_VERSION_1_5)
 				if (m_vbo)
 					vbo->glBindBuffer(GL_ARRAY_BUFFER_ARB, ve->get_vbo_vertices(vbuffer_extension::type_quads));
-#endif
 				glVertexPointer(3, GL_FLOAT, 0, ve->get_vertex_array(vbuffer_extension::type_quads));
 				if (shading) {
-#if defined(_GL_VERSION_1_5)
 					if (m_vbo)
 						vbo->glBindBuffer(GL_ARRAY_BUFFER_ARB, ve->get_vbo_normals(vbuffer_extension::type_quads));
-#endif
 					glNormalPointer(GL_FLOAT, 0, ve->get_normal_array(vbuffer_extension::type_quads));
 				}
-#if defined(_GL_VERSION_1_5)
 				if (m_vbo) {
 					if (m_shader)
 						vbo_color = ve->get_vbo_colors(vbuffer_extension::type_quads);
@@ -638,7 +619,6 @@ void renderer_opengl_retained::render_recursive(ldraw::model *m, const ldraw::fi
 						vbo_color = ve->get_vbo_precolored(vbuffer_extension::type_quads, m_colorstack.top());
 					vbo->glBindBuffer(GL_ARRAY_BUFFER_ARB, vbo_color);
 				}
-#endif
 				if (m_shader)
 					color = ve->get_color_array(vbuffer_extension::type_quads);
 				else

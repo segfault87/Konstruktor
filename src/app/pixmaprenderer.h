@@ -17,23 +17,23 @@ class RendererPixelBuffer;
 
 class PixmapRenderer
 {
-  public:
-	PixmapRenderer(int width, int height, QGLWidget *shareWidget = 0L);
-	~PixmapRenderer();
-	
-	void setNewSize(int width, int height);
-	
-	QPixmap renderToPixmap(ldraw::model *m, bool crop = false);
-	
-  private:
-	ldraw_renderer::renderer_opengl *renderer_;
-	ldraw_renderer::parameters *params_;
-	
-	int width_;
-	int height_;
-	
-	RendererPixelBuffer *buffer_;
-	QGLWidget *shareWidget_;
+ public:
+  PixmapRenderer(int width, int height, QGLWidget *shareWidget = 0L);
+  ~PixmapRenderer();
+  
+  void setNewSize(int width, int height);
+  
+  QPixmap renderToPixmap(ldraw::model *m, bool crop = false);
+  
+ private:
+  ldraw_renderer::renderer_opengl *renderer_;
+  ldraw_renderer::parameters *params_;
+  
+  int width_;
+  int height_;
+  
+  RendererPixelBuffer *buffer_;
+  QGLWidget *shareWidget_;
 };
 
 }

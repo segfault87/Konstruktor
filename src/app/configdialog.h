@@ -4,7 +4,7 @@
 #ifndef _CONFIGDIALOG_H_
 #define _CONFIGDIALOG_H_
 
-#include <kconfigdialog.h>
+#include <QDialog>
 
 namespace Ui 
 {
@@ -12,18 +12,21 @@ class ConfigDisplayForm;
 class ConfigRenderForm;
 }
 
+class QListWidget;
+class QStackedWidget;
+
 namespace Konstruktor
 {
 
-class ConfigDialog : public KConfigDialog
+class ConfigDialog : public QDialog
 {
-  public:
-	ConfigDialog(QWidget *parent = 0L);
-	virtual ~ConfigDialog();
-
-  private:
-	Ui::ConfigDisplayForm *uiDisplayForm_;
-	Ui::ConfigRenderForm *uiRenderForm_;
+ public:
+  ConfigDialog();
+  virtual ~ConfigDialog();
+  
+ private:
+  Ui::ConfigDisplayForm *uiDisplayForm_;
+  Ui::ConfigRenderForm *uiRenderForm_;
 };
 
 }

@@ -9,11 +9,11 @@ namespace Konstruktor
 
 struct Viewport
 {
-	float left;
-	float top;
-	float right;
-	float bottom;
-	float aspectRatio;
+  float left;
+  float top;
+  float right;
+  float bottom;
+  float aspectRatio;
 };
 
 extern const Viewport defaultViewport;

@@ -24,12 +24,9 @@
      <widget class="QWidget" name="page" >
       <layout class="QHBoxLayout" name="horizontalLayout" >
        <item>
-        <widget class="KLineEdit" name="searchEdit" >
+        <widget class="QLineEdit" name="searchEdit" >
          <property name="toolTip" >
           <string>Enter space-separated terms to search in the part list</string>
-         </property>
-         <property name="clickMessage" >
-          <string>Enter search terms here</string>
          </property>
          <property name="showClearButton" stdset="0" >
           <bool>true</bool>
@@ -94,11 +91,6 @@
   </layout>
  </widget>
  <customwidgets>
-  <customwidget>
-   <class>KLineEdit</class>
-   <extends>QLineEdit</extends>
-   <header>klineedit.h</header>
-  </customwidget>
   <customwidget>
    <class>PartsIconWidget</class>
    <extends>QListWidget</extends>

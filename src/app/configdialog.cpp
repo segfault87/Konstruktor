@@ -10,26 +10,25 @@
 namespace Konstruktor
 {
 
-ConfigDialog::ConfigDialog(QWidget *parent)
-	: KConfigDialog(parent, "Settings", Application::self()->config())
+ConfigDialog::ConfigDialog()
+    : QDialog()
 {
-	uiDisplayForm_ = new Ui::ConfigDisplayForm;
-	uiRenderForm_ = new Ui::ConfigRenderForm;
-
-	QWidget *wDisplay = new QWidget;
-	QWidget *wRender = new QWidget;
-
-	uiDisplayForm_->setupUi(wDisplay);
-	uiRenderForm_->setupUi(wRender);
-
-	addPage(wDisplay, Application::self()->config(), i18n("Display"), "system-run", i18n("Configure..."));
-	addPage(wRender, Application::self()->config(), i18n("Render"), "view-preview", i18n("Configure Renderer"));
+  uiDisplayForm_ = new Ui::ConfigDisplayForm;
+  uiRenderForm_ = new Ui::ConfigRenderForm;
+  
+  QWidget *wDisplay = new QWidget;
+  QWidget *wRender = new QWidget;
+  
+  uiDisplayForm_->setupUi(wDisplay);
+  uiRenderForm_->setupUi(wRender);
+  
+  
 }
 
 ConfigDialog::~ConfigDialog()
 {
-	delete uiDisplayForm_;
-	delete uiRenderForm_;
+  delete uiDisplayForm_;
+  delete uiRenderForm_;
 }
 
 }

@@ -1,21 +1,60 @@
 find_package(SharedMimeInfo REQUIRED)
 
 add_definitions(${SQLITE_DEFINITIONS})
+add_definitions(${QT_DEFINITIONS})
 include_directories(${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR} ${SQLITE_INCLUDE_DIR})
 
 # Konstruktor
 
-if(NO_KDE)
-set(konstruktor_platform_SRCS
+set(konstruktor_HEADERS
+  actionmanager.h
+  application.h
+  colordialog.h
+  colormanager.h
+  commandbase.h
+  commandcolor.h
+  commandinsert.h
+  commandpaste.h
+  commandremove.h
+  commandtransform.h
+  commandtransformlinear.h
+  common.h
+  configdialog.h
+  config.h
+  contentsmodel.h
+  contentsview.h
+  dbmanager.h
+  document.h
+  editor.h
+  mainwindow.h
+  menumanager.h
+  newmodeldialog.h
+  newsubmodeldialog.h
+  objectlist.h
+  partitems.h
+  partsiconwidget.h
+  partsmodel.h
+  partswidget.h
+  pivotextension.h
+  pixmapextension.h
+  pixmaprenderer.h
+  povrayexporter.h
+  povrayrenderparameters.h
+  povrayrenderwidget.h
+  refobject.h
+  renderwidget.h
+  scanlinewidget.h
+  selection.h
+  submodelmodel.h
+  submodelwidget.h
+  undostackextension.h
+  utils.h
+  viewport.h
+  visibilityextension.h
 )
-else(NO_KDE)
-set(konstruktor_platform_SRCS
-  kde/mainwindow.cpp
-)
-endif(NO_KDE)
-
+  
 set(konstruktor_SRCS
-  ${konstruktor_platform_SRCS}
+  actionmanager.cpp
   application.cpp
   colordialog.cpp
   colormanager.cpp
@@ -26,6 +65,7 @@ set(konstruktor_SRCS
   commandremove.cpp
   commandtransform.cpp
   commandtransformlinear.cpp
+  config.cpp
   configdialog.cpp
   contentsmodel.cpp
   contentsview.cpp
@@ -33,6 +73,7 @@ set(konstruktor_SRCS
   document.cpp
   editor.cpp
   mainwindow.cpp
+  menumanager.cpp
   newmodeldialog.cpp
   newsubmodeldialog.cpp
   objectlist.cpp
@@ -59,8 +100,7 @@ set(konstruktor_SRCS
   main.cpp
 )
 
-kde4_add_kcfg_files(konstruktor_SRCS kde/config.kcfgc)
-kde4_add_ui_files(konstruktor_SRCS
+qt4_wrap_ui(konstruktor_UIS
   colordialog.ui
   configdisplayform.ui
   configrenderform.ui
@@ -69,13 +109,23 @@ kde4_add_ui_files(konstruktor_SRCS
   partswidget.ui
 )
 
-kde4_add_executable(konstruktor ${konstruktor_SRCS})
-target_link_libraries(konstruktor libldr libldrawrenderer ${SQLITE_LIBRARIES} ${KDE4_KDECORE_LIBS}
-${KDE4_KIO_LIBS} ${KDE4_KDEUI_LIBS} ${QT_QTCORE_LIBRARY} ${QT_QTGUI_LIBRARY} ${QT_QTOPENGL_LIBRARY} )
+qt4_add_resources(konstruktor_RCC_SRCS konstruktor.qrc)
+qt4_wrap_cpp(konstruktor_HEADERS_MOC ${konstruktor_HEADERS})
+
+add_executable(konstruktor ${konstruktor_SRCS} ${konstruktor_UIS} ${konstruktor_HEADERS_MOC} ${konstruktor_RCC_SRCS})
+target_link_libraries(konstruktor libldr libldrawrenderer ${SQLITE_LIBRARIES} ${QT_QTCORE_LIBRARY} ${QT_QTGUI_LIBRARY} ${QT_QTOPENGL_LIBRARY} )
 
 # Konstruktor DB Updater
 
+set(konstruktor_db_updater_HEADERS
+  dbmanager.h
+  dbupdater.h
+  pixmaprenderer.h
+  viewport.h
+)
+
 set(konstruktor_db_updater_SRCS
+  config.cpp
   dbmanager.cpp
   dbupdater.cpp
   pixmaprenderer.cpp
@@ -83,19 +133,15 @@ set(konstruktor_db_updater_SRCS
   main_dbupdater.cpp
 )
 
-kde4_add_kcfg_files(konstruktor_db_updater_SRCS kde/config.kcfgc)
-kde4_add_executable(konstruktor_db_updater ${konstruktor_db_updater_SRCS})
+qt4_wrap_cpp(konstruktor_db_updater_HEADERS_MOC ${konstruktor_db_updater_HEADERS})
 
+add_executable(konstruktor_db_updater ${konstruktor_db_updater_SRCS} ${konstruktor_db_updater_HEADERS_MOC})
 set_target_properties(konstruktor_db_updater PROPERTIES COMPILE_FLAGS -DKONSTRUKTOR_DB_UPDATER)
-target_link_libraries(konstruktor_db_updater libldr libldrawrenderer ${SQLITE_LIBRARIES} ${QT_QTCORE_LIBRARY} ${QT_QTGUI_LIBRARY} ${QT_QTOPENGL_LIBRARY} ${KDE4_KDECORE_LIBRARY} ${KDE4_KDEUI_LIBRARY})
+target_link_libraries(konstruktor_db_updater libldr libldrawrenderer ${SQLITE_LIBRARIES} ${QT_QTCORE_LIBRARY} ${QT_QTGUI_LIBRARY} ${QT_QTOPENGL_LIBRARY})
 
 # install
 install(TARGETS konstruktor konstruktor_db_updater DESTINATION ${INSTALL_TARGETS_DEFAULT_ARGS})
 install(FILES konstruktor.desktop DESTINATION ${XDG_APPS_INSTALL_DIR})
-install(FILES kde/konstruktorui.rc DESTINATION ${DATA_INSTALL_DIR}/konstruktor)
 install(FILES ldraw-mime.xml DESTINATION ${XDG_MIME_INSTALL_DIR})
-kde4_install_icons(${ICON_INSTALL_DIR})
 update_xdg_mimetypes(${XDG_MIME_INSTALL_DIR})
 
-# subdirectories
-add_subdirectory(icons)

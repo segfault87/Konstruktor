@@ -23,19 +23,16 @@
       </widget>
      </item>
      <item>
-      <widget class="KLineEdit" name="povRayPath" >
+      <widget class="QLineEdit" name="povRayPath" >
        <property name="showClearButton" stdset="0" >
         <bool>true</bool>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="KIconButton" name="kiconbutton" >
-       <property name="icon" >
-        <string>document-open-folder</string>
-       </property>
-       <property name="iconSize" >
-        <number>16</number>
+      <widget class="QPushButton" name="kiconbutton" >
+       <property name="text" >
+        <string>Browse...</string>
        </property>
       </widget>
      </item>
@@ -57,16 +54,6 @@
   </layout>
  </widget>
  <customwidgets>
-  <customwidget>
-   <class>KIconButton</class>
-   <extends>QPushButton</extends>
-   <header>kicondialog.h</header>
-  </customwidget>
-  <customwidget>
-   <class>KLineEdit</class>
-   <extends>QLineEdit</extends>
-   <header>klineedit.h</header>
-  </customwidget>
  </customwidgets>
  <resources/>
  <connections/>
