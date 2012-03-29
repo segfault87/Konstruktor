@@ -2,6 +2,10 @@ if(UNIX)
   find_package(SharedMimeInfo REQUIRED)
 endif(UNIX)
 
+if(WIN32)
+set(GUI_TYPE WIN32)
+endif(WIN32)
+
 add_definitions(${SQLITE_DEFINITIONS})
 add_definitions(${QT_DEFINITIONS})
 include_directories(${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR} ${SQLITE_INCLUDE_DIR} ${QT_INCLUDES})
@@ -117,7 +121,7 @@ qt4_wrap_ui(konstruktor_UIS
 qt4_add_resources(konstruktor_RCC_SRCS konstruktor.qrc)
 qt4_wrap_cpp(konstruktor_HEADERS_MOC ${konstruktor_HEADERS})
 
-add_executable(konstruktor ${konstruktor_SRCS} ${konstruktor_UIS} ${konstruktor_HEADERS_MOC} ${konstruktor_RCC_SRCS})
+add_executable(konstruktor ${GUI_TYPE} ${konstruktor_SRCS} ${konstruktor_UIS} ${konstruktor_HEADERS_MOC} ${konstruktor_RCC_SRCS})
 target_link_libraries(konstruktor libldr libldrawrenderer ${SQLITE_LIBRARIES} ${QT_QTCORE_LIBRARY} ${QT_QTGUI_LIBRARY} ${QT_QTOPENGL_LIBRARY} )
 
 # Konstruktor DB Updater
@@ -140,7 +144,7 @@ set(konstruktor_db_updater_SRCS
 
 qt4_wrap_cpp(konstruktor_db_updater_HEADERS_MOC ${konstruktor_db_updater_HEADERS})
 
-add_executable(konstruktor_db_updater ${konstruktor_db_updater_SRCS} ${konstruktor_db_updater_HEADERS_MOC})
+add_executable(konstruktor_db_updater ${GUI_TYPE} ${konstruktor_db_updater_SRCS} ${konstruktor_db_updater_HEADERS_MOC})
 set_target_properties(konstruktor_db_updater PROPERTIES COMPILE_FLAGS -DKONSTRUKTOR_DB_UPDATER)
 target_link_libraries(konstruktor_db_updater libldr libldrawrenderer ${SQLITE_LIBRARIES} ${QT_QTCORE_LIBRARY} ${QT_QTGUI_LIBRARY} ${QT_QTOPENGL_LIBRARY})
 
