@@ -5,6 +5,7 @@
 
 #include "application.h"
 #include "colormanager.h"
+#include "utils.h"
 #include "ui_colordialog.h"
 
 #include "colordialog.h"
@@ -27,10 +28,10 @@ ColorDialog::ColorDialog(QWidget *parent)
   ui_->buttonAdd->setEnabled(false);
   ui_->buttonRemove->setEnabled(false);
   
-  ui_->buttonMoveDown->setIcon(QIcon::fromTheme("arrow-down"));
-  ui_->buttonMoveUp->setIcon(QIcon::fromTheme("arrow-up"));
-  ui_->buttonAdd->setIcon(QIcon::fromTheme("list-add"));
-  ui_->buttonRemove->setIcon(QIcon::fromTheme("list-remove"));
+  ui_->buttonMoveDown->setIcon(Utils::icon("arrow-down"));
+  ui_->buttonMoveUp->setIcon(Utils::icon("arrow-up"));
+  ui_->buttonAdd->setIcon(Utils::icon("list-add"));
+  ui_->buttonRemove->setIcon(Utils::icon("list-remove"));
 
   QStringList headers;
   headers << tr("ID") << tr("Name") << tr("Material Type");

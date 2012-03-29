@@ -7,6 +7,7 @@
 #include <QPixmap>
 
 #include "dbmanager.h"
+#include "utils.h"
 
 #include "partsmodel.h"
 
@@ -99,7 +100,7 @@ QVariant PartsModel::dataFavorite(const QModelIndex &index, int role) const
     if (role == Qt::DisplayRole) {
       return tr("Favorites");
     } else if (role == Qt::DecorationRole) {
-      return QIcon::fromTheme("favorites");
+      return Utils::icon("favorites");
     } else if (role == Qt::FontRole) {
       QFont font;
       font.setBold(true);

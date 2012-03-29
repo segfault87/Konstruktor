@@ -197,7 +197,7 @@ void MainWindow::newFile()
     // append into tab bar
     documents_.append(QPair<QString, Document *>(QString(), document));
     int tabidx = tabbar_->addTab(filename);
-    tabbar_->setTabIcon(tabidx, QIcon::fromTheme("text-plain"));
+    tabbar_->setTabIcon(tabidx, Utils::icon("text-plain"));
     tabbar_->setCurrentIndex(tabidx);
     activeDocument_ = document;
     
@@ -248,7 +248,7 @@ void MainWindow::openFile(const QString &path)
     openedUrls_.insert(path);
     documents_.append(QPair<QString, Document *>(path, document));
     int tabidx = tabbar_->addTab(path);
-    tabbar_->setTabIcon(tabidx, QIcon::fromTheme("text-plain"));
+    tabbar_->setTabIcon(tabidx, Utils::icon("text-plain"));
     tabbar_->setCurrentIndex(tabidx);
     
     activeDocument_ = document;
@@ -540,7 +540,7 @@ void MainWindow::modelModified()
     if (!activeDocument_->canSave()) {
       actionManager_->query("file/save")->setEnabled(true);
       activeDocument_->setSaveable(true);
-      tabbar_->setTabIcon(tabbar_->currentIndex(), QIcon::fromTheme("document-save"));
+      tabbar_->setTabIcon(tabbar_->currentIndex(), Utils::icon("document-save"));
     }
   }
 }
@@ -655,12 +655,12 @@ void MainWindow::initActions()
   QAction *ac;
 
   // File
-  actionManager_->createAction("file/new", tr("&New..."), this, SLOT(newFile()), QKeySequence::New, QIcon::fromTheme("document-new"));
-  actionManager_->createAction("file/open", tr("&Open..."), this, SLOT(openFile()), QKeySequence::Open, QIcon::fromTheme("document-open"));
-  actionManager_->createAction("file/close", tr("&Close"), this, SLOT(closeFile()), QKeySequence::Close, QIcon::fromTheme("document-close"));
-  actionManager_->createAction("file/save", tr("&Save"), this, SLOT(saveFile()), QKeySequence::Save, QIcon::fromTheme("document-save"));
-  actionManager_->createAction("file/save_as", tr("Save &As"), this, SLOT(saveFileAs()), QKeySequence::SaveAs, QIcon::fromTheme("document-save-as"));
-  actionManager_->createAction("file/quit", tr("&Quit"), this, SLOT(quit()), QKeySequence::Quit, QIcon::fromTheme("application-exit"));
+  actionManager_->createAction("file/new", tr("&New..."), this, SLOT(newFile()), QKeySequence::New, Utils::icon("document-new"));
+  actionManager_->createAction("file/open", tr("&Open..."), this, SLOT(openFile()), QKeySequence::Open, Utils::icon("document-open"));
+  actionManager_->createAction("file/close", tr("&Close"), this, SLOT(closeFile()), QKeySequence::Close, Utils::icon("document-close"));
+  actionManager_->createAction("file/save", tr("&Save"), this, SLOT(saveFile()), QKeySequence::Save, Utils::icon("document-save"));
+  actionManager_->createAction("file/save_as", tr("Save &As"), this, SLOT(saveFileAs()), QKeySequence::SaveAs, Utils::icon("document-save-as"));
+  actionManager_->createAction("file/quit", tr("&Quit"), this, SLOT(quit()), QKeySequence::Quit, Utils::icon("application-exit"));
 
   actionManager_->query("file/close")->setEnabled(false);
   
@@ -669,18 +669,18 @@ void MainWindow::initActions()
   // Edit
   actionManager_->addAction("edit/undo", editorGroup_->createUndoAction());
   actionManager_->addAction("edit/redo", editorGroup_->createRedoAction());
-  actionManager_->createAction("edit/cut", tr("Cu&t"), editorGroup_, SLOT(cut()), QKeySequence::Cut, QIcon::fromTheme("edit-cut"));
-  actionManager_->createAction("edit/copy", tr("&Copy"), editorGroup_, SLOT(copy()), QKeySequence::Copy, QIcon::fromTheme("edit-copy"));
-  actionManager_->createAction("edit/paste", tr("&Paste"), editorGroup_, SLOT(paste()), QKeySequence::Paste, QIcon::fromTheme("edit-paste"));
+  actionManager_->createAction("edit/cut", tr("Cu&t"), editorGroup_, SLOT(cut()), QKeySequence::Cut, Utils::icon("edit-cut"));
+  actionManager_->createAction("edit/copy", tr("&Copy"), editorGroup_, SLOT(copy()), QKeySequence::Copy, Utils::icon("edit-copy"));
+  actionManager_->createAction("edit/paste", tr("&Paste"), editorGroup_, SLOT(paste()), QKeySequence::Paste, Utils::icon("edit-paste"));
   
   actionManager_->query("edit/paste")->setEnabled(false);
   
-  actionManager_->createAction("edit/select_all", tr("&Select All"), contentList_, SLOT(selectAll()), QKeySequence::SelectAll, QIcon::fromTheme("edit-select-all"));
-  actionManager_->createAction("edit/select_none", tr("Select &None"), contentList_, SLOT(clearSelection()), QKeySequence("Ctrl+Shift+A"), QIcon::fromTheme("edit-delete"));
+  actionManager_->createAction("edit/select_all", tr("&Select All"), contentList_, SLOT(selectAll()), QKeySequence::SelectAll, Utils::icon("edit-select-all"));
+  actionManager_->createAction("edit/select_none", tr("Select &None"), contentList_, SLOT(clearSelection()), QKeySequence("Ctrl+Shift+A"), Utils::icon("edit-delete"));
   actionManager_->createAction("edit/hide", tr("&Hide"), contentList_, SLOT(hideSelected()), QKeySequence("Ctrl+H"));
   actionManager_->createAction("edit/unhide_all", tr("Unhide &All"), contentList_, SLOT(unhideAll()), QKeySequence("Ctrl+Shift+H"));
-  actionManager_->createAction("edit/select_color", tr("Select Color"), editorGroup_, SLOT(editColor()), QKeySequence("Ctrl+L"), QIcon::fromTheme("fill-color"));
-  actionManager_->createAction("edit/rotation_pivot", tr("Rotation Pivot"), editorGroup_, SLOT(rotationPivot()), QKeySequence("Ctrl+Shift+P"), QIcon::fromTheme("transform-rotate"));
+  actionManager_->createAction("edit/select_color", tr("Select Color"), editorGroup_, SLOT(editColor()), QKeySequence("Ctrl+L"), Utils::icon("fill-color"));
+  actionManager_->createAction("edit/rotation_pivot", tr("Rotation Pivot"), editorGroup_, SLOT(rotationPivot()), QKeySequence("Ctrl+Shift+P"), Utils::icon("transform-rotate"));
   
   ac = actionManager_->createAction("edit/grid_1", tr("Grid Level 1"), 0L, 0L, QKeySequence("Ctrl+1"), QIcon(":/icons/grid1.png"));
   ac->setData(Editor::Grid20);
@@ -704,7 +704,7 @@ void MainWindow::initActions()
   connect(gridActions, SIGNAL(triggered(QAction *)), this, SLOT(gridModeChanged(QAction *)));
   actionManager_->query("edit/grid_2")->setChecked(true);
   
-  actionManager_->createAction("edit/delete", tr("&Delete"), editorGroup_, SLOT(deleteSelected()), QKeySequence::Delete, QIcon::fromTheme("edit-delete"));
+  actionManager_->createAction("edit/delete", tr("&Delete"), editorGroup_, SLOT(deleteSelected()), QKeySequence::Delete, Utils::icon("edit-delete"));
 
   actionManager_->createAction("edit/move_x_pos", tr("Move -X"), editorGroup_, SLOT(moveByXPositive()), QKeySequence("Right"), QIcon(":/icons/move-x-pos.png"));
   actionManager_->createAction("edit/move_x_neg", tr("Move +X"), editorGroup_, SLOT(moveByXNegative()), QKeySequence("Left"), QIcon(":/icons/move-x-neg.png"));
@@ -725,18 +725,18 @@ void MainWindow::initActions()
   actionManager_->createAction("view/reset_3d_view", tr("Re&set 3D View"), this, SLOT(resetDisplay()));
   
   // Submodel
-  actionManager_->createAction("submodel/new", tr("&New Submodel..."), this, SLOT(newSubmodel()), QKeySequence(), QIcon::fromTheme("document-new"));
-  actionManager_->createAction("submodel/delete", tr("&Delete Submodel"), this, SLOT(deleteSubmodel()), QKeySequence(), QIcon::fromTheme("edit-delete"));
-  actionManager_->createAction("submodel/edit", tr("&Model Properties..."), this, SLOT(modelProperties()), QKeySequence(), QIcon::fromTheme("document-properties"));
+  actionManager_->createAction("submodel/new", tr("&New Submodel..."), this, SLOT(newSubmodel()), QKeySequence(), Utils::icon("document-new"));
+  actionManager_->createAction("submodel/delete", tr("&Delete Submodel"), this, SLOT(deleteSubmodel()), QKeySequence(), Utils::icon("edit-delete"));
+  actionManager_->createAction("submodel/edit", tr("&Model Properties..."), this, SLOT(modelProperties()), QKeySequence(), Utils::icon("document-properties"));
   
   // Render
-  actionManager_->createAction("render/render", tr("R&ender..."), this, SLOT(render()), QKeySequence("Ctrl+F11"), QIcon::fromTheme("view-preview"));
-  actionManager_->createAction("render/setup", tr("&Configure Renderer..."), this, SLOT(notImplemented()), QKeySequence(), QIcon::fromTheme("configure"));
+  actionManager_->createAction("render/render", tr("R&ender..."), this, SLOT(render()), QKeySequence("Ctrl+F11"), Utils::icon("view-preview"));
+  actionManager_->createAction("render/setup", tr("&Configure Renderer..."), this, SLOT(notImplemented()), QKeySequence(), Utils::icon("configure"));
   
   /*actionRenderSteps_ = ac->addAction("render_steps");
     actionRenderSteps_->setText(tr("Render by &Steps..."));
     actionRenderSteps_->setShortcut("Ctrl+Shift+F11"));
-    actionRenderSteps_->setIcon(QIcon::fromTheme("view-preview"));*/
+    actionRenderSteps_->setIcon(Utils::icon("view-preview"));*/
   
   // Settings
   //ac->addAction(KStandardAction::Preferences, this, SLOT(showConfigDialog()));
@@ -979,7 +979,7 @@ bool MainWindow::doSave(Document *document, bool newname)
     if (newidx != -1) {
       documents_[newidx].first = fname;
       tabbar_->setTabText(newidx, fname);
-      tabbar_->setTabIcon(newidx, QIcon::fromTheme("text-plain"));
+      tabbar_->setTabIcon(newidx, Utils::icon("text-plain"));
     }
     openedUrls_.insert(location);
     document->setPath(location);	
@@ -987,7 +987,7 @@ bool MainWindow::doSave(Document *document, bool newname)
     int i = 0;
     for (QVector<QPair<QString, Document *> >::ConstIterator it = documents_.constBegin(); it != documents_.constEnd(); ++it) {
       if ((*it).second == document) {
-        tabbar_->setTabIcon(i, QIcon::fromTheme("text-plain"));
+        tabbar_->setTabIcon(i, Utils::icon("text-plain"));
         break;
       }
       ++i;

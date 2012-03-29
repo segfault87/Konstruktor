@@ -11,6 +11,7 @@
 #include "colormanager.h"
 #include "document.h"
 #include "application.h"
+#include "utils.h"
 #include "visibilityextension.h"
 
 #include "contentsmodel.h"
@@ -70,7 +71,7 @@ QVariant ContentsModel::headerData(int section, Qt::Orientation orientation, int
           return QVariant();
       }
     } else if (role == Qt::DecorationRole && section == ColumnCheck) {
-      return QIcon::fromTheme("edit-delete");
+      return Utils::icon("edit-delete");
     }
   }
   

@@ -13,13 +13,14 @@ namespace Konstruktor
 
 class Utils
 {
-  private:
-	Utils() {}
-	~Utils() {}
-	
-  public:
-	static int maximum(const QSet<int> &set);
-	static QString urlFileName(const QUrl &url);
+ private:
+  Utils() {}
+  ~Utils() {}
+  
+ public:
+  static int maximum(const QSet<int> &set);
+  static QString urlFileName(const QUrl &url);
+  static QIcon icon(const QString &name);
 };
 
 }

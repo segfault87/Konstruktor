@@ -7,6 +7,7 @@
 #include "application.h"
 #include "pixmapextension.h"
 #include "submodelmodel.h"
+#include "utils.h"
 
 #include "submodelwidget.h"
 
@@ -70,7 +71,7 @@ void SubmodelWidget::contextMenuEvent(QContextMenuEvent *event)
   }
   
   QMenu contextMenu(this);
-  contextMenu.addAction(new QAction(QIcon::fromTheme("edit-copy"), tr("&Duplicate"), &contextMenu));
+  contextMenu.addAction(new QAction(Utils::icon("edit-copy"), tr("&Duplicate"), &contextMenu));
   
   QAction *action = contextMenu.exec(event->globalPos());
   if (action) {

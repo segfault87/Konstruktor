@@ -147,14 +147,14 @@ QString Application::saveLocation(const QString &directory)
 
 #if defined(Q_WS_MAC)
   result = QDir::homePath() +
-      "/Library/Application Support/Konstruktor/" + directory;
+      "/Library/Application Support/Konstruktor/" + directory + "/";
 #elif defined(Q_OS_UNIX)
   result = qgetenv("XDG_DATA_HOME");
   if (result.isEmpty())
-    result = QDir::homePath() + "/.local/share/konstruktor/" + directory;
+    result = QDir::homePath() + "/.local/share/konstruktor/" + directory + "/";
 #elif defined(Q_OS_WIN32)
   result = QDir::homePath() +
-      "/Application Data/Konstruktor";
+      "/Application Data/Konstruktor/" + directory + "/";
 #endif
 
   QDir().mkpath(result);

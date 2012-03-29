@@ -17,5 +17,29 @@
     <file>icons/rotate-y-neg.png</file>
     <file>icons/rotate-z-pos.png</file>
     <file>icons/rotate-z-neg.png</file>
+
+    <file>icons/fallback/application-exit.png</file>
+    <file>icons/fallback/configure.png</file>
+    <file>icons/fallback/document-open.png</file>
+    <file>icons/fallback/document-save.png</file>
+    <file>icons/fallback/edit-delete.png</file>
+    <file>icons/fallback/edit-select-all.png</file>
+    <file>icons/fallback/list-add.png</file>
+    <file>icons/fallback/transform-rotate.png</file>
+    <file>icons/fallback/arrow-down.png</file>
+    <file>icons/fallback/document-close.png</file>
+    <file>icons/fallback/document-properties.png</file>
+    <file>icons/fallback/edit-copy.png</file>
+    <file>icons/fallback/edit-paste.png</file>
+    <file>icons/fallback/edit-undo.png</file>
+    <file>icons/fallback/list-remove.png</file>
+    <file>icons/fallback/view-preview.png</file>
+    <file>icons/fallback/arrow-up.png</file>
+    <file>icons/fallback/document-new.png</file>
+    <file>icons/fallback/document-save-as.png</file>
+    <file>icons/fallback/edit-cut.png</file>
+    <file>icons/fallback/edit-redo.png</file>
+    <file>icons/fallback/fill-color.png</file>
+    <file>icons/fallback/text-plain.png</file>
   </qresource>
 </RCC>

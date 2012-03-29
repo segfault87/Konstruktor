@@ -78,7 +78,7 @@ QAction* Editor::createRedoAction()
   connect(this, SIGNAL(redoTextChanged(QString)), action, SLOT(setPrefixedText(QString)));
   connect(action, SIGNAL(triggered()), this, SLOT(redo()));
   
-  action->setIcon(QIcon::fromTheme("edit-redo"));
+  action->setIcon(Utils::icon("edit-redo"));
   action->setIconText(tr("&Redo"));
   action->setShortcut(QKeySequence::Redo);
   
@@ -96,7 +96,7 @@ QAction* Editor::createUndoAction()
   connect(this, SIGNAL(undoTextChanged(QString)), action, SLOT(setPrefixedText(QString)));
   connect(action, SIGNAL(triggered()), this, SLOT(undo()));
   
-  action->setIcon(QIcon::fromTheme("edit-undo"));
+  action->setIcon(Utils::icon("edit-undo"));
   action->setIconText(tr("&Undo"));
   action->setShortcut(QKeySequence::Undo);
   
