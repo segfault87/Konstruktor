@@ -46,6 +46,7 @@ class Config
   };
 
  public:
+  void reloadConfig();
   void writeConfig();
 
   /* General */

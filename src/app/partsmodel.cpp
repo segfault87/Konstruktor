@@ -68,7 +68,7 @@ QVariant PartsModel::dataCategory(const QModelIndex &index, int role) const
   PartCategory *cat = static_cast<PartCategory *>(index.internalPointer());
 	
   if (role == Qt::DisplayRole) {
-    return tr("%1 (%2)").arg(cat->name(), rowCount(index));
+    return tr("%1 (%2)").arg(cat->name()).arg(rowCount(index));
   } else if (role == Qt::FontRole) {
     if (cat->visibility() == 1) {
       QFont font;

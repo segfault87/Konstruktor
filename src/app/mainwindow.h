@@ -19,6 +19,7 @@ namespace ldraw
 
 class QAction;
 class QCloseEvent;
+class QGLContext;
 class QModelIndex;
 class QTreeView;
 
@@ -123,6 +124,7 @@ class MainWindow : public QMainWindow
   PartsWidget *partsWidget_;
   QTreeView *submodelList_;
   ContentsView *contentList_;	
+  QGLContext *glContext_[4];
   RenderWidget *renderWidget_[4];
   QTabBar *tabbar_;
   

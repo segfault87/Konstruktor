@@ -9,6 +9,7 @@
 
 namespace ldraw { class model; }
 
+class QDialogButtonBox;
 class QLabel;
 class QProgressBar;
 class QTemporaryFile;
@@ -52,6 +53,7 @@ class POVRayRenderWidget : public QDialog
   ScanlineWidgetContainer *scrollArea_;
   QLabel *status_;
   QProgressBar *progressBar_;
+  QDialogButtonBox *buttonBox_;
   
   POVRayExporter *exporter_;
   

@@ -1,11 +1,13 @@
 // Konstruktor - An interactive LDraw modeler for KDE
 // Copyright (c)2006-2011 Park "segfault" J. K. <mastermind@planetmono.org>
 
+#include <QDialogButtonBox>
 #include <QFileDialog>
 #include <QIcon>
 #include <QLabel>
 #include <QMessageBox>
 #include <QProgressBar>
+#include <QPushButton>
 #include <QTemporaryFile>
 #include <QVBoxLayout>
 
@@ -69,13 +71,24 @@ POVRayRenderWidget::POVRayRenderWidget(const POVRayRenderParameters &params, con
   status_->setAlignment(Qt::AlignHCenter);
   progressBar_ = new QProgressBar(this);
   progressBar_->setMaximum(100);
+  buttonBox_ = new QDialogButtonBox(this);
+  buttonBox_->addButton(QDialogButtonBox::Save);
+  buttonBox_->addButton(QDialogButtonBox::Close);
+  buttonBox_->addButton(QDialogButtonBox::Cancel);
+  buttonBox_->button(QDialogButtonBox::Save)->setEnabled(false);
+  buttonBox_->button(QDialogButtonBox::Close)->setEnabled(false);
+  buttonBox_->button(QDialogButtonBox::Cancel)->setEnabled(false);
   
   vboxLayout->addWidget(scrollArea_);
   vboxLayout->addWidget(status_);
   vboxLayout->addWidget(progressBar_);
+  vboxLayout->addWidget(buttonBox_);
   
   connect(this, SIGNAL(lineFinished(int)), scanlineWidget, SLOT(updateLine(int)));
   connect(this, SIGNAL(percent(int)), progressBar_, SLOT(setValue(int)));
+  connect(buttonBox_->button(QDialogButtonBox::Save), SIGNAL(clicked()), this, SLOT(saveImage()));
+  connect(buttonBox_->button(QDialogButtonBox::Cancel), SIGNAL(clicked()), this, SLOT(cancelRender()));
+  connect(buttonBox_->button(QDialogButtonBox::Close), SIGNAL(clicked()), this, SLOT(accept()));
   
   setLayout(vboxLayout);
 }
@@ -91,8 +104,8 @@ POVRayRenderWidget::~POVRayRenderWidget()
 
 void POVRayRenderWidget::start()
 {
-  //enableButton(QDialog::Close, false);
-  //enableButton(QDialog::User1, true);
+  buttonBox_->button(QDialogButtonBox::Close)->setEnabled(false);
+  buttonBox_->button(QDialogButtonBox::Cancel)->setEnabled(true);
   
   error_ = false;
   terminated_ = false;
@@ -245,8 +258,8 @@ void POVRayRenderWidget::povrayImage()
 
 void POVRayRenderWidget::povrayFinished(int exitCode, QProcess::ExitStatus exitStatus)
 {
-  //enableButton(QDialog::Close, true);
-  //enableButton(QDialog::User1, false);
+  buttonBox_->button(QDialogButtonBox::Close)->setEnabled(true);
+  buttonBox_->button(QDialogButtonBox::Cancel)->setEnabled(false);
   
   if (terminated_) {
     status_->setText(tr("Aborted."));
@@ -260,7 +273,7 @@ void POVRayRenderWidget::povrayFinished(int exitCode, QProcess::ExitStatus exitS
     status_->setText(tr("Rendering failed."));
   } else {
     status_->setText(tr("Finished."));
-    //enableButton(QDialog::User2, true);
+    buttonBox_->button(QDialogButtonBox::Save)->setEnabled(true);
   }
   
   delete process_;

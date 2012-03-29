@@ -45,8 +45,9 @@ DBUpdater::DBUpdater(const std::string &path, bool forceRescan, QObject *parent)
   }
   
   QString dbfile = saveLocation("") + "parts.db";
-  if (!QFile(dbfile).exists())
+  if (!QFile(dbfile).exists()) {
     forceRescan_ = true;
+  }
   
   manager_ = new DBManager(this);
   manager_->initialize(dbfile);
@@ -181,9 +182,6 @@ int DBUpdater::start()
   const std::map<std::string, std::string> &partlist = library_->part_list();
   int totalSize = partlist.size();
 
-  printf("%d %d\n", config_->partCount(), totalSize);
-  return 0;
-  
   if (forceRescan_) {
     deleteAll();
   } else if (config_->partCount() == totalSize) {
@@ -193,9 +191,7 @@ int DBUpdater::start()
     config_->setPartCount(-1);
     config_->writeConfig();
   }
-  
-  std::cout << "0 " << (totalSize - 1) << " Starting" << std::endl;
-	
+
   int i = 0;
   bool intransaction = false;
   for (std::map<std::string, std::string>::const_iterator it = partlist.begin(); it != partlist.end(); ++it, ++i) {

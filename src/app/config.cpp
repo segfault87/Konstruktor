@@ -23,6 +23,12 @@ Config::~Config()
   delete settings_;
 }
 
+void Config::reloadConfig()
+{
+  delete settings_;
+  settings_ = new QSettings();
+}
+
 void Config::writeConfig()
 {
   settings_->sync();
@@ -106,7 +112,7 @@ void Config::setPartCount(int v)
 
 void Config::setDatabaseRevision(int v)
 {
-  settings_->setValue("database/databse_revision", v);
+  settings_->setValue("database/database_revision", v);
 }
 
 void Config::setMagic(int v)

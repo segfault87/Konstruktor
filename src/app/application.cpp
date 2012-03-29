@@ -249,6 +249,8 @@ void Application::dbUpdateFinished(int exitCode, QProcess::ExitStatus exitStatus
   
   delete dbUpdater_;
   dbUpdater_ = 0L;
+
+  config_->reloadConfig();
   
   if (exitCode || exitStatus == QProcess::CrashExit) {
     QMessageBox::critical(0L, tr("Error"), tr("Could not scan LDraw part library."));

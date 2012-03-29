@@ -20,7 +20,7 @@ int main(int argc, char *argv[])
   QApplication app(argc, argv);
   QStringList args = app.arguments();
   std::string path;
-  bool rescan;
+  bool rescan = false;
 
   QCoreApplication::setOrganizationName("Influx");
   QCoreApplication::setOrganizationDomain("influx.kr");
@@ -44,7 +44,7 @@ int main(int argc, char *argv[])
     usage(argv[0]);
     return 1;
   }
-  
+
   int status;
   try {
     Konstruktor::DBUpdater updater(path, rescan);

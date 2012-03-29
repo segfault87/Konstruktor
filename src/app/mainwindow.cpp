@@ -101,6 +101,11 @@ MainWindow::~MainWindow()
   
   for (int i = 0; i < documents_.size(); ++i)
     delete documents_[i].second;
+
+  for (int i = 0; i < 4; ++i) {
+    delete renderWidget_[i];
+    delete glContext_[i];
+  }
 }
 
 // returns currently using viewport modes in bit array format
@@ -606,27 +611,27 @@ void MainWindow::initGui()
   
   Config *cfg = Application::self()->config();
   
+  // OpenGL context
   QGLFormat format = QGLFormat::defaultFormat();
   format.setAlpha(true);
   if (cfg->multisampling())
     format.setSampleBuffers(true);
   
-  QGLContext *ctx[4];
   for (int i = 0; i < 4; ++i)
-    ctx[i] = new QGLContext(format);
+    glContext_[i] = new QGLContext(format);
   
-  if (!ctx[0]->isValid()) {
+  if (!glContext_[0]->isValid()) {
     /* fallback if antialiasing is not supported */
     for (int i = 0; i < 4; ++i) {
-      delete ctx[i];
-      ctx[i] = new QGLContext(QGLFormat::defaultFormat());
+      delete glContext_[i];
+      glContext_[i] = new QGLContext(QGLFormat::defaultFormat());
     }
   }
   
-  renderWidget_[0] = new RenderWidget(this, &activeDocument_, RenderWidget::getViewportMode((int)cfg->viewportTopLeft()), ctx[0], 0L, srh1);
-  renderWidget_[1] = new RenderWidget(this, &activeDocument_, RenderWidget::getViewportMode((int)cfg->viewportBottomLeft()), ctx[1], renderWidget_[0], srh1);
-  renderWidget_[2] = new RenderWidget(this, &activeDocument_, RenderWidget::getViewportMode((int)cfg->viewportTopRight()), ctx[2], renderWidget_[0], srh2);
-  renderWidget_[3] = new RenderWidget(this, &activeDocument_, RenderWidget::getViewportMode((int)cfg->viewportBottomRight()), ctx[3], renderWidget_[0], srh2);
+  renderWidget_[0] = new RenderWidget(this, &activeDocument_, RenderWidget::getViewportMode((int)cfg->viewportTopLeft()), glContext_[0], 0L, srh1);
+  renderWidget_[1] = new RenderWidget(this, &activeDocument_, RenderWidget::getViewportMode((int)cfg->viewportBottomLeft()), glContext_[1], renderWidget_[0], srh1);
+  renderWidget_[2] = new RenderWidget(this, &activeDocument_, RenderWidget::getViewportMode((int)cfg->viewportTopRight()), glContext_[2], renderWidget_[0], srh2);
+  renderWidget_[3] = new RenderWidget(this, &activeDocument_, RenderWidget::getViewportMode((int)cfg->viewportBottomRight()), glContext_[3], renderWidget_[0], srh2);
   
   Application::self()->initializeRenderer(renderWidget_[0]);
   
@@ -853,11 +858,13 @@ void MainWindow::initMenus()
 void MainWindow::initToolBars()
 {
   QToolBar *toolBarFile = addToolBar(tr("File"));
+  toolBarFile->setObjectName("toolbar_file");
   toolBarFile->addAction(actionManager_->query("file/new"));
   toolBarFile->addAction(actionManager_->query("file/open"));
   toolBarFile->addAction(actionManager_->query("file/save"));
   
   QToolBar *toolBarEdit = addToolBar(tr("Edit"));
+  toolBarEdit->setObjectName("toolbar_edit");
   toolBarEdit->addAction(actionManager_->query("edit/undo"));
   toolBarEdit->addAction(actionManager_->query("edit/redo"));
   toolBarEdit->addSeparator();
@@ -880,14 +887,15 @@ void MainWindow::initToolBars()
   toolBarEdit->addAction(actionManager_->query("edit/move_z_pos"));
   toolBarEdit->addAction(actionManager_->query("edit/move_z_neg"));
   toolBarEdit->addSeparator();
-  toolBarEdit->addAction(actionManager_->query("edit/rotate_x_pos"));
-  toolBarEdit->addAction(actionManager_->query("edit/rotate_x_neg"));
-  toolBarEdit->addAction(actionManager_->query("edit/rotate_y_pos"));
-  toolBarEdit->addAction(actionManager_->query("edit/rotate_y_neg"));
-  toolBarEdit->addAction(actionManager_->query("edit/rotate_z_pos"));
-  toolBarEdit->addAction(actionManager_->query("edit/rotate_z_neg"));
+  toolBarEdit->addAction(actionManager_->query("edit/rotate_x_cw"));
+  toolBarEdit->addAction(actionManager_->query("edit/rotate_x_ccw"));
+  toolBarEdit->addAction(actionManager_->query("edit/rotate_y_cw"));
+  toolBarEdit->addAction(actionManager_->query("edit/rotate_y_ccw"));
+  toolBarEdit->addAction(actionManager_->query("edit/rotate_z_cw"));
+  toolBarEdit->addAction(actionManager_->query("edit/rotate_z_ccw"));
 
   QToolBar *toolBarView = addToolBar(tr("View"));
+  toolBarView->setObjectName("toolbar_view");
   toolBarView->addAction(actionManager_->query("view/reset_zoom"));
   toolBarView->addAction(actionManager_->query("view/reset_3d_view"));
 }
