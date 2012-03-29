@@ -26,6 +26,7 @@
 
 #include <libldr/utils.h>
 
+#include "aboutdialog.h"
 #include "actionmanager.h"
 #include "application.h"
 #include "configdialog.h"
@@ -141,7 +142,8 @@ void MainWindow::clipboardChanged()
 
 void MainWindow::about()
 {
-
+  QDialog *dialog = new AboutDialog(this);
+  dialog->exec();
 }
 
 void MainWindow::updateViewports()
@@ -628,10 +630,10 @@ void MainWindow::initGui()
     }
   }
   
-  renderWidget_[0] = new RenderWidget(this, &activeDocument_, RenderWidget::getViewportMode((int)cfg->viewportTopLeft()), glContext_[0], 0L, srh1);
-  renderWidget_[1] = new RenderWidget(this, &activeDocument_, RenderWidget::getViewportMode((int)cfg->viewportBottomLeft()), glContext_[1], renderWidget_[0], srh1);
-  renderWidget_[2] = new RenderWidget(this, &activeDocument_, RenderWidget::getViewportMode((int)cfg->viewportTopRight()), glContext_[2], renderWidget_[0], srh2);
-  renderWidget_[3] = new RenderWidget(this, &activeDocument_, RenderWidget::getViewportMode((int)cfg->viewportBottomRight()), glContext_[3], renderWidget_[0], srh2);
+  renderWidget_[0] = new RenderWidget(this, &activeDocument_, RenderWidget::getViewportMode((int) cfg->viewportTopLeft()), glContext_[0], 0L, srh1);
+  renderWidget_[1] = new RenderWidget(this, &activeDocument_, RenderWidget::getViewportMode((int) cfg->viewportBottomLeft()), glContext_[1], renderWidget_[0], srh1);
+  renderWidget_[2] = new RenderWidget(this, &activeDocument_, RenderWidget::getViewportMode((int) cfg->viewportTopRight()), glContext_[2], renderWidget_[0], srh2);
+  renderWidget_[3] = new RenderWidget(this, &activeDocument_, RenderWidget::getViewportMode((int) cfg->viewportBottomRight()), glContext_[3], renderWidget_[0], srh2);
   
   Application::self()->initializeRenderer(renderWidget_[0]);
   
@@ -708,8 +710,8 @@ void MainWindow::initActions()
 
   actionManager_->createAction("edit/move_x_pos", tr("Move -X"), editorGroup_, SLOT(moveByXPositive()), QKeySequence("Right"), QIcon(":/icons/move-x-pos.png"));
   actionManager_->createAction("edit/move_x_neg", tr("Move +X"), editorGroup_, SLOT(moveByXNegative()), QKeySequence("Left"), QIcon(":/icons/move-x-neg.png"));
-  actionManager_->createAction("edit/move_y_pos", tr("Move -Y"), editorGroup_, SLOT(moveByYPositive()), QKeySequence("PgUp"), QIcon(":/icons/move-y-pos.png"));
-  actionManager_->createAction("edit/move_y_neg", tr("Move +Y"), editorGroup_, SLOT(moveByYNegative()), QKeySequence("PgDown"), QIcon(":/icons/move-y-neg.png"));
+  actionManager_->createAction("edit/move_y_pos", tr("Move -Y"), editorGroup_, SLOT(moveByYPositive()), QKeySequence("PgDown"), QIcon(":/icons/move-y-pos.png"));
+  actionManager_->createAction("edit/move_y_neg", tr("Move +Y"), editorGroup_, SLOT(moveByYNegative()), QKeySequence("PgUp"), QIcon(":/icons/move-y-neg.png"));
   actionManager_->createAction("edit/move_z_pos", tr("Move -Z"), editorGroup_, SLOT(moveByZPositive()), QKeySequence("Up"), QIcon(":/icons/move-z-pos.png"));
   actionManager_->createAction("edit/move_z_neg", tr("Move +Z"), editorGroup_, SLOT(moveByZNegative()), QKeySequence("Down"), QIcon(":/icons/move-z-neg.png"));
   
@@ -759,7 +761,7 @@ void MainWindow::initActions()
   actionManager_->registerSelectionAction("edit/cut");
   actionManager_->registerSelectionAction("edit/copy");
   actionManager_->registerSelectionAction("edit/hide");
-  actionManager_->registerSelectionAction("edit/color");
+  actionManager_->registerSelectionAction("edit/select_color");
   actionManager_->registerSelectionAction("edit/delete");
   actionManager_->registerSelectionAction("edit/move_x_pos");
   actionManager_->registerSelectionAction("edit/move_x_neg");

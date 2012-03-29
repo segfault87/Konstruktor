@@ -9,6 +9,7 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR} ${SQ
 # Konstruktor
 
 set(konstruktor_HEADERS
+  aboutdialog.h
   actionmanager.h
   application.h
   colordialog.h
@@ -56,6 +57,7 @@ set(konstruktor_HEADERS
 )
   
 set(konstruktor_SRCS
+  aboutdialog.cpp
   actionmanager.cpp
   application.cpp
   colordialog.cpp
@@ -103,6 +105,7 @@ set(konstruktor_SRCS
 )
 
 qt4_wrap_ui(konstruktor_UIS
+  aboutdialog.ui
   colordialog.ui
   configdisplayform.ui
   configrenderform.ui

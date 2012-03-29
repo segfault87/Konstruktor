@@ -130,7 +130,7 @@ QList<int> Config::colorList() const
 {
   QList<int> output;
 
-  QVariant v = settings_->value("editor/color_list", QVariant()).toList();
+  QVariant v = settings_->value("editor/color_list", QVariant());
   if (v.isNull()) {
     output << 0 << 1 << 2 << 3 << 4 << 5 << 6 << 7 <<
         8 << 9 << 10 << 11 << 12 << 13 << 14 << 15;

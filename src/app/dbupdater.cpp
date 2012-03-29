@@ -233,7 +233,8 @@ int DBUpdater::start()
     }
     
     // If current part is a link to other one, skip it.
-    if (ldraw::utils::translate_string(m->main_model()->desc()).find("moved to") != std::string::npos) {
+    if (ldraw::utils::translate_string(m->main_model()->desc()).find("moved to") != std::string::npos ||
+        m->main_model()->desc()[0] == '~') {
       delete m;
       continue;
     }

@@ -41,5 +41,10 @@
     <file>icons/fallback/edit-redo.png</file>
     <file>icons/fallback/fill-color.png</file>
     <file>icons/fallback/text-plain.png</file>
+
+    <file>images/logo.png</file>
+
+    <file>files/credits.html</file>
+    <file>files/license.txt</file>
   </qresource>
 </RCC>
