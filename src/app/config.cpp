@@ -25,8 +25,7 @@ Config::~Config()
 
 void Config::reloadConfig()
 {
-  delete settings_;
-  settings_ = new QSettings();
+  settings_->sync();
 }
 
 void Config::writeConfig()

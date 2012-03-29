@@ -35,6 +35,6 @@ set_target_properties(libldrawrenderer PROPERTIES OUTPUT_NAME ldrawrenderer)
 set_target_properties(libldrawrenderer PROPERTIES VERSION 0.4.0 SOVERSION 1)
 
 # install
-install(TARGETS libldrawrenderer DESTINATION ${INSTALL_TARGETS_DEFAULT_ARGS})
-install(FILES ${libldrawrenderer_HEADERS} DESTINATION ${INCLUDE_INSTALL_DIR}/libldr/renderer)
+install(TARGETS libldrawrenderer DESTINATION lib)
+install(FILES ${libldrawrenderer_HEADERS} DESTINATION include/libldr/renderer)
 

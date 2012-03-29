@@ -1,8 +1,10 @@
-find_package(SharedMimeInfo REQUIRED)
+if(UNIX)
+  find_package(SharedMimeInfo REQUIRED)
+endif(UNIX)
 
 add_definitions(${SQLITE_DEFINITIONS})
 add_definitions(${QT_DEFINITIONS})
-include_directories(${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR} ${SQLITE_INCLUDE_DIR})
+include_directories(${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR} ${SQLITE_INCLUDE_DIR} ${QT_INCLUDES})
 
 # Konstruktor
 
@@ -140,8 +142,11 @@ set_target_properties(konstruktor_db_updater PROPERTIES COMPILE_FLAGS -DKONSTRUK
 target_link_libraries(konstruktor_db_updater libldr libldrawrenderer ${SQLITE_LIBRARIES} ${QT_QTCORE_LIBRARY} ${QT_QTGUI_LIBRARY} ${QT_QTOPENGL_LIBRARY})
 
 # install
-install(TARGETS konstruktor konstruktor_db_updater DESTINATION ${INSTALL_TARGETS_DEFAULT_ARGS})
-install(FILES konstruktor.desktop DESTINATION ${XDG_APPS_INSTALL_DIR})
-install(FILES ldraw-mime.xml DESTINATION ${XDG_MIME_INSTALL_DIR})
-update_xdg_mimetypes(${XDG_MIME_INSTALL_DIR})
+install(TARGETS konstruktor konstruktor_db_updater DESTINATION bin)
+
+if(UNIX)
+  install(FILES konstruktor.desktop DESTINATION share/applications)
+  install(FILES ldraw-mime.xml DESTINATION share/mime/packages)
+  update_xdg_mimetypes(share/mime/packages)
+endif(UNIX)
 
