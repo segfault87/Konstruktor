@@ -40,6 +40,7 @@
 #include "newsubmodeldialog.h"
 #include "objectlist.h"
 #include "partswidget.h"
+#include "povrayexporter.h"
 #include "povrayrenderparameters.h"
 #include "povrayrenderwidget.h"
 #include "renderwidget.h"
@@ -199,7 +200,7 @@ void MainWindow::activate(bool b)
   for (int i = 0; i < 4; ++i)
     renderWidget_[i]->setEnabled(b);
   
-  actionManager_->query("render/render")->setEnabled(Application::self()->hasPovRay());
+  actionManager_->query("render/render")->setEnabled(b && Application::self()->hasPovRay());
   //actionRenderSteps_->setEnabled(Application::self()->hasPovRay());
 }
 
@@ -437,6 +438,31 @@ void MainWindow::render()
   dialog.show();
   dialog.start();
   dialog.exec();
+}
+
+void MainWindow::renderExport()
+{
+  if (!activeDocument_)
+    return;
+
+  QString path = QFileDialog::getSaveFileName(this, tr("Export Model"), QString(), tr("POV-Ray Scene Files (*.pov)"));
+
+  if (!path.isEmpty()) {
+    QFile file(path);
+    if (!file.open(QFile::WriteOnly | QFile::Truncate)) {
+      QMessageBox::critical(this, tr("Error"), tr("Could not open \"%1\" for writing.").arg(path));
+      return;
+    }
+
+    POVRayRenderParameters param;
+    POVRayExporter exporter(activeDocument_->getActiveModel(), &param);
+    exporter.start();
+    
+    QTextStream stream(&file);
+    stream << exporter.output();
+
+    file.close();
+  }
 }
 
 void MainWindow::showConfigDialog()
@@ -783,6 +809,7 @@ void MainWindow::initActions()
   
   // Render
   actionManager_->createAction("render/render", tr("R&ender..."), this, SLOT(render()), QKeySequence("Ctrl+F11"), Utils::icon("view-preview"));
+  actionManager_->createAction("render/export", tr("E&xport..."), this, SLOT(renderExport()), QKeySequence(), Utils::icon("document-export"));
   actionManager_->createAction("render/setup", tr("&Configure Renderer..."), this, SLOT(notImplemented()), QKeySequence(), Utils::icon("configure"));
   
   /*actionRenderSteps_ = ac->addAction("render_steps");
@@ -807,6 +834,7 @@ void MainWindow::initActions()
   actionManager_->registerDocumentAction("submodel/edit");
   actionManager_->registerDocumentAction("edit/unhide_all");
   actionManager_->registerDocumentAction("edit/rotation_pivot");
+  actionManager_->registerDocumentAction("render/export");
 
   actionManager_->registerSelectionAction("edit/cut");
   actionManager_->registerSelectionAction("edit/copy");
@@ -904,6 +932,7 @@ void MainWindow::initMenus()
 
   QMenu *menuRender = menuBar()->addMenu(tr("&Render"));
   menuRender->addAction(actionManager_->query("render/render"));
+  menuRender->addAction(actionManager_->query("render/export"));
   menuRender->addAction(actionManager_->query("render/setup"));
 
   QMenu *menuHelp = menuBar()->addMenu(tr("&Help"));

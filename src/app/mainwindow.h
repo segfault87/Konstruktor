@@ -78,6 +78,7 @@ class MainWindow : public QMainWindow
   void resetDisplay();
   
   void render();
+  void renderExport();
   
   void showConfigDialog();
                          
