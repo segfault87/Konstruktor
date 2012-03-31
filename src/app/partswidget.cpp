@@ -1,6 +1,8 @@
 // Konstruktor - An interactive LDraw modeler for KDE
 // Copyright (c)2006-2011 Park "segfault" J. K. <mastermind@planetmono.org>
 
+#include <stdio.h>
+
 #include <QList>
 #include <QPixmapCache>
 #include <QSortFilterProxyModel>
@@ -17,10 +19,90 @@
 namespace Konstruktor
 {
 
+PixmapLoader::PixmapLoader(QListWidget *widget, QObject *parent)
+    : QThread(parent)
+{
+  list_ = widget;
+  restart_ = false;
+  abort_ = false;
+  running_ = false;
+
+  saveLocation_ = Application::self()->saveLocation("partimgs/");
+}
+
+PixmapLoader::~PixmapLoader()
+{
+  mutex_.lock();
+  abort_ = true;
+  condition_.wakeOne();
+  mutex_.unlock();
+  
+  wait();
+}
+
+void PixmapLoader::startJob(const QList<IconViewItem> &items)
+{
+  QMutexLocker locker(&mutex_);
+
+  pendingRequests_ = items;
+
+  if (!isRunning()) {
+    start(LowPriority);
+  } else {
+    restart_ = true;
+    condition_.wakeOne();
+  }
+}
+
+void PixmapLoader::cancel()
+{
+  QMutexLocker locker(&mutex_);
+  
+  pendingRequests_.clear();
+  if (running_)
+    abort_ = true;
+}
+
+void PixmapLoader::run()
+{
+  forever {
+    running_ = true;
+    
+    foreach (const IconViewItem &i, pendingRequests_) {
+      if (restart_)
+        break;
+
+      const PartItem *item = i.partItem;
+      QListWidgetItem *widgetItem = i.widgetItem;
+      
+      QImage image = QImage(saveLocation_ + item->filename() + ".png").scaled(64, 64, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+
+      mutex_.lock();
+      if (abort_) {
+        abort_ = false;
+        mutex_.unlock();
+        break;
+      }
+      mutex_.unlock();
+      
+      emit loadImage(i.rev, widgetItem, image);
+    }
+
+    running_ = false;
+
+    mutex_.lock();
+    if (!restart_)
+      condition_.wait(&mutex_);
+    restart_ = false;
+    mutex_.unlock();
+  }
+}
+
 PartsWidget::PartsWidget(QWidget *parent)
-	: QWidget(parent)
+    : QWidget(parent)
 {
   lastCat_ = -1;
+  stateCounter_ = 0;
   searchDelay_ = new QTimer(this);
   searchDelay_->setSingleShot(true);
   
@@ -39,12 +121,17 @@ PartsWidget::PartsWidget(QWidget *parent)
   ui_->partView->setModel(sortModel_);
   ui_->partView->setSortingEnabled(true);
   ui_->partView->sortByColumn(0, Qt::AscendingOrder);
+
+  pixmapLoader_ = new PixmapLoader(ui_->iconView, this);
   
   connect(searchDelay_, SIGNAL(timeout()), this, SLOT(search()));
   connect(ui_->searchEdit, SIGNAL(textEdited(const QString &)), this, SLOT(searchTextChanged(const QString &)));
   connect(ui_->hideUnofficial, SIGNAL(stateChanged(int)), this, SLOT(hideUnofficial(int)));
   connect(ui_->partView->selectionModel(), SIGNAL(currentChanged(const QModelIndex &, const QModelIndex &)), this, SLOT(selectionChanged(const QModelIndex &, const QModelIndex &)));
   connect(ui_->iconView, SIGNAL(itemClicked(QListWidgetItem *)), this, SLOT(iconSelected(QListWidgetItem *)));
+  connect(pixmapLoader_, SIGNAL(loadImage(int, QListWidgetItem *, const QImage &)), this, SLOT(updateIcon(int, QListWidgetItem *, const QImage &)));
+
+  pixmapLoader_->start();
 }
 
 PartsWidget::~PartsWidget()
@@ -133,21 +220,21 @@ void PartsWidget::selectionChanged(const QModelIndex &current, const QModelIndex
     
     ui_->iconView->clear();
     
-    QString saveLocation = Application::self()->saveLocation("partimgs/");
+    pixmapLoader_->cancel();
+    
+    ++stateCounter_;
+    QList<IconViewItem> itemlist;
     for (QList<PartItem>::ConstIterator it = list_[categories_[cat].id()].constBegin(); it != list_[categories_[cat].id()].constEnd(); ++it) {
       QListWidgetItem *obj = new QListWidgetItem(ui_->iconView);
-      
-      QPixmap pixmap;
-      if (!QPixmapCache::find((*it).filename(), pixmap)) {
-        pixmap = QPixmap(saveLocation + (*it).filename() + ".png").scaledToHeight(64, Qt::SmoothTransformation);
-        QPixmapCache::insert((*it).filename(), pixmap);
-      }
-      
-      obj->setData(Qt::DecorationRole, pixmap);
+
+      itemlist.append(IconViewItem(stateCounter_, obj, &(*it)));
+      obj->setData(Qt::SizeHintRole, QSize(64, 64));
       obj->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsDragEnabled);
       obj->setData(Qt::UserRole, QVariant::fromValue(*it));
       ui_->iconView->addItem(obj);
     }
+
+    pixmapLoader_->startJob(itemlist);
   }
   
   if (index.parent().isValid())
@@ -175,6 +262,12 @@ void PartsWidget::iconSelected(QListWidgetItem *item)
   /*ui_->partView->selectionModel()->select(
     sortModel_->mapToSource(model_->index(ui_->iconView->row(item), 0, model_->index(lastCat_, 0)),
     QItemSelectionModel::SelectCurrent);*/
+}
+
+void PartsWidget::updateIcon(int rev, QListWidgetItem *item, const QImage &image)
+{
+  if (rev == stateCounter_)
+    item->setData(Qt::DecorationRole, image);
 }
 
 void PartsWidget::initialize()
