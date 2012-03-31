@@ -12,12 +12,15 @@
 #include <QPair>
 #include <QVector>
 
+#include <libldr/color.h>
+
 namespace ldraw 
 {
   class model;
 }
 
 class QAction;
+class QActionGroup;
 class QCloseEvent;
 class QGLContext;
 class QModelIndex;
@@ -44,12 +47,13 @@ class MainWindow : public QMainWindow
   ~MainWindow();
   
   unsigned int viewportModes() const;
-  const Editor* editor() const { return editorGroup_; }
+  const Editor* editor() const { return editor_; }
   
  signals:
   void activeModelChanged(ldraw::model *m);
   void viewChanged();
   void actionEnabled(bool enabled);
+  void colorSelected(const ldraw::color &c);
                     
  public slots:
   void modelModified(const QSet<int> &selection);
@@ -86,6 +90,9 @@ class MainWindow : public QMainWindow
   void gridModeChanged(QAction *action);
   void modelModified();
   void clipboardChanged();
+  void resetColorToolBar();
+  void colorActionTriggered(QAction *action);
+  void rotationPivotActionTriggered(QAction *action);
   
   void notImplemented();
   void about();
@@ -116,7 +123,7 @@ class MainWindow : public QMainWindow
   Document *activeDocument_;
   QVector<QPair<QString, Document *> > documents_;
   QSet<QString> openedUrls_;
-  Editor *editorGroup_;
+  Editor *editor_;
   
   /*
    * Widgets
@@ -127,6 +134,11 @@ class MainWindow : public QMainWindow
   QGLContext *glContext_[4];
   RenderWidget *renderWidget_[4];
   QTabBar *tabbar_;
+  QToolBar *colorToolBar_;
+  QMenu *rotationPivotMenu_;
+  QAction *colorChooseAction_;
+  QActionGroup *colorActionGroup_;
+  QActionGroup *rotationPivotActionGroup_;
   
   /*
    * State management

@@ -60,6 +60,12 @@ class Editor : public QUndoGroup
   float gridDensity() const;
   float gridDensityYAxis() const;
   float gridDensityAngle() const;
+
+  QAction* getColor(const ldraw::color &color) const;
+  QList<QAction *> getFavoriteColors() const;
+  QList<QAction *> getRecentlyUsedColors() const;
+
+  void setRotationPivotMode(RotationPivot pivot);
   
  signals:
   void selectionIndexModified(const QSet<int> &selection);
@@ -68,6 +74,7 @@ class Editor : public QUndoGroup
   void rowsChanged(const QPair<CommandBase::AffectedRow, QSet<int> > &rowList);
   void modified();
   void needRepaint();
+  void colorListChanged();
                     
  public slots:
   void selectionChanged(const QSet<int> &selection);
@@ -83,7 +90,7 @@ class Editor : public QUndoGroup
   void paste();
   void deleteSelected();
   void editColor();
-  void rotationPivot();
+  void setColor(const ldraw::color &c);
   void move(const ldraw::vector &vector);
   void moveByXPositive();
   void moveByXNegative();

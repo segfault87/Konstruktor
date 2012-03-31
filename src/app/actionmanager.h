@@ -24,6 +24,7 @@ class ActionManager : public QObject
 
   QAction* createAction(const QString &actionName, const QString &name, QObject *receiver, const char *slot, const QKeySequence &shortcut = QKeySequence(), const QIcon &icon = QIcon());
   void addAction(const QString &actionName, QAction *action);
+  void removeAction(const QString &actionName);
   QAction* query(const QString &actionName);
   
   void registerDocumentAction(const QString &actionName);

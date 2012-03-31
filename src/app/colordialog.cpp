@@ -70,6 +70,11 @@ ldraw::color ColorDialog::getSelected() const
   return selectedColor_;
 }
 
+bool ColorDialog::isChanged() const
+{
+  return changed_;
+}
+
 void ColorDialog::initList()
 {
   QTreeWidgetItem *rootItem;

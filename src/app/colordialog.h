@@ -31,6 +31,7 @@ class ColorDialog : public QDialog
   ~ColorDialog();
   
   ldraw::color getSelected() const;
+  bool isChanged() const;
   
  private:
   void initList();

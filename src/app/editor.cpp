@@ -165,6 +165,45 @@ float Editor::gridDensityAngle() const
   }
 }
 
+QAction* Editor::getColor(const ldraw::color &color) const
+{
+  QAction *action = new QAction(QIcon(ColorManager::colorPixmap(color)), QString(color.get_entity()->name.c_str()), 0L);
+  action->setData(color.get_id());
+
+  return action;
+}
+
+QList<QAction *> Editor::getFavoriteColors() const
+{
+  ColorManager *cm = Application::self()->colorManager();
+
+  QList<QAction *> colorList;
+  foreach (const ldraw::color &it, cm->colorList()) {
+    colorList.append(getColor(it));
+  }
+
+  return colorList;
+}
+
+QList<QAction *> Editor::getRecentlyUsedColors() const
+{
+  ColorManager *cm = Application::self()->colorManager();
+
+  QList<QAction *> colorList;
+  
+  typedef QPair<ldraw::color, int> RecentlyUsedItem;
+  foreach (const RecentlyUsedItem &it, cm->recentlyUsed()) {
+    colorList.append(getColor(it.first));
+  }
+
+  return colorList;
+}
+
+void Editor::setRotationPivotMode(RotationPivot pivot)
+{
+  pivot_ = pivot;
+}
+
 void Editor::selectionChanged(const QSet<int> &selection)
 {
   selection_ = &selection;
@@ -253,18 +292,11 @@ void Editor::editColor()
   QMenu menu(tr("Select Color"));
   ColorManager *cm = Application::self()->colorManager();
   
-  foreach (const ldraw::color &it, cm->colorList()) {
-    QAction *action = menu.addAction(QIcon(ColorManager::colorPixmap(it)), it.get_entity()->name.c_str());
-    action->setData(it.get_id());
-  }
-  
+  foreach (QAction *a, getFavoriteColors())
+    menu.addAction(a);
   menu.addSeparator();
-  
-  foreach (const ColorManager::RecentColorPair &it, cm->recentlyUsed()) {
-    QAction *action = menu.addAction(QIcon(ColorManager::colorPixmap(it.first)), it.first.get_entity()->name.c_str());
-    action->setData(it.first.get_id());
-  }
-  
+  foreach (QAction *a, getRecentlyUsedColors())
+    menu.addAction(a);
   menu.addSeparator();
   QAction *customize = menu.addAction(tr("&More..."));
   
@@ -278,6 +310,9 @@ void Editor::editColor()
         cm->hit(colordialog->getSelected());
 	
         emit modified();
+
+        if (colordialog->isChanged())
+          emit colorListChanged();
       }
       
       delete colordialog;
@@ -292,6 +327,20 @@ void Editor::editColor()
   }
 }
 
+void Editor::setColor(const ldraw::color &c)
+{
+  if (!activeStack() || selection_->empty())
+    return;
+
+  ColorManager *cm = Application::self()->colorManager();
+
+  activeStack()->push(new CommandColor(c, *selection_, model_));
+  cm->hit(c);
+
+  emit modified();
+}
+
+#if 0
 void Editor::rotationPivot()
 {
   QMenu menu(tr("Rotation Pivot"));
@@ -327,6 +376,7 @@ void Editor::rotationPivot()
   else if (result == a3)
     pivot_ = PivotManual;
 }
+#endif
 
 void Editor::move(const ldraw::vector &vector)
 {

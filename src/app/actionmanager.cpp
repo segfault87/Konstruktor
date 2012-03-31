@@ -39,6 +39,49 @@ void ActionManager::addAction(const QString &actionName, QAction *action)
   actions_[actionName] = action;
 }
 
+void ActionManager::removeAction(const QString &actionName)
+{
+  if (actionName.endsWith('*')) {
+    QString prefix = actionName.left(actionName.length() - 1);
+
+    for (QMap<QString, QAction *>::iterator it = actions_.begin(); it != actions_.end();) {
+      if (it.key().startsWith(prefix)) {
+        QAction *a = it.value();
+        
+        int idx;
+        idx = modelActions_.indexOf(a);
+        if (idx != -1)
+          modelActions_.remove(idx);
+        idx = selectionActions_.indexOf(a);
+        if (idx != -1)
+          selectionActions_.remove(idx);
+        
+        it = actions_.erase(it);
+
+        delete a;
+      } else {
+        ++it;
+      }
+    }
+  } else {
+    if (actions_.contains(actionName)) {
+      QAction *a = actions_[actionName];
+      
+      int idx;
+      idx = modelActions_.indexOf(a);
+      if (idx != -1)
+        modelActions_.remove(idx);
+      idx = selectionActions_.indexOf(a);
+      if (idx != -1)
+        selectionActions_.remove(idx);
+
+      actions_.remove(actionName);
+
+      delete a;
+    }
+  }
+}
+
 QAction* ActionManager::query(const QString &actionName)
 {
   if (!actions_.contains(actionName))

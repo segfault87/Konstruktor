@@ -263,7 +263,7 @@ void PartsWidget::iconSelected(QListWidgetItem *item)
     sortModel_->mapToSource(model_->index(ui_->iconView->row(item), 0, model_->index(lastCat_, 0)),
     QItemSelectionModel::SelectCurrent);*/
 }
-
+ 
 void PartsWidget::updateIcon(int rev, QListWidgetItem *item, const QImage &image)
 {
   if (rev == stateCounter_)

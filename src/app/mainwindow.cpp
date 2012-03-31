@@ -20,6 +20,7 @@
 #include <QTabBar>
 #include <QTextStream>
 #include <QToolBar>
+#include <QToolButton>
 #include <QTreeView>
 #include <QUrl>
 #include <QVBoxLayout>
@@ -62,10 +63,10 @@ MainWindow::MainWindow(QWidget *parent)
   // set up the main window
   init();
   initGui();
-  initConnections();
   initActions();
   initMenus();
   initToolBars();
+  initConnections();
 
   Config *cfg = Application::self()->config();
   QByteArray state = cfg->state();
@@ -140,6 +141,33 @@ void MainWindow::clipboardChanged()
     paste->setEnabled(true);
 }
 
+void MainWindow::resetColorToolBar()
+{
+  actionManager_->removeAction("color/*");
+
+  QList<QAction *> colors = editor_->getFavoriteColors();
+  foreach (QAction *a, colors) {
+    QString key = QString("color/%1").arg(a->data().toInt());
+    
+    actionManager_->addAction(key, a);
+    actionManager_->registerSelectionAction(key);
+    colorToolBar_->addAction(a);
+    colorActionGroup_->addAction(a);
+  }
+}
+
+void MainWindow::colorActionTriggered(QAction *action)
+{
+  int cid = action->data().toInt();
+
+  emit colorSelected(ldraw::color(cid));
+}
+
+void MainWindow::rotationPivotActionTriggered(QAction *action)
+{
+  editor_->setRotationPivotMode((Editor::RotationPivot) action->data().toInt());
+}
+
 void MainWindow::about()
 {
   QDialog *dialog = new AboutDialog(this);
@@ -191,8 +219,8 @@ void MainWindow::newFile()
     Document *document = new Document(filename, dialog->textDesc(), dialog->textAuthor());
     
     // Initialize connection
-    connect(document, SIGNAL(undoStackAdded(QUndoStack *)), editorGroup_, SLOT(stackAdded(QUndoStack *)));
-    connect(document, SIGNAL(undoStackChanged(QUndoStack *)), editorGroup_, SLOT(setActiveStack(QUndoStack *)));
+    connect(document, SIGNAL(undoStackAdded(QUndoStack *)), editor_, SLOT(stackAdded(QUndoStack *)));
+    connect(document, SIGNAL(undoStackChanged(QUndoStack *)), editor_, SLOT(setActiveStack(QUndoStack *)));
     
     document->sendSignals();
     
@@ -241,8 +269,8 @@ void MainWindow::openFile(const QString &path)
     document = new Document(path);
     
     // Initialize connection
-    connect(document, SIGNAL(undoStackAdded(QUndoStack *)), editorGroup_, SLOT(stackAdded(QUndoStack *)));
-    connect(document, SIGNAL(undoStackChanged(QUndoStack *)), editorGroup_, SLOT(setActiveStack(QUndoStack *)));
+    connect(document, SIGNAL(undoStackAdded(QUndoStack *)), editor_, SLOT(stackAdded(QUndoStack *)));
+    connect(document, SIGNAL(undoStackChanged(QUndoStack *)), editor_, SLOT(setActiveStack(QUndoStack *)));
     
     document->sendSignals();
     
@@ -453,11 +481,11 @@ void MainWindow::activeDocumentChanged(int index)
     else
       save->setEnabled(false);
     
-    editorGroup_->setActiveStack(activeDocument_->activeUndoStack());
+    editor_->setActiveStack(activeDocument_->activeUndoStack());
   } else {
     activeDocument_ = 0L;
     
-    editorGroup_->setActiveStack(0L);
+    editor_->setActiveStack(0L);
   }
   
   // reset the content list
@@ -532,7 +560,7 @@ void MainWindow::selectionChanged(const QSet<int> &cset)
 
 void MainWindow::gridModeChanged(QAction *action)
 {
-  editorGroup_->setGridMode((Editor::GridMode)action->data().toInt());
+  editor_->setGridMode((Editor::GridMode)action->data().toInt());
   action->setChecked(true);
 }
 
@@ -553,7 +581,7 @@ void MainWindow::init()
   contentsModel_ = new ContentsModel(this);
   
   // editor group
-  editorGroup_ = new Editor(this);
+  editor_ = new Editor(this);
 
   /* basic gui setup */
   actionManager_ = new ActionManager(this);
@@ -669,11 +697,11 @@ void MainWindow::initActions()
   //actionOpenRecent_->loadEntries(KGlobal::config()->group("Recent Files"));
   
   // Edit
-  actionManager_->addAction("edit/undo", editorGroup_->createUndoAction());
-  actionManager_->addAction("edit/redo", editorGroup_->createRedoAction());
-  actionManager_->createAction("edit/cut", tr("Cu&t"), editorGroup_, SLOT(cut()), QKeySequence::Cut, Utils::icon("edit-cut"));
-  actionManager_->createAction("edit/copy", tr("&Copy"), editorGroup_, SLOT(copy()), QKeySequence::Copy, Utils::icon("edit-copy"));
-  actionManager_->createAction("edit/paste", tr("&Paste"), editorGroup_, SLOT(paste()), QKeySequence::Paste, Utils::icon("edit-paste"));
+  actionManager_->addAction("edit/undo", editor_->createUndoAction());
+  actionManager_->addAction("edit/redo", editor_->createRedoAction());
+  actionManager_->createAction("edit/cut", tr("Cu&t"), editor_, SLOT(cut()), QKeySequence::Cut, Utils::icon("edit-cut"));
+  actionManager_->createAction("edit/copy", tr("&Copy"), editor_, SLOT(copy()), QKeySequence::Copy, Utils::icon("edit-copy"));
+  actionManager_->createAction("edit/paste", tr("&Paste"), editor_, SLOT(paste()), QKeySequence::Paste, Utils::icon("edit-paste"));
   
   actionManager_->query("edit/paste")->setEnabled(false);
   
@@ -681,9 +709,31 @@ void MainWindow::initActions()
   actionManager_->createAction("edit/select_none", tr("Select &None"), contentList_, SLOT(clearSelection()), QKeySequence("Ctrl+Shift+A"), Utils::icon("edit-delete"));
   actionManager_->createAction("edit/hide", tr("&Hide"), contentList_, SLOT(hideSelected()), QKeySequence("Ctrl+H"));
   actionManager_->createAction("edit/unhide_all", tr("Unhide &All"), contentList_, SLOT(unhideAll()), QKeySequence("Ctrl+Shift+H"));
-  actionManager_->createAction("edit/select_color", tr("Select Color"), editorGroup_, SLOT(editColor()), QKeySequence("Ctrl+L"), Utils::icon("fill-color"));
-  actionManager_->createAction("edit/rotation_pivot", tr("Rotation Pivot"), editorGroup_, SLOT(rotationPivot()), QKeySequence("Ctrl+Shift+P"), Utils::icon("transform-rotate"));
-  
+  actionManager_->createAction("edit/select_color", tr("Select Color"), editor_, SLOT(editColor()), QKeySequence("Ctrl+L"), Utils::icon("fill-color"));
+
+  rotationPivotActionGroup_ = new QActionGroup(this);
+  rotationPivotActionGroup_->setExclusive(true);
+  ac = actionManager_->createAction("edit/rotation_pivot_each", tr("Each Parts"), 0L, 0L);
+  ac->setData((int) Editor::PivotEach);
+  ac->setCheckable(true);
+  ac->setChecked(true);
+  rotationPivotActionGroup_->addAction(ac);
+  ac = actionManager_->createAction("edit/rotation_pivot_center", tr("Center"), 0L, 0L);
+  ac->setData((int) Editor::PivotCenter);
+  ac->setCheckable(true);
+  rotationPivotActionGroup_->addAction(ac);
+  ac = actionManager_->createAction("edit/rotation_pivot_manual", tr("Manual (if exists)"), 0L, 0L);
+  ac->setData((int) Editor::PivotManual);
+  ac->setCheckable(true);
+  ac->setEnabled(false);
+  rotationPivotActionGroup_->addAction(ac);  
+
+  rotationPivotMenu_ = new QMenu(tr("Rotation Pivot"));
+  rotationPivotMenu_->setIcon(Utils::icon("transform-rotate"));
+  rotationPivotMenu_->addAction(actionManager_->query("edit/rotation_pivot_each"));
+  rotationPivotMenu_->addAction(actionManager_->query("edit/rotation_pivot_center"));
+  rotationPivotMenu_->addAction(actionManager_->query("edit/rotation_pivot_manual"));
+
   ac = actionManager_->createAction("edit/grid_1", tr("Grid Level 1"), 0L, 0L, QKeySequence("Ctrl+1"), QIcon(":/icons/grid1.png"));
   ac->setData(Editor::Grid20);
   ac->setCheckable(true);
@@ -706,21 +756,21 @@ void MainWindow::initActions()
   connect(gridActions, SIGNAL(triggered(QAction *)), this, SLOT(gridModeChanged(QAction *)));
   actionManager_->query("edit/grid_2")->setChecked(true);
   
-  actionManager_->createAction("edit/delete", tr("&Delete"), editorGroup_, SLOT(deleteSelected()), QKeySequence::Delete, Utils::icon("edit-delete"));
+  actionManager_->createAction("edit/delete", tr("&Delete"), editor_, SLOT(deleteSelected()), QKeySequence::Delete, Utils::icon("edit-delete"));
 
-  actionManager_->createAction("edit/move_x_pos", tr("Move -X"), editorGroup_, SLOT(moveByXPositive()), QKeySequence("Right"), QIcon(":/icons/move-x-pos.png"));
-  actionManager_->createAction("edit/move_x_neg", tr("Move +X"), editorGroup_, SLOT(moveByXNegative()), QKeySequence("Left"), QIcon(":/icons/move-x-neg.png"));
-  actionManager_->createAction("edit/move_y_pos", tr("Move -Y"), editorGroup_, SLOT(moveByYPositive()), QKeySequence("PgDown"), QIcon(":/icons/move-y-pos.png"));
-  actionManager_->createAction("edit/move_y_neg", tr("Move +Y"), editorGroup_, SLOT(moveByYNegative()), QKeySequence("PgUp"), QIcon(":/icons/move-y-neg.png"));
-  actionManager_->createAction("edit/move_z_pos", tr("Move -Z"), editorGroup_, SLOT(moveByZPositive()), QKeySequence("Up"), QIcon(":/icons/move-z-pos.png"));
-  actionManager_->createAction("edit/move_z_neg", tr("Move +Z"), editorGroup_, SLOT(moveByZNegative()), QKeySequence("Down"), QIcon(":/icons/move-z-neg.png"));
+  actionManager_->createAction("edit/move_x_pos", tr("Move -X"), editor_, SLOT(moveByXPositive()), QKeySequence("Right"), QIcon(":/icons/move-x-pos.png"));
+  actionManager_->createAction("edit/move_x_neg", tr("Move +X"), editor_, SLOT(moveByXNegative()), QKeySequence("Left"), QIcon(":/icons/move-x-neg.png"));
+  actionManager_->createAction("edit/move_y_pos", tr("Move -Y"), editor_, SLOT(moveByYPositive()), QKeySequence("PgDown"), QIcon(":/icons/move-y-pos.png"));
+  actionManager_->createAction("edit/move_y_neg", tr("Move +Y"), editor_, SLOT(moveByYNegative()), QKeySequence("PgUp"), QIcon(":/icons/move-y-neg.png"));
+  actionManager_->createAction("edit/move_z_pos", tr("Move -Z"), editor_, SLOT(moveByZPositive()), QKeySequence("Up"), QIcon(":/icons/move-z-pos.png"));
+  actionManager_->createAction("edit/move_z_neg", tr("Move +Z"), editor_, SLOT(moveByZNegative()), QKeySequence("Down"), QIcon(":/icons/move-z-neg.png"));
   
-  actionManager_->createAction("edit/rotate_x_cw", tr("Rotate +X"), editorGroup_, SLOT(rotateByXClockwise()), QKeySequence("Ctrl+Up"), QIcon(":/icons/rotate-x-pos.png"));
-  actionManager_->createAction("edit/rotate_x_ccw", tr("Rotate -X"), editorGroup_, SLOT(rotateByXCounterClockwise()), QKeySequence("Ctrl+Down"), QIcon(":/icons/rotate-x-neg.png"));
-  actionManager_->createAction("edit/rotate_y_cw", tr("Rotate +Y"), editorGroup_, SLOT(rotateByYClockwise()), QKeySequence("Ctrl+Right"), QIcon(":/icons/rotate-y-pos.png"));
-  actionManager_->createAction("edit/rotate_y_ccw", tr("Rotate -Y"), editorGroup_, SLOT(rotateByYCounterClockwise()), QKeySequence("Ctrl+Left"), QIcon(":/icons/rotate-y-neg.png"));
-  actionManager_->createAction("edit/rotate_z_cw", tr("Rotate +Z"), editorGroup_, SLOT(rotateByZClockwise()), QKeySequence("Ctrl+Shift+Right"), QIcon(":/icons/rotate-z-pos.png"));
-  actionManager_->createAction("edit/rotate_z_ccw", tr("Rotate -Z"), editorGroup_, SLOT(rotateByZCounterClockwise()), QKeySequence("Ctrl+Shift+Left"), QIcon(":/icons/rotate-z-neg.png"));
+  actionManager_->createAction("edit/rotate_x_cw", tr("Rotate +X"), editor_, SLOT(rotateByXClockwise()), QKeySequence("Ctrl+Up"), QIcon(":/icons/rotate-x-pos.png"));
+  actionManager_->createAction("edit/rotate_x_ccw", tr("Rotate -X"), editor_, SLOT(rotateByXCounterClockwise()), QKeySequence("Ctrl+Down"), QIcon(":/icons/rotate-x-neg.png"));
+  actionManager_->createAction("edit/rotate_y_cw", tr("Rotate +Y"), editor_, SLOT(rotateByYClockwise()), QKeySequence("Ctrl+Right"), QIcon(":/icons/rotate-y-pos.png"));
+  actionManager_->createAction("edit/rotate_y_ccw", tr("Rotate -Y"), editor_, SLOT(rotateByYCounterClockwise()), QKeySequence("Ctrl+Left"), QIcon(":/icons/rotate-y-neg.png"));
+  actionManager_->createAction("edit/rotate_z_cw", tr("Rotate +Z"), editor_, SLOT(rotateByZClockwise()), QKeySequence("Ctrl+Shift+Right"), QIcon(":/icons/rotate-z-pos.png"));
+  actionManager_->createAction("edit/rotate_z_ccw", tr("Rotate -Z"), editor_, SLOT(rotateByZCounterClockwise()), QKeySequence("Ctrl+Shift+Left"), QIcon(":/icons/rotate-z-neg.png"));
 
   // View
   actionManager_->createAction("view/reset_zoom", tr("Reset &Zoom"), this, SLOT(resetZoom()));
@@ -786,26 +836,30 @@ void MainWindow::initConnections()
   connect(contentsModel_, SIGNAL(hide(const QModelIndex &)), contentList_, SLOT(hide(const QModelIndex &)));
   connect(contentsModel_, SIGNAL(unhide(const QModelIndex &)), contentList_, SLOT(unhide(const QModelIndex &)));
   connect(this, SIGNAL(activeModelChanged(ldraw::model *)), contentList_, SLOT(modelChanged(ldraw::model *)));
-  connect(this, SIGNAL(activeModelChanged(ldraw::model *)), editorGroup_, SLOT(modelChanged(ldraw::model *)));
+  connect(this, SIGNAL(activeModelChanged(ldraw::model *)), editor_, SLOT(modelChanged(ldraw::model *)));
   connect(this, SIGNAL(activeModelChanged(ldraw::model *)), submodelList_, SLOT(modelChanged(ldraw::model *)));
   connect(this, SIGNAL(activeModelChanged(ldraw::model *)), this, SLOT(modelChanged(ldraw::model *)));
   connect(this, SIGNAL(viewChanged()), SLOT(updateViewports()));
   connect(submodelList_, SIGNAL(doubleClicked(const QModelIndex &)), this, SLOT(submodelViewDoubleClicked(const QModelIndex &)));
   connect(contentList_, SIGNAL(selectionChanged(const QSet<int> &)), this, SLOT(selectionChanged(const QSet<int> &)));
-  connect(contentList_, SIGNAL(selectionChanged(const QSet<int> &)), editorGroup_, SLOT(selectionChanged(const QSet<int> &)));
-  connect(editorGroup_, SIGNAL(selectionIndexModified(const QSet<int> &)), this, SLOT(modelModified(const QSet<int> &)));
-  connect(editorGroup_, SIGNAL(needRepaint()), this, SLOT(updateViewports()));
-  connect(editorGroup_, SIGNAL(modified()), this, SLOT(modelModified()));
-  connect(editorGroup_, SIGNAL(rowsChanged(const QPair<CommandBase::AffectedRow, QSet<int> > &)), contentsModel_, SLOT(rowsChanged(const QPair<CommandBase::AffectedRow, QSet<int> > &)));
-  connect(editorGroup_, SIGNAL(rowsChanged(const QPair<CommandBase::AffectedRow, QSet<int> > &)), contentList_, SLOT(rowsChanged(const QPair<CommandBase::AffectedRow, QSet<int> > &)));
+  connect(contentList_, SIGNAL(selectionChanged(const QSet<int> &)), editor_, SLOT(selectionChanged(const QSet<int> &)));
+  connect(editor_, SIGNAL(selectionIndexModified(const QSet<int> &)), this, SLOT(modelModified(const QSet<int> &)));
+  connect(editor_, SIGNAL(needRepaint()), this, SLOT(updateViewports()));
+  connect(editor_, SIGNAL(modified()), this, SLOT(modelModified()));
+  connect(editor_, SIGNAL(rowsChanged(const QPair<CommandBase::AffectedRow, QSet<int> > &)), contentsModel_, SLOT(rowsChanged(const QPair<CommandBase::AffectedRow, QSet<int> > &)));
+  connect(editor_, SIGNAL(colorListChanged()), this, SLOT(resetColorToolBar()));
+  connect(editor_, SIGNAL(rowsChanged(const QPair<CommandBase::AffectedRow, QSet<int> > &)), contentList_, SLOT(rowsChanged(const QPair<CommandBase::AffectedRow, QSet<int> > &)));
+  connect(colorActionGroup_, SIGNAL(triggered(QAction *)), this, SLOT(colorActionTriggered(QAction *)));
+  connect(rotationPivotActionGroup_, SIGNAL(triggered(QAction *)), this, SLOT(rotationPivotActionTriggered(QAction *)));
+  connect(this, SIGNAL(colorSelected(const ldraw::color &)), editor_, SLOT(setColor(const ldraw::color &)));
   connect(qApp->clipboard(), SIGNAL(dataChanged()), this, SLOT(clipboardChanged()));
   
   for (int i = 0; i < 4; ++i) {
     connect(this, SIGNAL(activeModelChanged(ldraw::model *)), renderWidget_[i], SLOT(modelChanged(ldraw::model *)));
     connect(contentList_, SIGNAL(selectionChanged(const QSet<int> &)), renderWidget_[i], SLOT(selectionChanged(const QSet<int> &)));
     connect(renderWidget_[i], SIGNAL(madeSelection(const std::list<int> &, RenderWidget::SelectionMethod)), contentList_, SLOT(updateSelection(const std::list<int> &, RenderWidget::SelectionMethod)));
-    connect(renderWidget_[i], SIGNAL(translateObject(const ldraw::vector &)), editorGroup_, SLOT(move(const ldraw::vector &)));
-    connect(renderWidget_[i], SIGNAL(objectDropped(const QString &, const ldraw::matrix &, const ldraw::color &)), editorGroup_, SLOT(insert(const QString &, const ldraw::matrix &, const ldraw::color &)));
+    connect(renderWidget_[i], SIGNAL(translateObject(const ldraw::vector &)), editor_, SLOT(move(const ldraw::vector &)));
+    connect(renderWidget_[i], SIGNAL(objectDropped(const QString &, const ldraw::matrix &, const ldraw::color &)), editor_, SLOT(insert(const QString &, const ldraw::matrix &, const ldraw::color &)));
   }
 }
 
@@ -837,8 +891,8 @@ void MainWindow::initMenus()
   menuEdit->addAction(actionManager_->query("edit/hide"));
   menuEdit->addAction(actionManager_->query("edit/unhide_all"));
   menuEdit->addSeparator();
-  menuEdit->addAction(actionManager_->query("edit/rotation_pivot"));
-
+  menuEdit->addMenu(rotationPivotMenu_);
+  
   QMenu *menuView = menuBar()->addMenu(tr("&View"));
   menuView->addAction(actionManager_->query("view/reset_zoom"));
   menuView->addAction(actionManager_->query("view/reset_3d_view"));
@@ -875,7 +929,13 @@ void MainWindow::initToolBars()
   toolBarEdit->addAction(actionManager_->query("edit/paste"));
   toolBarEdit->addSeparator();
   toolBarEdit->addAction(actionManager_->query("edit/select_color"));
-  toolBarEdit->addAction(actionManager_->query("edit/rotation_pivot"));
+  
+  QToolButton *toolButton = new QToolButton();
+  toolButton->setMenu(rotationPivotMenu_);
+  toolButton->setPopupMode(QToolButton::InstantPopup);
+  toolButton->setIcon(Utils::icon("transform-rotate"));
+  toolBarEdit->addWidget(toolButton);
+
   toolBarEdit->addSeparator();
   toolBarEdit->addAction(actionManager_->query("edit/grid_1"));
   toolBarEdit->addAction(actionManager_->query("edit/grid_2"));
@@ -895,6 +955,13 @@ void MainWindow::initToolBars()
   toolBarEdit->addAction(actionManager_->query("edit/rotate_y_ccw"));
   toolBarEdit->addAction(actionManager_->query("edit/rotate_z_cw"));
   toolBarEdit->addAction(actionManager_->query("edit/rotate_z_ccw"));
+
+  colorToolBar_ = new QToolBar(tr("Colors"), this);
+  colorToolBar_->setObjectName("toolbar_colors");
+  colorToolBar_->setIconSize(QSize(16, 16));
+  addToolBar(Qt::LeftToolBarArea, colorToolBar_);
+  colorActionGroup_ = new QActionGroup(this);
+  resetColorToolBar();
 
   QToolBar *toolBarView = addToolBar(tr("View"));
   toolBarView->setObjectName("toolbar_view");
