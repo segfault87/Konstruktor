@@ -50,7 +50,7 @@ class color_entity
   unsigned char rgba[4]; // RGBA Array
   unsigned char complement[4]; // RGBA Array
   char luminance;
-  int id; // LDraw Color ID
+  unsigned int id; // LDraw Color ID
   std::string name; // Name String
   const void *traits;
 };
@@ -91,7 +91,7 @@ class LIBLDR_EXPORT color
   
   bool m_custom_color;
   bool m_valid;
-  int m_id;
+  unsigned int m_id;
   const color_entity *m_entity;
 };
 

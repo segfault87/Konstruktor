@@ -5,6 +5,8 @@
 
 #include <cmath>
 
+#include "renderer/opengl_extension_vbo.h"
+
 #include <libldr/metrics.h>
 #include <libldr/utils.h>
 

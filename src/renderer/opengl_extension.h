@@ -14,17 +14,21 @@ namespace ldraw_renderer
 
 class LIBLDRAWRENDERER_EXPORT opengl_extension
 {
-  public:
-	typedef void (*func_ptr)();
-	
-	opengl_extension(const char *name);
+public:
+  typedef void (*func_ptr)();
+  
+  opengl_extension(const char *name);
+  
+  bool is_supported() const;
+  
+protected:
+  bool m_supported;
+  
+  func_ptr get_glext_proc(const char *procname);
 
-	bool is_supported() const;
-
-  protected:
-	bool m_supported;
-
-	func_ptr get_glext_proc(const char *procname);
+#if defined(__APPLE__)
+  static void *s_dlhandle;
+#endif
 };
 
 }

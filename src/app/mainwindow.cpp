@@ -80,6 +80,8 @@ MainWindow::MainWindow(QWidget *parent)
   // to make sure that there is no open models.
   activeDocumentChanged(-1);
   
+  emit actionEnabled(false);
+
   // parse cmd line args
   QStringList args = qApp->arguments();
   for (int i = 1; i < args.size(); ++i) {
@@ -87,8 +89,6 @@ MainWindow::MainWindow(QWidget *parent)
     if (!arg.startsWith("-"))
       openFile(arg);
   }
-  
-  emit actionEnabled(false);
   
   setStatusMessage(tr("Ready..."));
 }

@@ -14,11 +14,20 @@ typedef char GLchar;
 #endif
 
 #define GL_GLEXT_PROTOTYPES
+#if defined(__APPLE__)
+#define GL_GLEXT_LEGACY
+#include <OpenGL/gl.h>
+#include <OpenGL/glu.h>
+#undef GL_VERSION_1_5
+#undef GL_VERSION_2_0
+#include <GL/glext.h>
+#else
 #include <GL/gl.h>
 #include <GL/glu.h>
 #if !defined(WIN32)
 #include <GL/glx.h>
 #endif
 #include <GL/glext.h>
+#endif
 
 #endif

@@ -17,23 +17,23 @@ namespace ldraw_renderer
 
 class LIBLDRAWRENDERER_EXPORT opengl_extension_vbo : public opengl_extension
 {
-  public:
-	static opengl_extension_vbo* self();
-
-	opengl_extension_vbo();
-
-	void glGenBuffers(GLsizei n, GLuint *ids);
-	void glDeleteBuffers(GLsizei n, const GLuint *ids);
-	void glBindBuffer(GLenum target, GLuint id);
-	void glBufferData(GLenum target, GLsizei size, const void *data, GLenum usage);
-
-  private:
-	static opengl_extension_vbo *m_instance;
-
-	PFNGLGENBUFFERSPROC m_glgenbuffers;
-	PFNGLDELETEBUFFERSPROC m_gldeletebuffers;
-	PFNGLBINDBUFFERPROC m_glbindbuffer;
-	PFNGLBUFFERDATAPROC m_glbufferdata;
+ public:
+  static opengl_extension_vbo* self();
+  
+  opengl_extension_vbo();
+  
+  void glGenBuffers(GLsizei n, GLuint *ids);
+  void glDeleteBuffers(GLsizei n, const GLuint *ids);
+  void glBindBuffer(GLenum target, GLuint id);
+  void glBufferData(GLenum target, GLsizei size, const void *data, GLenum usage);
+  
+ private:
+  static opengl_extension_vbo *m_instance;
+  
+  PFNGLGENBUFFERSPROC m_glgenbuffers;
+  PFNGLDELETEBUFFERSPROC m_gldeletebuffers;
+  PFNGLBINDBUFFERPROC m_glbindbuffer;
+  PFNGLBUFFERDATAPROC m_glbufferdata;
 };
 
 }

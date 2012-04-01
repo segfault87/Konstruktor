@@ -209,13 +209,29 @@ void color::link()
     nc->material = material_normal;
     nc->id = m_id;
     nc->name = "Dithered color";
-    nc->rgba[0] = (unsigned char)(((int)c1->rgba[0] + (int)c2->rgba[0])/2);
-    nc->rgba[1] = (unsigned char)(((int)c1->rgba[1] + (int)c2->rgba[1])/2);
-    nc->rgba[2] = (unsigned char)(((int)c1->rgba[2] + (int)c2->rgba[2])/2);
-    nc->rgba[3] = (unsigned char)(((int)c1->rgba[3] + (int)c2->rgba[3])/2);
+    nc->rgba[0] = (unsigned char) (((int) c1->rgba[0] + (int) c2->rgba[0])/2);
+    nc->rgba[1] = (unsigned char) (((int) c1->rgba[1] + (int) c2->rgba[1])/2);
+    nc->rgba[2] = (unsigned char) (((int) c1->rgba[2] + (int) c2->rgba[2])/2);
+    nc->rgba[3] = (unsigned char) (((int) c1->rgba[3] + (int) c2->rgba[3])/2);
     
     m_entity = nc;
     
+    return;
+  } else if ((m_id & 0xff000000) == 0x04000000) {
+    m_custom_color = true;
+    unsigned int v = m_id & 0xfff;
+
+    color_entity *nc = new color_entity;
+    nc->material = material_normal;
+    nc->id = m_id;
+    nc->name = "MLCad custom color";
+    nc->rgba[0] = (unsigned char) (((v & 0xf00) >> 8) * 255.0f / 15.0f);
+    nc->rgba[1] = (unsigned char) (((v & 0x0f0) >> 4) * 255.0f / 15.0f);
+    nc->rgba[2] = (unsigned char) (((v & 0x00f)     ) * 255.0f / 15.0f);
+    nc->rgba[3] = 255;
+
+    m_entity = nc;
+
     return;
   }
   
