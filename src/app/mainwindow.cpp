@@ -186,9 +186,9 @@ void MainWindow::changeCaption()
 {
   if (activeDocument_) {
     ldraw::model *main_model = activeDocument_->contents()->main_model();
-    setWindowTitle(QString("%2 - %1").arg(main_model->desc().c_str(), main_model->name().c_str()));
+    setWindowTitle(tr("%1 - Konstruktor").arg(main_model->desc().c_str()));
   } else {
-    setWindowTitle("");
+    setWindowTitle(tr("Konstruktor"));
   }
 }
 

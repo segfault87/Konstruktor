@@ -14,7 +14,7 @@ namespace ldraw
 {
 
 model::model(const std::string &desc, const std::string &name, const std::string &author, model_multipart *parent)
-	: m_desc(desc), m_name(name), m_author(author), m_null(false), m_parent(parent), m_model_type(general)
+    : m_desc(desc), m_name(name), m_author(author), m_null(false), m_parent(parent), m_model_type(general)
 {
 }
 
@@ -196,7 +196,7 @@ model* model_multipart::find_submodel(const std::string &name)
 {
   std::string lowercase = utils::translate_string(name);
   std::map<std::string, model*>::iterator it = m_submodel_list.find(lowercase);
-  
+
   if(it == m_submodel_list.end())
     return 0L;
   else
@@ -215,7 +215,7 @@ bool model_multipart::insert_submodel(model *m, const std::string &key)
   // Search for duplicate
   if(m_submodel_list.find(fn) != m_submodel_list.end())
     return false;
-  
+
   m_submodel_list[fn] = m;
   
   return true;
