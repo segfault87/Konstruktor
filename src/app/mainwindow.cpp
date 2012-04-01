@@ -186,7 +186,10 @@ void MainWindow::changeCaption()
 {
   if (activeDocument_) {
     ldraw::model *main_model = activeDocument_->contents()->main_model();
-    setWindowTitle(tr("%1 - Konstruktor").arg(main_model->desc().c_str()));
+    if (activeDocument_->canSave())
+      setWindowTitle(tr("%1 [modified] - Konstruktor").arg(main_model->desc().c_str()));
+    else
+      setWindowTitle(tr("%1 - Konstruktor").arg(main_model->desc().c_str()));
   } else {
     setWindowTitle(tr("Konstruktor"));
   }
@@ -597,6 +600,7 @@ void MainWindow::modelModified()
       actionManager_->query("file/save")->setEnabled(true);
       activeDocument_->setSaveable(true);
       tabbar_->setTabIcon(tabbar_->currentIndex(), Utils::icon("document-save"));
+      changeCaption();
     }
   }
 }
