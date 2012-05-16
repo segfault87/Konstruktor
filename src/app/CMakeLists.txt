@@ -31,6 +31,7 @@ set(konstruktor_HEADERS
   contentsmodel.h
   contentsview.h
   dbmanager.h
+  dbupdaterdialog.h
   document.h
   editor.h
   mainwindow.h
@@ -78,6 +79,7 @@ set(konstruktor_SRCS
   contentsmodel.cpp
   contentsview.cpp
   dbmanager.cpp
+  dbupdaterdialog.cpp
   document.cpp
   editor.cpp
   mainwindow.cpp
@@ -111,7 +113,9 @@ set(konstruktor_SRCS
 qt4_wrap_ui(konstruktor_UIS
   aboutdialog.ui
   colordialog.ui
+  configdialog.ui
   configdisplayform.ui
+  configldrawform.ui
   configrenderform.ui
   newmodeldialog.ui
   newsubmodeldialog.ui
@@ -144,7 +148,7 @@ set(konstruktor_db_updater_SRCS
 
 qt4_wrap_cpp(konstruktor_db_updater_HEADERS_MOC ${konstruktor_db_updater_HEADERS})
 
-add_executable(konstruktor_db_updater ${GUI_TYPE} ${konstruktor_db_updater_SRCS} ${konstruktor_db_updater_HEADERS_MOC})
+add_executable(konstruktor_db_updater ${konstruktor_db_updater_SRCS} ${konstruktor_db_updater_HEADERS_MOC})
 set_target_properties(konstruktor_db_updater PROPERTIES COMPILE_FLAGS -DKONSTRUKTOR_DB_UPDATER)
 target_link_libraries(konstruktor_db_updater libldr libldrawrenderer ${SQLITE_LIBRARIES} ${QT_QTCORE_LIBRARY} ${QT_QTGUI_LIBRARY} ${QT_QTOPENGL_LIBRARY})
 

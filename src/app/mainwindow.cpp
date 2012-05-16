@@ -470,11 +470,13 @@ void MainWindow::renderExport()
 
 void MainWindow::showConfigDialog()
 {
+  /*ConfigDialog dialog(this);
+  dialog.exec();
+
+  if (dialog.result() == QDialog::Accepted)
+  Application::self()->config()->writeConfig();*/
+
   notImplemented();
-  /*
-    ConfigDialog dialog(this);
-    dialog.exec();
-  */
 }
 
 
@@ -822,7 +824,7 @@ void MainWindow::initActions()
     actionRenderSteps_->setIcon(Utils::icon("view-preview"));*/
   
   // Settings
-  //ac->addAction(KStandardAction::Preferences, this, SLOT(showConfigDialog()));
+  actionManager_->createAction("settings/configure", tr("&Configure..."), this, SLOT(showConfigDialog()), QKeySequence::Preferences, Utils::icon("configure"));
 
   // Help
   actionManager_->createAction("help/about", tr("&About Konstruktor..."), this, SLOT(about()));
@@ -929,7 +931,7 @@ void MainWindow::initMenus()
   menuView->addAction(actionManager_->query("view/reset_zoom"));
   menuView->addAction(actionManager_->query("view/reset_3d_view"));
 
-  QMenu *menuSubmodel = menuBar()->addMenu(tr("&Submodel"));
+  QMenu *menuSubmodel = menuBar()->addMenu(tr("S&ubmodel"));
   menuSubmodel->addAction(actionManager_->query("submodel/new"));
   menuSubmodel->addAction(actionManager_->query("submodel/delete"));
   menuSubmodel->addAction(actionManager_->query("submodel/edit"));
@@ -938,6 +940,9 @@ void MainWindow::initMenus()
   menuRender->addAction(actionManager_->query("render/render"));
   menuRender->addAction(actionManager_->query("render/export"));
   menuRender->addAction(actionManager_->query("render/setup"));
+
+  QMenu *menuSettings = menuBar()->addMenu(tr("&Settings"));
+  menuSettings->addAction(actionManager_->query("settings/configure"));
 
   QMenu *menuHelp = menuBar()->addMenu(tr("&Help"));
   menuHelp->addAction(actionManager_->query("help/about"));

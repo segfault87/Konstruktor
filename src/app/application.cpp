@@ -18,6 +18,7 @@
 
 #include "colormanager.h"
 #include "dbmanager.h"
+#include "dbupdaterdialog.h"
 #include "mainwindow.h"
 #include "pixmaprenderer.h"
 
@@ -40,10 +41,10 @@ Application::Application(QObject *parent)
   db_ = new DBManager(this);
   colorManager_ = new ColorManager;
   
-  dbDialog_ = 0L;
-  
   if (!initialize())
     qApp->exit();
+  else
+    startup();
 }
 
 Application::~Application()
@@ -73,7 +74,18 @@ bool Application::initialize()
       else
         library_ = new ldraw::part_library(path);
     } catch (const ldraw::exception &) {
-      QMessageBox::critical(0L, tr("Error"), tr("<qt>Unable to find LDraw part library. If you have installed LDraw, please specify your installation path.  If you have not installed it, it can be obtained from <a href=\"http://www.ldraw.org\">http://www.ldraw.org</a>.</qt>"));
+      QMessageBox *alert =
+          new QMessageBox(QMessageBox::Critical,
+                          tr("Error"),
+                          tr("<qt>Unable to find LDraw part library. "
+                             "If you have installed LDraw, please specify "
+                             "your installation path.  If you have not "
+                             "installed it, you can download it from "
+                             "<a href=\"" LDRAW_DL_URL "\">" LDRAW_DL_URL "</a>.</qt>"),
+                          QMessageBox::Ok);
+
+      alert->exec();
+      delete alert;
       
       QString newpath = QFileDialog::getExistingDirectory(0L, tr("Choose LDraw installation directory"));
       if (newpath.isEmpty()) {
@@ -113,24 +125,14 @@ bool Application::initialize()
   configUpdated();
   
   testPovRay(true);
+
+  DBUpdaterDialog dialog;
+  dialog.start();
   
-  startDBUpdater();
+  if (dialog.exec() == QDialog::Rejected)
+    return false;
   
   return true;
-}
-
-void Application::startDBUpdater()
-{
-  QStringList args;
-  args << library_->ldrawpath().c_str();
-
-  dbUpdater_ = new QProcess(this);
-  
-  connect(dbUpdater_, SIGNAL(readyReadStandardOutput()), this, SLOT(dbUpdateStatus()));
-  connect(dbUpdater_, SIGNAL(error(QProcess::ProcessError)), this, SLOT(dbUpdateError(QProcess::ProcessError)));
-  connect(dbUpdater_, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(dbUpdateFinished(int, QProcess::ExitStatus)));
-  
-  dbUpdater_->start("konstruktor_db_updater", args);
 }
 
 void Application::startup()
@@ -148,11 +150,11 @@ QString Application::saveLocation(const QString &directory)
 #if defined(Q_WS_MAC)
   result = QDir::homePath() +
       "/Library/Application Support/Konstruktor/" + directory + "/";
-#elif defined(Q_OS_UNIX)
+#elif defined(Q_WS_X11)
   result = qgetenv("XDG_DATA_HOME");
   if (result.isEmpty())
     result = QDir::homePath() + "/.local/share/konstruktor/" + directory + "/";
-#elif defined(Q_OS_WIN32)
+#elif defined(Q_WS_WIN)
   result = QDir::homePath() +
       "/Application Data/Konstruktor/" + directory + "/";
 #endif
@@ -175,7 +177,10 @@ void Application::testPovRay(bool overrideconfig)
     
     args << "--version";
     if (QProcess::execute(config_->povRayExecutablePath(), args) != 0) {
-      QMessageBox::critical(0L, tr("Error"), tr("Could not execute POV-Ray. Raytracing feature is temporarily disabled. Please make sure that POV-Ray is properly installed."));
+      if (config_->firstRun()) {
+        QMessageBox::critical(0L, tr("Error"), tr("Could not execute POV-Ray. Raytracing feature is temporarily disabled. Please make sure that POV-Ray is properly installed."));
+        config_->setFirstRun(false);
+      }
       
       if (overrideconfig) {
         config_->setPovRayExecutablePath("");
@@ -215,70 +220,6 @@ void Application::configUpdated()
     case Config::Square:
       params_->set_stud_rendering_mode(ldraw_renderer::parameters::stud_square);
   }
-}
-
-void Application::dbUpdateStatus()
-{
-  if (!dbDialog_) {
-    dbDialog_ = new QProgressDialog();
-
-    dbDialog_->setWindowTitle(tr("Scanning"));
-    dbDialog_->setAutoClose(true);
-    dbDialog_->show();
-  }
-  
-  dbUpdater_->setReadChannel(QProcess::StandardOutput);
-  
-  QStringList message = QString(dbUpdater_->readAll()).trimmed().split('\n');
-  QString lastLine = message[message.size() - 1].trimmed();
-  
-  int cur = lastLine.section(' ', 0, 0).toInt();
-  int max = lastLine.section(' ', 1, 1).toInt();
-  
-  dbDialog_->setMaximum(max);
-  dbDialog_->setValue(cur);
-  dbDialog_->setLabelText(tr("<qt><p align=center>Building indexes from the LDraw part library. Please wait...<br/>%1</p></qt>").arg(lastLine.section(' ', 2)));
-}
-
-void Application::dbUpdateFinished(int exitCode, QProcess::ExitStatus exitStatus)
-{
-  if (dbDialog_) {
-    delete dbDialog_;
-    dbDialog_ = 0L;
-  }
-  
-  delete dbUpdater_;
-  dbUpdater_ = 0L;
-
-  config_->reloadConfig();
-  
-  if (exitCode || exitStatus == QProcess::CrashExit) {
-    QMessageBox::critical(0L, tr("Error"), tr("Could not scan LDraw part library."));
-    startup();
-    
-    qApp->exit();
-  } else {
-    startup();
-  }
-}
-
-void Application::dbUpdateError(QProcess::ProcessError error)
-{
-  QString errorMsg;
-  
-  switch (error) {
-    case QProcess::FailedToStart:
-      errorMsg = tr("Failed to start part database updater. Your installation might be broken.");
-      break;
-    case QProcess::Crashed:
-      errorMsg = tr("Part database updater is stopped unexpectedly.");
-      break;
-    default:
-      errorMsg = tr("Unknown error occurred while scanning parts.");
-  }
-  
-  QMessageBox::critical(0L, tr("Error in Database Updater"), errorMsg);
-  qApp->exit();
 }
 
 }
