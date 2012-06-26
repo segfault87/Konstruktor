@@ -14,85 +14,85 @@ namespace Konstruktor
 const char RefObject::mimeType[] = "application/x-konstruktor-refobject";
 
 RefObject::RefObject()
-	: metrics_(0L)
+    : metrics_(0L)
 {
 }
 
 RefObject::RefObject(const RefObject &rhs)
-	: filename_(rhs.filename()), metrics_(rhs.metrics())
+    : filename_(rhs.filename()), metrics_(rhs.metrics())
 {
 }
 
 RefObject::RefObject(const QString &filename, const ldraw::metrics &metrics)
-	: filename_(filename), metrics_(metrics)
+    : filename_(filename), metrics_(metrics)
 {
 }
 
 const QString& RefObject::filename() const
 {
-	return filename_;
+  return filename_;
 }
 	
 const ldraw::metrics& RefObject::metrics() const
 {
-	return metrics_;
+  return metrics_;
 }
 
 void RefObject::setFilename(const QString &filename)
 {
-	filename_ = filename;
+  filename_ = filename;
 }
 
 void RefObject::setMetrics(const ldraw::metrics &metrics)
 {
-	metrics_ = metrics;
+  metrics_ = metrics;
 }
 
 RefObject& RefObject::operator= (const RefObject &rhs)
 {
-	filename_ = rhs.filename();
-	metrics_ = rhs.metrics();
+  filename_ = rhs.filename();
+  metrics_ = rhs.metrics();
 
-	return *this;
+  return *this;
 }
 
 QMimeData* RefObject::mimeData() const
 {
-	QMimeData *mime = new QMimeData();
-
-	mime->setData(mimeType, serialize());
-
-	return mime;
+  QMimeData *mime = new QMimeData();
+  
+  mime->setData(mimeType, serialize());
+  
+  return mime;
 }
 
 QByteArray RefObject::serialize() const
 {
-	QByteArray encodedData;
-
-	QDataStream stream(&encodedData, QIODevice::WriteOnly);
-	stream << metrics_.min().x() << metrics_.min().y() << metrics_.min().z();
-	stream << metrics_.max().x() << metrics_.max().y() << metrics_.max().z();
-	stream << filename();
-
-	return encodedData;
+  QByteArray encodedData;
+  
+  QDataStream stream(&encodedData, QIODevice::WriteOnly);
+  stream << metrics_.min().x() << metrics_.min().y() << metrics_.min().z();
+  stream << metrics_.max().x() << metrics_.max().y() << metrics_.max().z();
+  stream << filename();
+  
+  return encodedData;
 }
 
 RefObject RefObject::deserialize(QByteArray &data)
 {
-	RefObject obj;
-	QString filename;
-	ldraw::vector min, max;
-
-	QDataStream stream(&data, QIODevice::ReadOnly);
-	
-	stream >> min.x() >> min.y() >> min.z();
-	stream >> max.x() >> max.y() >> max.z();
-	stream >> filename;
-
-	obj.setMetrics(ldraw::metrics(min, max));
-	obj.setFilename(filename);
-	
-	return obj;
+  RefObject obj;
+  QString filename;
+  ldraw::vector min, max;
+  
+  QDataStream stream(&data, QIODevice::ReadOnly);
+  
+  stream >> min.x() >> min.y() >> min.z();
+  stream >> max.x() >> max.y() >> max.z();
+  stream >> filename;
+  
+  obj.setMetrics(ldraw::metrics(min, max));
+  obj.setFilename(filename);
+  
+  return obj;
 }
 
 }

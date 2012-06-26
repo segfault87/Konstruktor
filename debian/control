@@ -6,7 +6,6 @@ Maintainer: Park Joon-Kyu <mastermind@planetmono.org>
 Build-Depends: debhelper (>= 7.0.50~),
   cmake,
   libglu1-mesa-dev,
-  kdelibs5-dev,
   libqt4-dev,
   libqt4-opengl-dev,
   libsqlite3-dev

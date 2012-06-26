@@ -792,8 +792,8 @@ void MainWindow::initActions()
 
   actionManager_->createAction("edit/move_x_pos", tr("Move -X"), editor_, SLOT(moveByXPositive()), QKeySequence("Right"), QIcon(":/icons/move-x-pos.png"));
   actionManager_->createAction("edit/move_x_neg", tr("Move +X"), editor_, SLOT(moveByXNegative()), QKeySequence("Left"), QIcon(":/icons/move-x-neg.png"));
-  actionManager_->createAction("edit/move_y_pos", tr("Move -Y"), editor_, SLOT(moveByYPositive()), QKeySequence("PgDown"), QIcon(":/icons/move-y-pos.png"));
-  actionManager_->createAction("edit/move_y_neg", tr("Move +Y"), editor_, SLOT(moveByYNegative()), QKeySequence("PgUp"), QIcon(":/icons/move-y-neg.png"));
+  actionManager_->createAction("edit/move_y_pos", tr("Move -Y"), editor_, SLOT(moveByYPositive()), QKeySequence("End"), QIcon(":/icons/move-y-pos.png"));
+  actionManager_->createAction("edit/move_y_neg", tr("Move +Y"), editor_, SLOT(moveByYNegative()), QKeySequence("Home"), QIcon(":/icons/move-y-neg.png"));
   actionManager_->createAction("edit/move_z_pos", tr("Move -Z"), editor_, SLOT(moveByZPositive()), QKeySequence("Up"), QIcon(":/icons/move-z-pos.png"));
   actionManager_->createAction("edit/move_z_neg", tr("Move +Z"), editor_, SLOT(moveByZNegative()), QKeySequence("Down"), QIcon(":/icons/move-z-neg.png"));
   
