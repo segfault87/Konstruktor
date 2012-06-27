@@ -77,7 +77,7 @@ class LIBLDR_EXPORT color
   bool operator<(const color &rhs) const { return m_id < rhs.get_id(); }
   bool operator==(const color &rhs) const { return m_id == rhs.get_id(); }
   
-  int get_id() const { return m_id; }
+  unsigned int get_id() const { return m_id; }
   void set_id(int i) { m_id = i; link(); }
   
   bool is_valid() { return m_valid; }
