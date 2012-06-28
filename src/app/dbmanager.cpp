@@ -46,6 +46,9 @@ DBManager::~DBManager()
 
 void DBManager::initialize(const QString &path)
 {
+  if (isLoaded_)
+    sqlite3_close(db_);
+
   const QByteArray epath = QFile::encodeName(path);
   
   QFile file(epath);

@@ -115,8 +115,6 @@ bool Application::initialize()
     config_->writeConfig();
   }
   
-  db_->initialize(saveLocation("")+"parts.db");
-  
   params_ = new ldraw_renderer::parameters();
   params_->set_shading(true);
   params_->set_shader(false);
@@ -131,6 +129,8 @@ bool Application::initialize()
   
   if (dialog.exec() == QDialog::Rejected)
     return false;
+
+  db_->initialize(saveLocation("")+"parts.db");
   
   return true;
 }

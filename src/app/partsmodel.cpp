@@ -15,7 +15,7 @@ namespace Konstruktor
 {
 
 PartsModel::PartsModel(QList<PartCategory> &categories, QMap<int, PartCategory *> &categorymap, QMap<int, QList<PartItem> > &list, QObject *parent)
-	: QAbstractItemModel(parent), categories_(categories), categorymap_(categorymap), list_(list)
+    : QAbstractItemModel(parent), categories_(categories), categorymap_(categorymap), list_(list)
 {
 }
 
