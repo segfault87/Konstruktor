@@ -1,6 +1,6 @@
-if(UNIX)
+if(UNIX AND NOT APPLE)
   find_package(SharedMimeInfo REQUIRED)
-endif(UNIX)
+endif(UNIX AND NOT APPLE)
 
 if(WIN32)
 set(GUI_TYPE WIN32)
@@ -155,9 +155,9 @@ target_link_libraries(konstruktor_db_updater libldr libldrawrenderer ${SQLITE_LI
 # install
 install(TARGETS konstruktor konstruktor_db_updater DESTINATION bin)
 
-if(UNIX)
+if(UNIX AND NOT APPLE)
   install(FILES konstruktor.desktop DESTINATION share/applications)
   install(FILES ldraw-mime.xml DESTINATION share/mime/packages)
   update_xdg_mimetypes(share/mime/packages)
-endif(UNIX)
+endif(UNIX AND NOT APPLE)
 
