@@ -15,6 +15,7 @@
 #include <QFontMetrics>
 #include <QMenu>
 #include <QMessageBox>
+#include <QMimeData>
 #include <QMouseEvent>
 #include <QPainter>
 

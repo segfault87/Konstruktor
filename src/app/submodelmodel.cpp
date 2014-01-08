@@ -79,7 +79,8 @@ void SubmodelModel::resetItems()
 		refobjects_.append(RefObject((*it).first.c_str(), *m->custom_data<ldraw::metrics>()));
 	}
 
-	reset();
+	beginResetModel();
+	endResetModel();
 }
 
 QVariant SubmodelModel::data(const QModelIndex &index, int role) const

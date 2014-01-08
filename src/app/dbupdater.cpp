@@ -5,7 +5,7 @@
 
 #include <QDir>
 #include <QDirIterator>
-#include <QFSFileEngine>
+#include <QFile>
 #include <QGLWidget>
 #include <QSet>
 #include <QStringList>
@@ -343,8 +343,7 @@ int DBUpdater::start()
     manager_->query(QString("DELETE FROM part_keywords WHERE partid=%1").arg(pcnt));
     manager_->query(QString("DELETE FROM favorites WHERE partid='%1'").arg(*it++));
     
-    QFSFileEngine fs(path + (*it) + ".png");
-    fs.remove();
+    QFile::remove(path + (*it) + ".png");
   }
   
   std::cout << (totalSize - 1) << " " << (totalSize - 1) << " Finished" << std::endl;
@@ -443,8 +442,7 @@ void DBUpdater::deletePartImages()
   QDirIterator it(dir);
   
   while (it.hasNext()) {
-    QFSFileEngine fs(it.next());
-    fs.remove();
+    QFile::remove(it.next());
   }
 }
 

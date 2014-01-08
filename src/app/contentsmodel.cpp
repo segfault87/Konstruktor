@@ -43,7 +43,8 @@ void ContentsModel::setDocument(Document *document)
     checkTable_ = VisibilityExtension::query(model_);
   }
   
-  reset();
+  beginResetModel();
+  endResetModel();
 }
 
 int ContentsModel::rowCount(const QModelIndex &parent) const
@@ -308,7 +309,8 @@ Qt::ItemFlags ContentsModel::flags(const QModelIndex &index) const
 void ContentsModel::rowsChanged(const CommandBase::AffectedRowInfo &/*rowList*/)
 {
   // FIXME: do not force reset
-  reset();
+  beginResetModel();
+  endResetModel();
   
   /*if (!inverse) {
     for (int i = 0; i < rowList.size(); ++i) {
