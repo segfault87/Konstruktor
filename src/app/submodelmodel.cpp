@@ -65,24 +65,6 @@ QModelIndex SubmodelModel::index(const ldraw::model *m)
 
 void SubmodelModel::resetItems()
 {
-<<<<<<< HEAD
-	active_ = 0;
-
-	submodelList_.clear();
-	refobjects_.clear();
-	
-	for (std::map<std::string, ldraw::model *>::iterator it = document_->contents()->submodel_list().begin(); it != document_->contents()->submodel_list().end(); ++it) {
-		submodelList_.append(QPair<std::string, ldraw::model *>((*it).first, (*it).second));
-		ldraw::model *m = (*it).second;
-		if (!m->custom_data<ldraw::metrics>())
-			m->update_custom_data<ldraw::metrics>();
-		
-		refobjects_.append(RefObject((*it).first.c_str(), *m->custom_data<ldraw::metrics>()));
-	}
-
-	beginResetModel();
-	endResetModel();
-=======
   active_ = 0;
   
   submodelList_.clear();
@@ -97,8 +79,8 @@ void SubmodelModel::resetItems()
     refobjects_.append(RefObject((*it).first.c_str(), *m->custom_data<ldraw::metrics>()));
   }
   
-  reset();
->>>>>>> d02fc5f2754eafb6b4e4df15261070ff86253392
+  beginResetModel();
+  endResetModel();
 }
 
 QVariant SubmodelModel::data(const QModelIndex &index, int role) const
