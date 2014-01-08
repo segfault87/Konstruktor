@@ -44,6 +44,11 @@ QByteArray Config::geometry() const
 {
   return settings_->value("general/geometry", QByteArray()).toByteArray();
 }
+
+bool Config::firstRun() const
+{
+  return settings_->value("general/first_run", true).toBool();
+}
   
 void Config::setState(const QByteArray &v)
 {
@@ -53,6 +58,11 @@ void Config::setState(const QByteArray &v)
 void Config::setGeometry(const QByteArray &v)
 {
   settings_->setValue("general/geometry", v);
+}
+
+void Config::setFirstRun(bool b)
+{
+  settings_->setValue("general/first_run", b);
 }
 
 /* LDraw */
@@ -475,12 +485,22 @@ void Config::setBackgroundColor(const QColor &v)
 
 QString Config::povRayExecutablePath() const
 {
-  return settings_->value("renderer/pov_ray_executable_path", "povray").toString();
+  return settings_->value("povray/executable_path", "povray").toString();
+}
+
+bool Config::primitiveSubstitution() const
+{
+  return settings_->value("povray/primitive_substitution", true).toBool();
 }
 
 void Config::setPovRayExecutablePath(const QString &v)
 {
-  settings_->setValue("povray/pov_ray_executable_path", v);
+  settings_->setValue("povray/executable_path", v);
+}
+
+void Config::setPrimitiveSubstitution(bool v)
+{
+  settings_->setValue("povray/primitive_substitution", v);
 }
 
 }

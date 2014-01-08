@@ -125,7 +125,7 @@ class LIBLDR_EXPORT model
   {
     std::map<std::string, extension *>::iterator it = m_data.find(T::identifier());
     if (it != m_data.end()) {
-      delete *it;
+      delete (*it).second;
       m_data.erase(it);
     }
   }		

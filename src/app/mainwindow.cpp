@@ -187,9 +187,12 @@ void MainWindow::changeCaption()
 {
   if (activeDocument_) {
     ldraw::model *main_model = activeDocument_->contents()->main_model();
-    setWindowTitle(QString("%2 - %1").arg(main_model->desc().c_str(), main_model->name().c_str()));
+    if (activeDocument_->canSave())
+      setWindowTitle(tr("%1 [modified] - Konstruktor").arg(main_model->desc().c_str()));
+    else
+      setWindowTitle(tr("%1 - Konstruktor").arg(main_model->desc().c_str()));
   } else {
-    setWindowTitle("");
+    setWindowTitle(tr("Konstruktor"));
   }
 }
 
@@ -468,11 +471,13 @@ void MainWindow::renderExport()
 
 void MainWindow::showConfigDialog()
 {
+  /*ConfigDialog dialog(this);
+  dialog.exec();
+
+  if (dialog.result() == QDialog::Accepted)
+  Application::self()->config()->writeConfig();*/
+
   notImplemented();
-  /*
-    ConfigDialog dialog(this);
-    dialog.exec();
-  */
 }
 
 
@@ -598,6 +603,7 @@ void MainWindow::modelModified()
       actionManager_->query("file/save")->setEnabled(true);
       activeDocument_->setSaveable(true);
       tabbar_->setTabIcon(tabbar_->currentIndex(), Utils::icon("document-save"));
+      changeCaption();
     }
   }
 }
@@ -787,8 +793,8 @@ void MainWindow::initActions()
 
   actionManager_->createAction("edit/move_x_pos", tr("Move -X"), editor_, SLOT(moveByXPositive()), QKeySequence("Right"), QIcon(":/icons/move-x-pos.png"));
   actionManager_->createAction("edit/move_x_neg", tr("Move +X"), editor_, SLOT(moveByXNegative()), QKeySequence("Left"), QIcon(":/icons/move-x-neg.png"));
-  actionManager_->createAction("edit/move_y_pos", tr("Move -Y"), editor_, SLOT(moveByYPositive()), QKeySequence("PgDown"), QIcon(":/icons/move-y-pos.png"));
-  actionManager_->createAction("edit/move_y_neg", tr("Move +Y"), editor_, SLOT(moveByYNegative()), QKeySequence("PgUp"), QIcon(":/icons/move-y-neg.png"));
+  actionManager_->createAction("edit/move_y_pos", tr("Move -Y"), editor_, SLOT(moveByYPositive()), QKeySequence("End"), QIcon(":/icons/move-y-pos.png"));
+  actionManager_->createAction("edit/move_y_neg", tr("Move +Y"), editor_, SLOT(moveByYNegative()), QKeySequence("Home"), QIcon(":/icons/move-y-neg.png"));
   actionManager_->createAction("edit/move_z_pos", tr("Move -Z"), editor_, SLOT(moveByZPositive()), QKeySequence("Up"), QIcon(":/icons/move-z-pos.png"));
   actionManager_->createAction("edit/move_z_neg", tr("Move +Z"), editor_, SLOT(moveByZNegative()), QKeySequence("Down"), QIcon(":/icons/move-z-neg.png"));
   
@@ -819,7 +825,7 @@ void MainWindow::initActions()
     actionRenderSteps_->setIcon(Utils::icon("view-preview"));*/
   
   // Settings
-  //ac->addAction(KStandardAction::Preferences, this, SLOT(showConfigDialog()));
+  actionManager_->createAction("settings/configure", tr("&Configure..."), this, SLOT(showConfigDialog()), QKeySequence::Preferences, Utils::icon("configure"));
 
   // Help
   actionManager_->createAction("help/about", tr("&About Konstruktor..."), this, SLOT(about()));
@@ -926,7 +932,7 @@ void MainWindow::initMenus()
   menuView->addAction(actionManager_->query("view/reset_zoom"));
   menuView->addAction(actionManager_->query("view/reset_3d_view"));
 
-  QMenu *menuSubmodel = menuBar()->addMenu(tr("&Submodel"));
+  QMenu *menuSubmodel = menuBar()->addMenu(tr("S&ubmodel"));
   menuSubmodel->addAction(actionManager_->query("submodel/new"));
   menuSubmodel->addAction(actionManager_->query("submodel/delete"));
   menuSubmodel->addAction(actionManager_->query("submodel/edit"));
@@ -935,6 +941,9 @@ void MainWindow::initMenus()
   menuRender->addAction(actionManager_->query("render/render"));
   menuRender->addAction(actionManager_->query("render/export"));
   menuRender->addAction(actionManager_->query("render/setup"));
+
+  QMenu *menuSettings = menuBar()->addMenu(tr("&Settings"));
+  menuSettings->addAction(actionManager_->query("settings/configure"));
 
   QMenu *menuHelp = menuBar()->addMenu(tr("&Help"));
   menuHelp->addAction(actionManager_->query("help/about"));

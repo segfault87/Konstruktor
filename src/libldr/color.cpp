@@ -213,6 +213,11 @@ void color::link()
     nc->rgba[1] = (unsigned char) (((int) c1->rgba[1] + (int) c2->rgba[1])/2);
     nc->rgba[2] = (unsigned char) (((int) c1->rgba[2] + (int) c2->rgba[2])/2);
     nc->rgba[3] = (unsigned char) (((int) c1->rgba[3] + (int) c2->rgba[3])/2);
+
+    nc->complement[0] = 89;
+    nc->complement[1] = 89;
+    nc->complement[2] = 89;
+    nc->complement[3] = 255;
     
     m_entity = nc;
     
@@ -229,6 +234,11 @@ void color::link()
     nc->rgba[1] = (unsigned char) (((v & 0x0f0) >> 4) * 255.0f / 15.0f);
     nc->rgba[2] = (unsigned char) (((v & 0x00f)     ) * 255.0f / 15.0f);
     nc->rgba[3] = 255;
+
+    nc->complement[0] = (unsigned char) (((v & 0xf00000) >> 20) * 255.0f / 15.0f);
+    nc->complement[1] = (unsigned char) (((v & 0x0f0000) >> 16) * 255.0f / 15.0f);
+    nc->complement[2] = (unsigned char) (((v & 0x00f000) >> 12) * 255.0f / 15.0f);
+    nc->complement[3] = 255;
 
     m_entity = nc;
 

@@ -33,7 +33,7 @@ class Selection : public ldraw::filter
   void setModel(const ldraw::model *m);
   
   void resetSelection();
-  void setInversed(bool i);
+  void setInverted(bool i);
   
   const QSet<int>* getSelection() const;
   bool hasSelection() const;
@@ -50,7 +50,7 @@ class Selection : public ldraw::filter
   const ldraw::model *model_;
   const VisibilityExtension *visibility_;
   
-  bool inversed_;
+  bool inverted_;
 };
 
 class IntermediateSelection : public ldraw::filter

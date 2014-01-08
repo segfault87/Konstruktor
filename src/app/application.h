@@ -12,6 +12,12 @@
 
 #include "config.h"
 
+#if defined(Q_WS_WIN)
+#define LDRAW_DL_URL "http://bit.ly/ldraw-part-library-windows"
+#else
+#define LDRAW_DL_URL "http://bit.ly/ldraw-part-library"
+#endif
+
 namespace ldraw
 {
   class model;
@@ -45,7 +51,6 @@ class Application : public QObject
   ~Application();
   
   bool initialize();
-  void startDBUpdater();
   void startup();
   
   static Application* self() { return instance_; }
@@ -67,11 +72,6 @@ class Application : public QObject
  public slots:
   void configUpdated();
                       
- private slots:
-  void dbUpdateStatus();
-  void dbUpdateFinished(int, QProcess::ExitStatus);
-  void dbUpdateError(QProcess::ProcessError);
-  
  private:
   static Application *instance_;
   
@@ -83,9 +83,6 @@ class Application : public QObject
   ldraw_renderer::parameters *params_;
   DBManager *db_;
   ColorManager *colorManager_;
-  
-  QProgressDialog *dbDialog_;
-  QProcess *dbUpdater_;
   
   QMutex globalDirsMutex_;
   bool hasPovRay_;

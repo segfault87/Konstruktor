@@ -20,7 +20,7 @@ typedef char GLchar;
 #include <OpenGL/glu.h>
 #undef GL_VERSION_1_5
 #undef GL_VERSION_2_0
-#include <GL/glext.h>
+#include <gl/glext.h>
 #else
 #include <GL/gl.h>
 #include <GL/glu.h>

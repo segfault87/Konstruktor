@@ -5,8 +5,6 @@
 
 #include <cmath>
 
-#include "renderer/opengl_extension_vbo.h"
-
 #include <libldr/metrics.h>
 #include <libldr/utils.h>
 
@@ -18,6 +16,8 @@
 #include <QMimeData>
 #include <QMouseEvent>
 #include <QPainter>
+
+#include "renderer/opengl_extension_vbo.h"
 
 #include "document.h"
 #include "editor.h"
@@ -624,9 +624,9 @@ void RenderWidget::paintGL()
         glTranslatef(translation_.x(), translation_.y(), translation_.z());
       
       params_->set_rendering_mode(ldraw_renderer::parameters::model_boundingboxes);
-      tsset_->setInversed(true);
+      tsset_->setInverted(true);
       renderer_->render(currentModel_, tsset_);
-      tsset_->setInversed(false);
+      tsset_->setInverted(false);
       
       if (behavior_ == Idle)
         params_->set_rendering_mode(renderMode_);
@@ -846,7 +846,13 @@ void RenderWidget::mouseMoveEvent(QMouseEvent *event)
     float matrix[16];
     glGetFloatv(GL_MODELVIEW_MATRIX, matrix);
     
-    ldraw_renderer::selection_list result = renderer_->select(projectionMatrix_, matrix, region_.x(), region_.y(), region_.width(), region_.height(), (*activeDocument_)->getActiveModel(), tvset_);
+    ldraw_renderer::selection_list result = renderer_->select(
+        projectionMatrix_,
+        matrix,
+        region_.x(), region_.y(),
+        region_.width(), region_.height(),
+        (*activeDocument_)->getActiveModel(),
+        tvset_);
     
     tisset_->setList(result);
     
@@ -884,7 +890,13 @@ void RenderWidget::mouseReleaseEvent(QMouseEvent *event)
     if (!isRegion_)
       renderer_->set_selection_type(ldraw_renderer::renderer::selection_model_full);
     
-    ldraw_renderer::selection_list resultWithDepth = renderer_->select(projectionMatrix_, matrix, region_.x(), region_.y(), region_.width(), region_.height(), (*activeDocument_)->getActiveModel(), tvset_ );
+    ldraw_renderer::selection_list resultWithDepth = renderer_->select(
+        projectionMatrix_,
+        matrix,
+        region_.x(), region_.y(),
+        region_.width(), region_.height(),
+        (*activeDocument_)->getActiveModel(),
+        tvset_);
     
     if (!isRegion_)
       renderer_->set_selection_type(ldraw_renderer::renderer::selection_points);

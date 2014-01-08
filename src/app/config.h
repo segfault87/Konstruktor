@@ -52,9 +52,11 @@ class Config
   /* General */
   QByteArray state() const;
   QByteArray geometry() const;
+  bool firstRun() const;
   
   void setState(const QByteArray &v);
   void setGeometry(const QByteArray &v);
+  void setFirstRun(bool v);
 
   /* LDraw */
   QString path() const;
@@ -156,8 +158,10 @@ class Config
   /* POV-Ray */
 
   QString povRayExecutablePath() const;
+  bool primitiveSubstitution() const;
 
   void setPovRayExecutablePath(const QString &v);
+  void setPrimitiveSubstitution(bool v);
   
  private:
   QSettings *settings_;
