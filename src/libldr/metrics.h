@@ -48,6 +48,6 @@ class LIBLDR_EXPORT metrics : public extension
 	bool m_started;
 };
 
-}
+};
 
 #endif

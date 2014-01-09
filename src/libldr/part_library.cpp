@@ -4,7 +4,6 @@
  *                                                                                   *
  * Author: (c)2006-2008 Park "segfault" J. K. <mastermind_at_planetmono_dot_org>     */
 
-#include <dirent.h>
 #include <sys/types.h>
 
 #include <algorithm>
@@ -23,8 +22,9 @@ namespace ldraw
 #ifdef WIN32
 // For win32
 static const std::string predefined_path[] = {
-  "\\ldraw",
-  "\\Program Files\\ldraw",
+  "c:\\ldraw",
+  "c:\\Program Files\\ldraw",
+  "c:\\Program Files (x86)\\ldraw",
   ""
 };
 #else
@@ -66,13 +66,13 @@ part_library::part_library()
   if (!tmp) {
     int i = 0;
     while (!predefined_path[i].empty()) {
-      if(init(predefined_path[i])) {
+      if (read_fs(predefined_path[i])) {
         return;
       }
       ++i;
     }
   } else {
-    if(init(std::string(tmp))) {
+    if (read_fs(std::string(tmp))) {
       return;
     }
   }
@@ -84,7 +84,7 @@ part_library::part_library(const std::string &path)
 {
   m_unlink_policy = parts | primitives;
   
-  if(!init(path))
+  if(!read_fs(path))
     throw exception(__func__, exception::fatal, "Couldn't find LDraw part library.");
 }
 
@@ -110,6 +110,11 @@ std::string part_library::ldrawpath(path_type path_type) const
     default:
       return std::string();
   }
+}
+
+std::string part_library::ldrawpath(const std::string &filename, path_type path_type) const
+{
+  return ldrawpath(path_type) + DIRECTORY_SEPARATOR + filename;
 }
 
 bool part_library::find(const std::string &name) const
@@ -234,104 +239,6 @@ void part_library::unlink_element(element_ref *r)
   
   r->set_model(0L);
   r->resolve(0L);
-}
-
-bool part_library::init(const std::string &path)
-{
-  // TODO recursive subdirectory handling
-  DIR *de;
-  struct dirent *ep;
-  std::string dn1, dn2;
-  std::string pdir, partsdir;
-  
-  // 1. find subdirectories
-  if ((de = opendir(path.c_str())) == 0L)
-    return false;
-  
-  while ((ep = readdir(de))) {
-    dn1 = ep->d_name;
-    dn2 = utils::translate_string(dn1);
-    
-    if (dn2 == "p") pdir = dn1;
-    else if (dn2 == "parts") partsdir = dn1;
-  }
-  closedir(de);
-  
-  if (pdir.empty() || partsdir.empty()) {
-    std::cerr << "[libLDR] No p/ or parts/ found." << std::endl;
-    return false;
-  }
-  
-  m_ldrawpath = path;
-  m_primdir = pdir;
-  m_partsdir = partsdir;
-  
-  // 2. look into p/ directory
-  if ((de = opendir((m_ldrawpath + DIRECTORY_SEPARATOR + pdir).c_str())) == 0L) {
-    std::cerr << "[libLDR] Couldn't open p/." << std::endl;
-    return false;
-  }
-  while ((ep = readdir(de))) {
-    dn1 = ep->d_name;
-    dn2 = utils::translate_string(dn1);
-    
-    if (dn2.length() > 4 && dn2.substr(dn1.length()-4, 4) == ".dat")
-      m_primlist[dn2] = dn1;
-  }
-  closedir(de);
-  
-  // 3. look into p/48 directory
-  if ((de = opendir((m_ldrawpath + DIRECTORY_SEPARATOR + pdir + DIRECTORY_SEPARATOR + "48").c_str())) == 0L)
-    std::cerr << "[libLDR] Couldn't open p/48/." << std::endl;
-  else {
-    while((ep = readdir(de))) {
-      dn1 = std::string("48") + DIRECTORY_SEPARATOR + ep->d_name;
-      dn2 = utils::translate_string(dn1);
-      
-      if (dn2.length() > 4 && dn2.substr(dn2.length()-4, 4) == ".dat")
-        m_primlist[dn2] = dn1;
-    }
-    closedir(de);
-  }
-  
-  // 4. look into parts/ directory
-  if ((de = opendir((m_ldrawpath + DIRECTORY_SEPARATOR + m_partsdir).c_str())) == 0L) {
-    std::cerr << "[libLDR] Couldn't open parts/." << std::endl;
-    return false;
-  }
-  while((ep = readdir(de))) {
-    dn1 = ep->d_name;
-    dn2 = utils::translate_string(dn1);
-    
-    if (dn2.length() > 4 && dn2.substr(dn2.length() - 4, 4) == ".dat")
-      m_partlist[dn2] = dn1;
-  }
-  closedir(de);
-  
-  // 5. look into parts/s directory
-  std::string s;
-  de = opendir((m_ldrawpath + DIRECTORY_SEPARATOR + m_partsdir + DIRECTORY_SEPARATOR + "s").c_str());
-  s = "s";
-  
-  if(!de) {
-    de = opendir((m_ldrawpath + DIRECTORY_SEPARATOR + m_partsdir + DIRECTORY_SEPARATOR + "S").c_str());
-    s = "S";
-  }
-  
-  if(!de)
-    std::cerr << "[libLDR] Couldn't open parts/s/." << std::endl;
-  else {
-    while((ep = readdir(de))) {
-      dn1 = s + DIRECTORY_SEPARATOR + ep->d_name;
-      dn2 = utils::translate_string(dn1);
-      
-      if (dn2.length() > 4 && dn2.substr(dn2.length() - 4, 4) == ".dat")
-        m_partlist[dn2] = dn1;
-    }
-    closedir(de);
-  }
-  
-  return true;
 }
 
 void part_library::link_model(model *m)
