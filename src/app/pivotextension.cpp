@@ -47,7 +47,7 @@ void PivotExtension::updateToCenter(const ldraw::filter *filter)
 	ldraw::metrics metrics(m_model);
 	metrics.update(filter);
 
-	pivot_ = (metrics.min() + metrics.max()) * 0.5f;
+	pivot_ = (metrics.min_() + metrics.max_()) * 0.5f;
 }
 
 void PivotExtension::updateToCenter()
@@ -60,7 +60,7 @@ void PivotExtension::updateToCenter()
 
 	ldraw::metrics *m = m_model->custom_data<ldraw::metrics>();
 	
-	pivot_ = (m->min() + m->max()) * 0.5f;
+	pivot_ = (m->min_() + m->max_()) * 0.5f;
 }
 
 const ldraw::vector& PivotExtension::pivot() const

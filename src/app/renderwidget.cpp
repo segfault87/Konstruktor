@@ -5,6 +5,7 @@
 
 #include <cmath>
 
+#include <libldr/elements.h>
 #include <libldr/metrics.h>
 #include <libldr/utils.h>
 
@@ -392,7 +393,7 @@ void RenderWidget::rotate()
   switch (viewportMode_) {
     case Free:
       metrics = (*activeDocument_)->getActiveModel()->custom_data<ldraw::metrics>();
-      vec = (metrics->min() + metrics->max()) * 0.5f;
+      vec = (metrics->min_() + metrics->max_()) * 0.5f;
       glMultMatrixf((*activeDocument_)->getMouseRotation().get_matrix().transpose().get_pointer());
       glTranslatef(-vec.x(), -vec.y(), -vec.z());
       break;
@@ -445,7 +446,7 @@ void RenderWidget::renderPointArray()
             
             const ldraw::metrics *rmm = rm->custom_data<ldraw::metrics>();
             const ldraw::matrix &rmt = r->get_matrix();
-            ldraw::vector center = (rmt * rmm->min() + rmt * rmm->max()) * 0.5f;
+            ldraw::vector center = (rmt * rmm->min_() + rmt * rmm->max_()) * 0.5f;
             
             glVertex3fv(center.get_pointer());
           }				

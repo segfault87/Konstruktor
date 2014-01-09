@@ -159,8 +159,8 @@ void renderer_opengl_retained::render_bounding_box(const ldraw::metrics &metrics
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glDisableClientState(GL_COLOR_ARRAY);
 
-	const ldraw::vector &pos = metrics.min();
-	ldraw::vector len = metrics.max() - metrics.min();
+	const ldraw::vector &pos = metrics.min_();
+	ldraw::vector len = metrics.max_() - metrics.min_();
 
 	glPushMatrix();
 	glTranslatef(pos.x(), pos.y(), pos.z());
@@ -189,8 +189,8 @@ void renderer_opengl_retained::render_bounding_box_filled(const ldraw::metrics &
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glDisableClientState(GL_COLOR_ARRAY);
 
-	const ldraw::vector &pos = metrics.min();
-	ldraw::vector len = metrics.max() - metrics.min();
+	const ldraw::vector &pos = metrics.min_();
+	ldraw::vector len = metrics.max_() - metrics.min_();
 
 	glPushMatrix();
 	glTranslatef(pos.x(), pos.y(), pos.z());
@@ -376,7 +376,7 @@ selection_list renderer_opengl_retained::select(float *projection_matrix, float 
 			const ldraw::matrix &rmt = l->get_matrix();
 			
 			if (m_selection == selection_points) {
-				ldraw::vector center = (rmt * rmm->min() + rmt * rmm->max()) * 0.5f;
+				ldraw::vector center = (rmt * rmm->min_() + rmt * rmm->max_()) * 0.5f;
 				
 				glBegin(GL_POINTS);
 				glVertex3fv(center.get_pointer());

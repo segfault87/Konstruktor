@@ -70,8 +70,8 @@ QByteArray RefObject::serialize() const
   QByteArray encodedData;
   
   QDataStream stream(&encodedData, QIODevice::WriteOnly);
-  stream << metrics_.min().x() << metrics_.min().y() << metrics_.min().z();
-  stream << metrics_.max().x() << metrics_.max().y() << metrics_.max().z();
+  stream << metrics_.min_().x() << metrics_.min_().y() << metrics_.min_().z();
+  stream << metrics_.max_().x() << metrics_.max_().y() << metrics_.max_().z();
   stream << filename();
   
   return encodedData;

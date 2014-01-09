@@ -9,6 +9,7 @@
 #include <QPixmapCache>
 #include <QProcess>
 #include <QProgressDialog>
+#include <QStandardPaths>
 
 #include <libldr/color.h>
 #include <libldr/model.h>
@@ -145,19 +146,23 @@ void Application::startup()
 QString Application::saveLocation(const QString &directory)
 {
   globalDirsMutex_.lock();
-  QString result;
+  QString result = QStandardPaths::writableLocation(QStandardPaths::DataLocation) + "/" + directory;
 
+#if 0
 #if defined(Q_WS_MAC)
   result = QDir::homePath() +
       "/Library/Application Support/Konstruktor/" + directory + "/";
-#elif defined(Q_WS_X11)
+#elif defined(Q_OS_UNIX)
   result = qgetenv("XDG_DATA_HOME");
   if (result.isEmpty())
     result = QDir::homePath() + "/.local/share/konstruktor/" + directory + "/";
-#elif defined(Q_WS_WIN)
+#elif defined(Q_OS_WIN32)
   result = QDir::homePath() +
       "/Application Data/Konstruktor/" + directory + "/";
 #endif
+#endif
+
+  printf("%s\n", result.toLocal8Bit().data());
 
   QDir().mkpath(result);
   globalDirsMutex_.unlock();

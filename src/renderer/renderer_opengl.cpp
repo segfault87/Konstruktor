@@ -126,4 +126,3 @@ renderer_opengl* renderer_opengl_factory::create_renderer() const
 }
 
 }
-

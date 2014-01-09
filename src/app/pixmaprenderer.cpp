@@ -273,8 +273,8 @@ QPixmap PixmapRenderer::renderToPixmap(ldraw::model *m, bool crop)
       metricp.update();
       metric = &metricp;
     }
-    const ldraw::vector &min = metric->min();
-    const ldraw::vector &max = metric->max();
+    const ldraw::vector &min = metric->min_();
+    const ldraw::vector &max = metric->max_();
     
     Viewport vp;
     vp.left   = 1e30;

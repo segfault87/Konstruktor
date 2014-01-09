@@ -146,8 +146,8 @@ void metrics::dimension_test(const vector &v)
 
 void metrics::dimension_test(const matrix &transformation, const metrics &m)
 {
-	vector min = transformation * m.min();
-	vector max = transformation * m.max();
+	vector min = transformation * m.min_();
+	vector max = transformation * m.max_();
 
 	dimension_test(min);
 	dimension_test(max);

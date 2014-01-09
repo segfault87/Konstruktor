@@ -125,7 +125,7 @@ qt5_wrap_ui(konstruktor_UIS
 qt5_add_resources(konstruktor_RCC_SRCS konstruktor.qrc)
 qt5_wrap_cpp(konstruktor_HEADERS_MOC ${konstruktor_HEADERS})
 
-add_executable(konstruktor ${GUI_TYPE} ${konstruktor_SRCS} ${konstruktor_UIS} ${konstruktor_HEADERS_MOC} ${konstruktor_RCC_SRCS})
+add_executable(konstruktor ${GUI_TYPE} ${konstruktor_SRCS} ${konstruktor_HEADERS} ${konstruktor_UIS} ${konstruktor_HEADERS_MOC} ${konstruktor_RCC_SRCS})
 target_link_libraries(konstruktor libldr libldrawrenderer ${SQLITE_LIBRARIES} ${QT_QTCORE_LIBRARY} ${QT_QTGUI_LIBRARY} ${QT_QTOPENGL_LIBRARY} )
 
 qt5_use_modules(konstruktor Widgets OpenGL)
@@ -150,7 +150,7 @@ set(konstruktor_db_updater_SRCS
 
 qt5_wrap_cpp(konstruktor_db_updater_HEADERS_MOC ${konstruktor_db_updater_HEADERS})
 
-add_executable(konstruktor_db_updater ${konstruktor_db_updater_SRCS} ${konstruktor_db_updater_HEADERS_MOC})
+add_executable(konstruktor_db_updater ${konstruktor_db_updater_SRCS} ${konstruktor_db_updater_HEADERS} ${konstruktor_db_updater_HEADERS_MOC})
 set_target_properties(konstruktor_db_updater PROPERTIES COMPILE_FLAGS -DKONSTRUKTOR_DB_UPDATER)
 target_link_libraries(konstruktor_db_updater libldr libldrawrenderer ${SQLITE_LIBRARIES} ${QT_QTCORE_LIBRARY} ${QT_QTGUI_LIBRARY} ${QT_QTOPENGL_LIBRARY})
 
