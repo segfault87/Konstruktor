@@ -17,18 +17,25 @@ Selection::Selection()
   inverted_ = false;
 }
 
+Selection::Selection(const QSet<int> &set, ldraw::model *m)
+{
+  tsset_ = &set;
+  model_ = m;
+  visibility_ = 0L;
+  inverted_ = false;
+}
+
 Selection::~Selection()
 {
   
 }
-
 
 void Selection::setSelection(const QSet<int> &set)
 {
   tsset_ = &set;
 }
 
-void Selection::setModel(const ldraw::model *m)
+void Selection::setModel(ldraw::model *m)
 {
   model_ = m;
   tsset_ = 0L;
@@ -52,7 +59,27 @@ const QSet<int>* Selection::getSelection() const
 
 bool Selection::hasSelection() const
 {
-  return tsset_ != 0L;
+  return tsset_ != 0L && tsset_->count() != 0;
+}
+
+ldraw::vector Selection::calculateCenter() const
+{
+  ldraw::metrics m(model_);
+
+  m.update(this);
+
+  return (m.min() + m.max()) * 0.5f;
+}
+
+const ldraw::element_ref* Selection::getUniqueRef() const
+{
+  if (!tsset_)
+    return 0L;
+
+  if (tsset_->count() == 1)
+    return CAST_AS_CONST_REF(model_->elements()[*tsset_->begin()]);
+  
+  return 0L;
 }
 
 const ldraw::element_ref* Selection::getLastRef() const
@@ -98,20 +125,23 @@ ldraw::color Selection::getLastColor() const
     return ldraw::color(0);
 }
 
-bool Selection::query(const ldraw::model *, int index, int) const
+bool Selection::query(const ldraw::model *, int index, int depth) const
 {
   if (!tsset_)
     return false;
+
+  if (depth > 0)
+    return true;
   
-  bool visibility = false;
-  
+  bool visibility = true;
   if (visibility_)
     visibility = !visibility_->find(index);
-  
+
+  bool result = tsset_->contains(index);
   if (inverted_)
-    return !(tsset_->contains(index) && visibility);
-  else
-    return tsset_->contains(index) && visibility;
+    result = !result;
+
+  return result && visibility;
 }
 
 IntermediateSelection::IntermediateSelection(Selection *currentSelection)
@@ -148,12 +178,19 @@ bool IntermediateSelection::hasSelection() const
   return tsset_.size() > 0;
 }
 
-bool IntermediateSelection::query(const ldraw::model *, int index, int) const
+bool IntermediateSelection::query(const ldraw::model *, int index, int depth) const
 {
-  if ((selectionMethod_ == RenderWidget::Subtraction || selectionMethod_ == RenderWidget::Intersection) && currentSelection_->hasSelection())
-    return !(tsset_.find(index) != tsset_.end() && currentSelection_->getSelection()->contains(index));
-  else
+  if (depth > 0)
+    return true;
+
+  if ((selectionMethod_ == RenderWidget::Subtraction ||
+       selectionMethod_ == RenderWidget::Intersection) &&
+      currentSelection_->hasSelection()) {
+    return !(tsset_.find(index) != tsset_.end() &&
+             currentSelection_->getSelection()->contains(index));
+  } else {
     return !(tsset_.find(index) != tsset_.end());
+  }
 }
 
 }

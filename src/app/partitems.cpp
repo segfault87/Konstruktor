@@ -15,7 +15,8 @@ PartCategory::PartCategory(const QString &name, int id, int visibility, int idx)
 }
 
 
-PartItem::PartItem(PartCategory *parent, const QString &desc, const QString &filename, const ldraw::metrics &metrics)
+PartItem::PartItem(PartCategory *parent, const QString &desc,
+                   const QString &filename, const ldraw::metrics &metrics)
     : RefObject(filename, metrics)
 {
   parent_ = parent;

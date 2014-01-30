@@ -57,7 +57,7 @@ class PixmapLoader : public QThread
 
  signals:
   void loadImage(int rev, QListWidgetItem *item, const QImage &image);
-
+                                                                     
  public slots:
   void startJob(const QList<IconViewItem> &items);
   void cancel();
@@ -86,7 +86,7 @@ class PartsWidget : public QWidget
  signals:
   void beginPixmapUpdate(const QList<IconViewItem> &items);
   void cancelPixmapUpdate();
-                        
+                           
  public slots:
   void resetItems(const QString &search = QString(), bool hideUnofficial = false);
   void hideUnofficial(int checkState);

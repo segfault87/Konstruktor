@@ -49,7 +49,17 @@ static const QString viewportNames[VIEWPORT_TYPES] = {
   QObject::tr("3D")
 };
 
-RenderWidget::RenderWidget(MainWindow *mainwindow, Document **document, ViewportMode viewport, QGLContext *context, QGLWidget *shareWidget, QWidget *parent)
+
+void initializeGridVbo()
+{
+  ldraw_renderer::opengl_extension_vbo *vbo = ldraw_renderer::opengl_extension_vbo::self();
+  
+  
+}
+
+RenderWidget::RenderWidget(MainWindow *mainwindow, Document **document,
+                           ViewportMode viewport, QGLContext *context,
+                           QGLWidget *shareWidget, QWidget *parent)
     : QGLWidget(context, parent, shareWidget), objectmetrics_(0L)
 {
   viewportMode_ = Uninitialized;
@@ -64,6 +74,10 @@ RenderWidget::RenderWidget(MainWindow *mainwindow, Document **document, Viewport
   activeDocument_ = document;
   behavior_ = Idle;
   initialized_ = false;
+
+  anchorEnabled_ = false;
+  anchorMode_ = AxisNone;
+  anchorHover_ = AxisNone;
   
   readConfig();
   gridVbo_[0] = 0;
@@ -106,6 +120,7 @@ RenderWidget::RenderWidget(MainWindow *mainwindow, Document **document, Viewport
   doneCurrent();
   
   setAcceptDrops(true);
+  setMouseTracking(true);
 }
 
 RenderWidget::~RenderWidget()
@@ -121,8 +136,10 @@ RenderWidget::ViewportMode RenderWidget::viewportMode() const
 
 ldraw::vector RenderWidget::viewportCoordinate(const QPoint &dim) const
 {
-  float xr = stretched_.left + ((stretched_.right  - stretched_.left) / width())  * dim.x();
-  float yr = stretched_.top  + ((stretched_.bottom - stretched_.top)  / height()) * dim.y();
+  float xr = stretched_.left +
+      ((stretched_.right  - stretched_.left) / width())  * dim.x();
+  float yr = stretched_.top +
+      ((stretched_.bottom - stretched_.top) / height()) * dim.y();
   
   switch (viewportMode_) {
     case Front:
@@ -203,31 +220,33 @@ RenderWidget::ViewportMode RenderWidget::getViewportMode(int idx)
 {
   switch (idx) {
     case 0:
-      return RenderWidget::Top;
+      return Top;
     case 1:
-      return RenderWidget::Bottom;
+      return Bottom;
     case 2:
-      return RenderWidget::Front;
+      return Front;
     case 3:
-      return RenderWidget::Back;
+      return Back;
     case 4:
-      return RenderWidget::Left;
+      return Left;
     case 5:
-      return RenderWidget::Right;
+      return Right;
     case 6:
     default:
-      return RenderWidget::Free;
+      return Free;
   }
 }
 
 void RenderWidget::modelChanged(ldraw::model *)
 {
   tsset_->resetSelection();
+  anchorChanged();
 }
 
 void RenderWidget::selectionChanged(const QSet<int> &set)
 {
   tsset_->setSelection(set);
+  anchorChanged();
   
   update();
 }
@@ -286,6 +305,32 @@ void RenderWidget::readConfig()
   reapplyConfigurations();
 }
 
+void RenderWidget::anchorChanged()
+{
+  const ldraw::element_ref *uniqueSelection = tsset_->getUniqueRef();
+  Editor::RotationPivot pivotMode = Editor::instance()->rotationPivotMode();
+
+  anchorEnabled_ = false;
+  
+  if (uniqueSelection) {
+    anchorEnabled_ = true;
+    if (pivotMode == Editor::PivotEach) {
+      anchor_ = uniqueSelection->get_matrix();
+    } else {
+      ldraw::vector pivotvec = Editor::instance()->getPivot();
+      anchor_ = ldraw::matrix();
+      anchor_.set_translation_vector(pivotvec);
+    }
+  } else if (tsset_->hasSelection()) {
+    if (pivotMode != Editor::PivotEach) {
+      anchorEnabled_ = true;
+      ldraw::vector pivotvec = Editor::instance()->getPivot();
+      anchor_ = ldraw::matrix();
+      anchor_.set_translation_vector(pivotvec);
+    }
+  }
+}
+
 void RenderWidget::set3DViewport()
 {
   glMatrixMode(GL_PROJECTION);
@@ -300,23 +345,32 @@ void RenderWidget::set3DViewport()
   
   float median, d;
   
-  if (std::fabs(viewport->bottom-viewport->top)*((float)width_/height_) >= std::fabs(viewport->right-viewport->left)) {
+  if (std::fabs(viewport->bottom-viewport->top) * ((float)width_/height_) >=
+      std::fabs(viewport->right-viewport->left)) {
     median = (viewport->right + viewport->left) * 0.5f;
-    d = std::fabs((viewport->right-median)*((float)width_/height_))/viewport->aspectRatio;
+    d = std::fabs((viewport->right-median) * ((float)width_/height_))
+        / viewport->aspectRatio;
     stretched_.left = median - d;
     stretched_.right = median + d;
     stretched_.bottom = viewport->bottom;
     stretched_.top = viewport->top;
-    glOrtho(stretched_.left, stretched_.right, stretched_.bottom, stretched_.top, 10000.0f, -10000.0f);
+    glOrtho(stretched_.left, stretched_.right,
+            stretched_.bottom, stretched_.top,
+            10000.0f, -10000.0f);
   } else {
     median = (viewport->top + viewport->bottom) * 0.5f;
-    d = std::fabs((viewport->bottom-median)/((float)width_/height_))*viewport->aspectRatio;
+    d = std::fabs((viewport->bottom-median) / ((float)width_/height_))
+        * viewport->aspectRatio;
     stretched_.left = viewport->left;
     stretched_.right = viewport->right;
     stretched_.bottom = median + d;
     stretched_.top = median - d;
-    glOrtho(stretched_.left, stretched_.right, stretched_.bottom, stretched_.top, 10000.0f, -10000.0f);
+    glOrtho(stretched_.left, stretched_.right,
+            stretched_.bottom, stretched_.top,
+            10000.0f, -10000.0f);
   }
+
+  rotate();
   
   glGetFloatv(GL_PROJECTION_MATRIX, projectionMatrix_);
 }
@@ -324,63 +378,39 @@ void RenderWidget::set3DViewport()
 // Map current cursor position to world coordinate
 void RenderWidget::updatePositionVector(const QPoint &pos)
 {
-  const Editor *editor = parent_->editor();
+  const Editor *editor = Editor::instance();
   
   float dx = pos.x() / (float)width_ * std::fabs(stretched_.right - stretched_.left);
   float dy = pos.y() / (float)height_ * std::fabs(stretched_.bottom - stretched_.top);
   
+  ldraw::vector v;
+
   switch (viewportMode_) {
     case Top:
-      translation_ = ldraw::vector(editor->snap(dx), 0.0f, -editor->snap(dy));
+      v = ldraw::vector(editor->snap(dx), 0.0f, -editor->snap(dy));
       break;
     case Bottom:
-      translation_ = ldraw::vector(editor->snap(dx), 0.0f, editor->snap(dy));
+      v = ldraw::vector(editor->snap(dx), 0.0f, editor->snap(dy));
       break;
     case Front:
-      translation_ = ldraw::vector(editor->snap(dx), editor->snapYAxis(dy), 0.0f);
+      v = ldraw::vector(editor->snap(dx), editor->snapYAxis(dy), 0.0f);
       break;
     case Back:
-      translation_ = ldraw::vector(-editor->snap(dx), editor->snapYAxis(dy), 0.0f);
+      v = ldraw::vector(-editor->snap(dx), editor->snapYAxis(dy), 0.0f);
       break;
     case Left:
-      translation_ = ldraw::vector(0.0f, editor->snapYAxis(dy), -editor->snap(dx));
+      v = ldraw::vector(0.0f, editor->snapYAxis(dy), -editor->snap(dx));
       break;
     case Right:
-      translation_ = ldraw::vector(0.0f, editor->snapYAxis(dy), editor->snap(dx));
+      v = ldraw::vector(0.0f, editor->snapYAxis(dy), editor->snap(dx));
       break;
     default:
       break;
   }
-}
 
-ldraw::matrix RenderWidget::retranslate() const
-{
-  ldraw::matrix matrix = objectmatrix_;
-  ldraw::vector ovec = matrix.get_translation_vector();
-  ldraw::vector adjustedvec = translation_;
-  
-  switch (viewportMode_) {
-    case Top:
-    case Bottom:
-      adjustedvec.y() = ovec.y();
-      break;
-    case Front:
-    case Back:
-      adjustedvec.z() = ovec.z();
-      break;
-    case Left:
-    case Right:
-      adjustedvec.x() = ovec.x();
-      break;
-    default:
-      break;
-  };
-  
-  matrix.set_translation_vector(adjustedvec);
-  
-  return matrix;
+  translation_ = ldraw::matrix();
+  translation_.set_translation_vector(v);
 }
-
 
 // Set viewport
 void RenderWidget::rotate()
@@ -415,7 +445,136 @@ void RenderWidget::rotate()
   }
 }
 
-void RenderWidget::renderPointArray()
+ldraw::matrix RenderWidget::retranslate(const ldraw::matrix &original) const
+{
+  ldraw::matrix o = original;
+  ldraw::vector v = translation_.get_translation_vector();
+  ldraw::vector tvec = o.get_translation_vector();
+
+  switch (viewportMode_) {
+    case Top:
+    case Bottom:
+      v.y() = tvec.y();
+      break;
+    case Front:
+    case Back:
+      v.z() = tvec.z();
+      break;
+    case Left:
+    case Right:
+      v.x() = tvec.x();
+      break;
+    default:
+      ;
+  }
+
+  o.set_translation_vector(v);
+
+  return o;
+}
+
+ldraw::vector RenderWidget::unproject(const QPoint &position)
+{
+  makeCurrent();
+
+  GLdouble projectionCoerced[16];
+  GLdouble modelviewCoerced[16];
+  GLint viewport[4];
+  GLdouble x, y, z;
+  GLdouble depth;
+  ldraw::matrix identity;
+  
+  for (int i = 0; i < 16; ++i) {
+    projectionCoerced[i] = projectionMatrix_[i];
+    modelviewCoerced[i] = identity.value(i / 4, i % 4);
+  }
+  
+  glGetIntegerv(GL_VIEWPORT, viewport);
+
+  glReadPixels(position.x(), position.y(), 1, 1, GL_DEPTH_COMPONENT, &depth);
+
+  gluUnProject(position.x(), position.y(), depth,
+               modelviewCoerced, projectionCoerced, viewport,
+               &x, &y, &z);
+
+  doneCurrent();
+
+  return ldraw::vector(x, y, z);
+}
+
+RenderWidget::AnchorMode RenderWidget::anchorHitTest(int x, int y)
+{
+  GLint hits, viewport[4];
+  GLuint selectionBuffer[20];
+
+  glPushAttrib(GL_LINE_BIT);
+  glLineWidth(7.0f);
+
+  glSelectBuffer(5, selectionBuffer);
+  glRenderMode(GL_SELECT);
+
+  glGetIntegerv(GL_VIEWPORT, viewport);
+
+  glMatrixMode(GL_PROJECTION);
+  glPushMatrix();
+  glLoadIdentity();
+  gluPickMatrix(x - 3, viewport[3] - (y + 3), 6, 6, viewport);
+  glMultMatrixf(projectionMatrix_);
+
+  glMatrixMode(GL_MODELVIEW);
+  glLoadIdentity();
+  glMultMatrixf((anchor_ * 3.0f).transpose().get_pointer());
+  
+  glInitNames();
+
+  glPushName(0);
+  glBegin(GL_LINES);
+  glVertex3f(-10.0f, 0.0f, 0.0f);
+  glVertex3f(10.0f, 0.0f, 0.0f);
+  glEnd();
+  glPopName();
+  
+  glPushName(1);
+  glBegin(GL_LINES);
+  glVertex3f(0.0f, -10.0f, 0.0f);
+  glVertex3f(0.0f, 10.0f, 0.0f);
+  glEnd();
+  glPopName();
+
+  glPushName(2);
+  glBegin(GL_LINES);
+  glVertex3f(0.0f, 0.0f, -10.0f);
+  glVertex3f(0.0f, 0.0f, 10.0f);
+  glEnd();
+  glPopName();
+
+  hits = glRenderMode(GL_RENDER);
+
+  glPopMatrix();
+
+  glMatrixMode(GL_PROJECTION);
+  glPopMatrix();
+
+  glPopAttrib();
+
+  if (hits < 0)
+    return AxisNone;
+
+  for (int i = 0; i < hits; ++i) {
+    GLuint idx = selectionBuffer[i * 4 + 3];
+
+    if (idx == 0)
+      return AxisX;
+    else if (idx == 1)
+      return AxisY;
+    else if (idx == 2)
+      return AxisZ;
+  }
+
+  return AxisNone;
+}
+
+void RenderWidget::renderPointArray() const
 {
   if (!currentModel_)
     return;
@@ -432,7 +591,9 @@ void RenderWidget::renderPointArray()
     glBegin(GL_POINTS);
     
     int j = 0;
-    for (ldraw::model::const_iterator it = currentModel_->elements().begin(); it != currentModel_->elements().end(); ++it) {
+    for (ldraw::model::const_iterator it = currentModel_->elements().begin();
+         it != currentModel_->elements().end();
+         ++it) {
       if ((*it)->get_type() == ldraw::type_ref) {
         ldraw::element_ref *r = CAST_AS_REF(*it);
         ldraw::model *rm = r->get_model();
@@ -457,7 +618,9 @@ void RenderWidget::renderPointArray()
   }
 }
 
-void RenderWidget::renderGrid(float xg, float yg, int xc, int yc, float xo, float yo, float zo)
+void RenderWidget::renderGrid(float xg, float yg,
+                              int xc, int yc,
+                              float xo, float yo, float zo) const
 {
   glLineWidth(1.0f);
   
@@ -519,16 +682,56 @@ void RenderWidget::renderGrid(float xg, float yg, int xc, int yc, float xo, floa
   }
 }
 
+void RenderWidget::renderAnchor() const
+{
+  glDisable(GL_DEPTH_TEST);
+
+  ldraw::vector a = anchor_.get_translation_vector();
+  ldraw::vector b = translation_.get_translation_vector();
+
+  glPushMatrix();
+  glMultMatrixf((translation_ * anchor_ * 3.0f).transpose().get_pointer());
+  
+  glLineWidth(3.0f);
+  glBegin(GL_LINES);
+
+  if (anchorHover_ == AxisX)
+    glColor3f(1.0f, 1.0f, 1.0f);
+  else
+    glColor3f(1.0f, 0.0f, 0.0f);
+  glVertex3f(-10.0f, 0.0f, 0.0f);
+  glVertex3f(-1.0f, 0.0f, 0.0f);
+  glVertex3f(1.0f, 0.0f, 0.0f);
+  glVertex3f(10.0f, 0.0f, 0.0f);
+
+  if (anchorHover_ == AxisY)
+    glColor3f(1.0f, 1.0f, 1.0f);
+  else
+    glColor3f(0.0f, 1.0f, 0.0f);
+  glVertex3f(0.0f, -10.0f, 0.0f);
+  glVertex3f(0.0f, -1.0f, 0.0f);
+  glVertex3f(0.0f, 1.0f, 0.0f);
+  glVertex3f(0.0f, 10.0f, 0.0f);
+
+  if (anchorHover_ == AxisZ)
+    glColor3f(1.0f, 1.0f, 1.0f);
+  else
+    glColor3f(0.0f, 0.0f, 1.0f);
+  glVertex3f(0.0f, 0.0f, -10.0f);
+  glVertex3f(0.0f, 0.0f, -1.0f);
+  glVertex3f(0.0f, 0.0f, 1.0f);
+  glVertex3f(0.0f, 0.0f, 10.0f);
+
+  glEnd();
+  
+  glPopMatrix();
+  
+  glEnable(GL_DEPTH_TEST);
+}
+
 void RenderWidget::reapplyConfigurations()
 {
   initializeGridVbo();
-}
-
-void RenderWidget::initializeGridVbo()
-{
-  //ldraw_renderer::opengl_extension_vbo *vbo = ldraw_renderer::opengl_extension_vbo::self();
-  
-  
 }
 
 void RenderWidget::initializeGL()
@@ -554,6 +757,7 @@ void RenderWidget::paintGL()
   
   glMatrixMode(GL_PROJECTION);
   glPushMatrix();
+  
   glMatrixMode(GL_MODELVIEW);
   glPushMatrix();
   
@@ -569,7 +773,6 @@ void RenderWidget::paintGL()
       currentModel_ = curmodel;
       tvset_ = VisibilityExtension::query(curmodel);
       tsset_->setModel(currentModel_);
-      
     }
     
     if (Application::self()->config()->multisampling())
@@ -587,7 +790,6 @@ void RenderWidget::paintGL()
     
     glEnable(GL_BLEND);
     
-    rotate();
     if (params_->get_rendering_mode() == ldraw_renderer::parameters::model_boundingboxes)
       glColor3ub(0, 0, 0);
     renderer_->render(curmodel, tvset_);
@@ -600,7 +802,7 @@ void RenderWidget::paintGL()
       glLineWidth(2.0f);
       glPushMatrix();
       
-      glMultMatrixf(retranslate().transpose().get_pointer());
+      glMultMatrixf((translation_ * objectmatrix_).transpose().get_pointer());
       
       renderer_->render_bounding_box(objectmetrics_);
       
@@ -612,15 +814,13 @@ void RenderWidget::paintGL()
       }
     }
     
-    glDisable(GL_DEPTH_TEST);
-    
     if (tsset_->hasSelection()) {
       qglColor(highlightColor_);
       glLineWidth(2.0f);
       glPushMatrix();
       
-      if (behavior_ == Moving)
-        glTranslatef(translation_.x(), translation_.y(), translation_.z());
+      if (behavior_ == Moving || behavior_ == MovingByAxis)
+        glMultMatrixf(translation_.transpose().get_pointer());
       
       params_->set_rendering_mode(ldraw_renderer::parameters::model_boundingboxes);
       tsset_->setInverted(true);
@@ -640,8 +840,8 @@ void RenderWidget::paintGL()
       glLineWidth(2.0f);
       glPushMatrix();
       
-      if (behavior_ == Moving)
-        glTranslatef(translation_.x(), translation_.y(), translation_.z());
+      if (behavior_ == Moving || behavior_ == MovingByAxis)
+        glMultMatrixf(translation_.transpose().get_pointer());
       
       params_->set_rendering_mode(ldraw_renderer::parameters::model_boundingboxes);
       tisset_->setSelectionMethod(selectionMethod_);
@@ -654,11 +854,18 @@ void RenderWidget::paintGL()
       
       glPopMatrix();
     }
-    
-    glEnable(GL_DEPTH_TEST);
+
+    if (anchorEnabled_)
+      renderAnchor();
     
     if (Application::self()->config()->drawGrids())
-      renderGrid(gridResolution_, gridResolution_, gridRows_, gridColumns_, gridX_, gridY_, gridZ_);
+      renderGrid(gridResolution_,
+                 gridResolution_,
+                 gridRows_,
+                 gridColumns_,
+                 gridX_,
+                 gridY_,
+                 gridZ_);
   }
   
   glMatrixMode(GL_PROJECTION);
@@ -710,7 +917,8 @@ void RenderWidget::paintEvent(QPaintEvent *event)
   p.setPen(Qt::NoPen);
   p.drawRect(20, 20, textSize_.width()+10, textSize_.height()+10);
   p.setPen(Qt::white);
-  p.drawText(25, 25, textSize_.width(), textSize_.height(), Qt::AlignVCenter, viewportName_);
+  p.drawText(25, 25, textSize_.width(), textSize_.height(),
+             Qt::AlignVCenter, viewportName_);
   
   p.end();
   
@@ -750,7 +958,13 @@ void RenderWidget::mousePressEvent(QMouseEvent *event)
     return;
   }
   
-  if (event->button() & Qt::MidButton) {
+  if (anchorHover_ != AxisNone && event->button() & Qt::LeftButton) {
+    anchorMode_ = anchorHover_;
+    anchorstart_ = unproject(event->pos());
+    behavior_ = MovingByAxis;
+
+    update();
+  } else if (event->button() & Qt::MidButton) {
     params_->set_rendering_mode(dragMode_);
     behavior_ = Panning;
     lastPos_ = event->pos();
@@ -760,7 +974,9 @@ void RenderWidget::mousePressEvent(QMouseEvent *event)
     params_->set_rendering_mode(dragMode_);
     behavior_ = Rotating;
     
-    (*activeDocument_)->getMouseRotation().press_event(event->pos().x(), event->pos().y(), width_, height_);
+    (*activeDocument_)->getMouseRotation().press_event(event->pos().x(),
+                                                       event->pos().y(),
+                                                       width_, height_);
     
     update();
   } else if (event->button() & Qt::LeftButton) {
@@ -768,19 +984,26 @@ void RenderWidget::mousePressEvent(QMouseEvent *event)
     
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
-    rotate();
-    float matrix[16];
-    glGetFloatv(GL_MODELVIEW_MATRIX, matrix);
     
-    if (viewportMode_ != Free && tsset_->hasSelection() && tsset_->getSelection()->size() > 0 && renderer_->hit_test(projectionMatrix_, matrix, event->pos().x(), event->pos().y(), 1, 1, (*activeDocument_)->getActiveModel(), tsset_)) {
+    if (viewportMode_ != Free && tsset_->hasSelection() &&
+        tsset_->getSelection()->size() > 0 &&
+        renderer_->hit_test(projectionMatrix_,
+                            const_cast<float *>(ldraw::matrix().get_pointer()),
+                            event->pos().x(),
+                            event->pos().y(),
+                            1,
+                            1,
+                            (*activeDocument_)->getActiveModel(),
+                            tsset_)
+        ) {
       params_->set_rendering_mode(dragMode_);
       
       behavior_ = Moving;
       lastPos_ = event->pos();
       
-      translation_ = ldraw::vector(0.0f, 0.0f, 0.0f);
+      translation_ = ldraw::matrix();
       
-      // TODO implement temporal exclusion for visibility extension
+      // TODO implement temporary exclusion for visibility extension
       //const QSet<int> *sel = tsset_->getSelection();
       //if (params_->get_rendering_mode() == ldraw_renderer::parameters::model_boundingboxes) {
       //	for (QSet<int>::ConstIterator it = sel->constBegin(); it != sel->constEnd(); ++it)
@@ -812,12 +1035,18 @@ void RenderWidget::mousePressEvent(QMouseEvent *event)
 void RenderWidget::mouseMoveEvent(QMouseEvent *event)
 {
   EXIT_IF_NO_DOCUMENT;
-  
+
   if (behavior_ == Rotating) {
-    (*activeDocument_)->getMouseRotation().move_event(event->pos().x(), event->pos().y(), width_, height_);
+    /* rotating the free viewport */
+
+    (*activeDocument_)->getMouseRotation().move_event(event->pos().x(),
+                                                      event->pos().y(),
+                                                      width_, height_);
     
     update();
   } else if (behavior_ == Panning) {
+    /* moving the viewport */
+
     Viewport &viewport = (*activeDocument_)->getViewport((int)viewportMode_);
     QPoint p = event->pos() - lastPos_;
     float dx = p.x() / (float)width_  * std::fabs(stretched_.right - stretched_.left);
@@ -832,22 +1061,22 @@ void RenderWidget::mouseMoveEvent(QMouseEvent *event)
     
     update();
   } else if (behavior_ == Dragging) {
+    /* selecting object(s) */
+
     region_.setCoords(region_.x(), region_.y(), event->pos().x(), event->pos().y());
     
-    if (region_.width() > 3 || region_.height() > 3 || region_.width() < -3 || region_.height() < -3)
+    if (region_.width() > 3 || region_.height() > 3 ||
+        region_.width() < -3 || region_.height() < -3)
       isRegion_ = true;
     
     makeCurrent();
     
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
-    rotate();
-    float matrix[16];
-    glGetFloatv(GL_MODELVIEW_MATRIX, matrix);
     
     ldraw_renderer::selection_list result = renderer_->select(
         projectionMatrix_,
-        matrix,
+        const_cast<float *>(ldraw::matrix().get_pointer()),
         region_.x(), region_.y(),
         region_.width(), region_.height(),
         (*activeDocument_)->getActiveModel(),
@@ -859,9 +1088,46 @@ void RenderWidget::mouseMoveEvent(QMouseEvent *event)
     
     update();
   } else if (behavior_ == Moving) {
+    /* moving object(s) */
+
     updatePositionVector(event->pos() - lastPos_);
     
     update();
+  } else if (behavior_ == MovingByAxis) {
+    /* moving object(s) by dragging the anchor */
+
+    ldraw::vector v = unproject(event->pos()) - anchorstart_;
+    ldraw::vector n;
+
+    const Editor *editor = Editor::instance();
+
+    if (anchorMode_ == AxisX)
+      n = ldraw::vector(editor->snap(v.x()), 0.0f, 0.0f);
+    else if (anchorMode_ == AxisY)
+      n = ldraw::vector(0.0f, editor->snap(-v.y()), 0.0f);
+    else if (anchorMode_ == AxisZ)
+      n = ldraw::vector(0.0f, 0.0f, editor->snap(-v.z()));
+    else
+      return;
+
+    translation_.set_translation_vector(n);
+
+    update();
+  } else if (anchorEnabled_) {
+    makeCurrent();
+
+    AnchorMode old = anchorHover_;
+
+    if ((anchorHover_ = anchorHitTest(
+            event->pos().x(),
+            event->pos().y())) != AxisNone ||
+        old != AxisNone) {
+      doneCurrent();
+      update();
+      return;
+    }
+
+    doneCurrent();
   }
 }
 
@@ -869,7 +1135,8 @@ void RenderWidget::mouseReleaseEvent(QMouseEvent *event)
 {
   EXIT_IF_NO_DOCUMENT;
   
-  if ((behavior_ == Rotating && event->button() & Qt::RightButton) || (behavior_ == Panning && event->button() & Qt::MidButton)) {
+  if ((behavior_ == Rotating && event->button() & Qt::RightButton) ||
+      (behavior_ == Panning && event->button() & Qt::MidButton)) {
     behavior_ = Idle;
     params_->set_rendering_mode(renderMode_);
     
@@ -882,16 +1149,13 @@ void RenderWidget::mouseReleaseEvent(QMouseEvent *event)
     
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
-    rotate();
-    float matrix[16];
-    glGetFloatv(GL_MODELVIEW_MATRIX, matrix);
     
     if (!isRegion_)
       renderer_->set_selection_type(ldraw_renderer::renderer::selection_model_full);
     
     ldraw_renderer::selection_list resultWithDepth = renderer_->select(
         projectionMatrix_,
-        matrix,
+        const_cast<float *>(ldraw::matrix().get_pointer()),
         region_.x(), region_.y(),
         region_.width(), region_.height(),
         (*activeDocument_)->getActiveModel(),
@@ -911,7 +1175,9 @@ void RenderWidget::mouseReleaseEvent(QMouseEvent *event)
     if (!isRegion_ && resultWithDepth.size() > 0) {
       int idx = 0;
       GLuint min = UINT_MAX;
-      for (ldraw_renderer::selection_list::iterator it = resultWithDepth.begin(); it != resultWithDepth.end(); ++it, ++i) {
+      for (ldraw_renderer::selection_list::iterator it = resultWithDepth.begin();
+           it != resultWithDepth.end();
+           ++it, ++i) {
         if ((*it).second < min) {
           min = (*it).second;
           idx = (*it).first;
@@ -920,7 +1186,9 @@ void RenderWidget::mouseReleaseEvent(QMouseEvent *event)
       
       result.push_back(idx);
     } else {
-      for (ldraw_renderer::selection_list::iterator it = resultWithDepth.begin(); it != resultWithDepth.end(); ++it, ++i)
+      for (ldraw_renderer::selection_list::iterator it = resultWithDepth.begin();
+           it != resultWithDepth.end();
+           ++it, ++i)
         result.push_back((*it).first);
     }
     
@@ -929,7 +1197,8 @@ void RenderWidget::mouseReleaseEvent(QMouseEvent *event)
     tisset_->clear();
     
     update();
-  } else if (behavior_ == Moving && event->button() & Qt::LeftButton) {
+  } else if ((behavior_ == Moving || behavior_ == MovingByAxis) &&
+             event->button() & Qt::LeftButton) {
     behavior_ = Idle;
     
     const QSet<int> *sel = tsset_->getSelection();
@@ -938,11 +1207,17 @@ void RenderWidget::mouseReleaseEvent(QMouseEvent *event)
         tvset_->remove(*it);
     }
     
-    if (translation_.length() > LDR_EPSILON)
-      emit translateObject(translation_);
+    emit translateObject(translation_);
+    
+    translation_ = ldraw::matrix();
     
     params_->set_rendering_mode(renderMode_);
     
+    update();
+  } else if (anchorMode_ != AxisNone) {
+    anchorHover_ = AxisNone;
+    anchorMode_ = AxisNone;
+
     update();
   }
 }
@@ -987,10 +1262,13 @@ void RenderWidget::dragEnterEvent(QDragEnterEvent *event)
   RefObject refobj = RefObject::deserialize(data);
   
   event->accept();
+
+  translation_ = ldraw::matrix();
   
   behavior_ = Placing;
   objectmetrics_ = refobj.metrics();
-  objectmatrix_ = tsset_->getLastMatrix();
+  objectmatrix_ = retranslate(tsset_->getLastMatrix());
+  anchor_ = objectmatrix_;
   objectcolor_ = tsset_->getLastColor();
   
   params_->set_rendering_mode(dragMode_);
@@ -999,6 +1277,7 @@ void RenderWidget::dragEnterEvent(QDragEnterEvent *event)
   float y = stretched_.top  / (stretched_.top - stretched_.bottom) * height_;
   
   lastPos_ = QPoint((int)x, (int)y);
+  anchorEnabled_ = true;
   
   update();
 }
@@ -1011,6 +1290,9 @@ void RenderWidget::dragLeaveEvent(QDragLeaveEvent *event)
   
   behavior_ = Idle;
   params_->set_rendering_mode(renderMode_);
+
+  anchorEnabled_ = false;
+  translation_ = ldraw::matrix();
 
   update();
 }
@@ -1043,16 +1325,20 @@ void RenderWidget::dropEvent(QDropEvent *event)
   RefObject refobj = RefObject::deserialize(data);
   
   // Cyclic reference test
-  ldraw::model *sm = (*activeDocument_)->contents()->find_submodel(refobj.filename().toLocal8Bit().data());
+  ldraw::model *sm = (*activeDocument_)->contents()->
+      find_submodel(refobj.filename().toLocal8Bit().data());
   if (sm) {
-    if (ldraw::utils::cyclic_reference_test((*activeDocument_)->getActiveModel(), sm)) {
+    if (ldraw::utils::cyclic_reference_test(
+            (*activeDocument_)->getActiveModel(), sm)) {
       QMessageBox::critical(this, tr("Error"), tr("Cannot include this part into the current model."));
       
       return;
     }
   }
   
-  emit objectDropped(refobj.filename(), retranslate(), objectcolor_);
+  emit objectDropped(refobj.filename(), translation_ * objectmatrix_, objectcolor_);
+
+  translation_ = ldraw::matrix();
   
   update();
 }

@@ -17,18 +17,34 @@ class PartItemBase
  public:
   virtual ~PartItemBase() {}
   
-  enum Type { TypeCategory, TypePartItem, TypeFavorite };
+  enum Type { TypeItem = 0x1, TypeGroup = 0x4, TypeCategory = 0x2, TypeFavorites = 0x3 };
   
   virtual Type type() = 0;
 };
 
-class PartCategory : public PartItemBase
+class PartGroup : public PartItemBase
+{
+ public:
+  virtual ~PartGroup() {}
+
+  virtual Type type() { return TypeGroup; }
+};
+
+class PartFavorites : public PartGroup
+{
+ public:
+  virtual ~PartFavorites() {}
+
+  virtual Type type() { return PartGroup::type() | TypeFavorites; }
+};
+
+class PartCategory : public PartGroup
 {
  public:
   PartCategory() {}
   PartCategory(const QString &name, int id, int visibility, int idx);
   
-  Type type() { return TypeCategory; }
+  Type type() { return PartGroup::type() | TypeCategory; }
   
   const QString& name() const { return name_; }
   int id() const { return id_; }
@@ -46,9 +62,10 @@ class PartItem : public PartItemBase, public RefObject
 {
  public:
   PartItem() {}
-  PartItem(PartCategory *parent, const QString &desc, const QString &filename, const ldraw::metrics &metrics);
+  PartItem(PartCategory *parent, const QString &desc,
+           const QString &filename, const ldraw::metrics &metrics);
   
-  Type type() { return TypePartItem; }
+  Type type() { return TypeItem; }
   
   const QString& description() const { return desc_; }
   PartCategory* parent() { return parent_; }
@@ -56,12 +73,6 @@ class PartItem : public PartItemBase, public RefObject
  private:
   QString desc_;
   PartCategory *parent_;
-};
-
-class Favorites : public PartItemBase
-{
- public:
-  Type type() { return TypeFavorite; }
 };
 
 }

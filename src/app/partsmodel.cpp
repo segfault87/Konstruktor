@@ -14,9 +14,56 @@
 namespace Konstruktor
 {
 
-PartsModel::PartsModel(QList<PartCategory> &categories, QMap<int, PartCategory *> &categorymap, QMap<int, QList<PartItem> > &list, QObject *parent)
-    : QAbstractItemModel(parent), categories_(categories), categorymap_(categorymap), list_(list)
+ItemModelBase::ItemModelBase(QObject *parent)
+    : QAbstractItemModel(parent)
 {
+
+}
+
+ItemModelBase::~ItemModelBase()
+{
+
+}
+
+QVariant ItemModelBase::headerData(int, Qt::Orientation orientation, int role) const
+{
+  if (orientation == Qt::Horizontal && role == Qt::DisplayRole)
+    return tr("Parts");
+  else
+    return QVariant();
+}
+
+QStringList ItemModelBase::mimeTypes() const
+{
+  QStringList types;
+  types << RefObject::mimeType;
+  return types;
+}
+
+QMimeData* ItemModelBase::mimeData(const QModelIndexList &indexes) const
+{
+  if (indexes.size() != 1)
+    return 0L;
+  
+  const QModelIndex &index = indexes[0];
+  if (!index.isValid() || !index.internalPointer())
+    return 0L;
+  
+  PartItemBase *item = static_cast<PartItemBase *>(index.internalPointer());
+  if (item->type() != PartItemBase::TypePartItem)
+    return 0L;
+  
+  return dynamic_cast<PartItem *>(item)->mimeData();
+}
+
+PartsModel::PartsModel(QList<PartCategory> &categories,
+                       QMap<int, PartCategory *> &categorymap,
+                       QMap<int, QList<PartItem> > &list,
+                       QObject *parent)
+    : ItemModelBase(parent), categories_(categories),
+      categorymap_(categorymap), list_(list)
+{
+  
 }
 
 PartsModel::~PartsModel()
@@ -30,7 +77,7 @@ int PartsModel::rowCount(const QModelIndex &parent) const
     return 0;
   
   if (!parent.isValid())
-    return categories_.size();
+    return categories_.size() + 1;
   
   PartItemBase *i = static_cast<PartItemBase *>(parent.internalPointer());
   
@@ -40,11 +87,6 @@ int PartsModel::rowCount(const QModelIndex &parent) const
   } else {
     return 0;
   }
-}
-
-int PartsModel::favoriteRow() const
-{
-  return categories_.size();
 }
 
 QVariant PartsModel::data(const QModelIndex &index, int role) const
@@ -112,14 +154,6 @@ QVariant PartsModel::dataFavorite(const QModelIndex &index, int role) const
   return QVariant();
 }
 
-QVariant PartsModel::headerData(int, Qt::Orientation orientation, int role) const
-{
-  if (orientation == Qt::Horizontal && role == Qt::DisplayRole)
-    return tr("Parts");
-  else
-    return QVariant();
-}
-
 QModelIndex PartsModel::index(int row, int column, const QModelIndex &parent) const
 {
   if (!hasIndex(row, column, parent))
@@ -136,7 +170,7 @@ QModelIndex PartsModel::index(int row, int column, const QModelIndex &parent) co
     if (row == favoriteRow())
       ptr = (void *)&favorites_;
     else
-      ptr = (void *)&categories_[row];
+      ptr = (void *)&categories_[partRow(row)];
   }
   
   return createIndex(row, column, ptr);
@@ -169,31 +203,47 @@ Qt::ItemFlags PartsModel::flags(const QModelIndex &index) const
   if (s->type() == PartItemBase::TypePartItem)
     flags |= Qt::ItemIsDragEnabled;
   
-  return flags;
+  return flags;  
+}
+
+MetaPartsModel::MetaPartsModel(FavoritesModel *favorites,
+                               PartsModel *parts,
+                               QObject *parent)
+    : QAbstratItemModel(parent), favorites_(favorites), parts_(parts)
+{
   
 }
 
-QStringList PartsModel::mimeTypes() const
+MetaPartsModel::~MetaPartsModel()
 {
-  QStringList types;
-  types << RefObject::mimeType;
-  return types;
+  
 }
 
-QMimeData* PartsModel::mimeData(const QModelIndexList &indexes) const
+int MetaPartsModel::columnCount(const QModelIndex &parent) const
 {
-  if (indexes.size() != 1)
-    return 0L;
-  
-  const QModelIndex &index = indexes[0];
-  if (!index.isValid() || !index.internalPointer())
-    return 0L;
-  
-  PartItemBase *item = static_cast<PartItemBase *>(index.internalPointer());
-  if (item->type() != PartItemBase::TypePartItem)
-    return 0L;
-  
-  return dynamic_cast<PartItem *>(item)->mimeData();
+  return 1;
 }
+
+int MetaPartsModel::rowCount(const QModelIndex &parent) const
+{
+  if (!parent.isValid())
+    return favorites_->rowCount() + parts_->rowCount();
+  else
+    return parentModel(parent)->rowCount(parent);
+}
+
+QVariant MetaPartsModel::headerData(int column,
+                                    Qt::Orientation orientation,
+                                    int role) const
+{
+  return parts_->headerData(column, orientation, role);
+}
+
+QVariant MetaPartsModel::data(const QModelIndex &index, int role) const
+{
+  return parentModel(index)->data(index, role);
+}
+
+
 
 }

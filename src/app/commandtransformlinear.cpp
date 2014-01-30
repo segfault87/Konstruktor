@@ -50,8 +50,12 @@ ldraw::matrix CommandTransformLinear::getRotationMatrix(Editor::Axis axis, float
   return m;
 }
 
-CommandTransformLinear::CommandTransformLinear(TransformType type, Editor::Axis axis, Editor::RotationPivot pivot, float delta, const QSet<int> &selection, ldraw::model *model)
-    : CommandTransform(selection, model, pivot)
+CommandTransformLinear::CommandTransformLinear(TransformType type, Editor::Axis axis,
+                                               Editor::RotationPivot pivotMode,
+                                               ldraw::vector pivot, float delta,
+                                               const QSet<int> &selection,
+                                               ldraw::model *model)
+    : CommandTransform(selection, model, pivotMode, pivot)
 {
   axis_ = axis;
   type_ = type;
@@ -59,7 +63,7 @@ CommandTransformLinear::CommandTransformLinear(TransformType type, Editor::Axis 
   
   /* no use for translating 'position' */
   if (type == Position)
-    pivot_ = Editor::PivotEach;
+    pivotMode_ = Editor::PivotEach;
   
   if (type == Rotation)
     postmult_ = getRotationMatrix(axis_, delta);
@@ -109,11 +113,11 @@ int CommandTransformLinear::id() const
   else
     return -1;
   
-  if (pivot_ == Editor::PivotEach)
+  if (pivotMode_ == Editor::PivotEach)
     pivot = 0;
-  else if (pivot_ == Editor::PivotCenter)
+  else if (pivotMode_ == Editor::PivotCenter)
     pivot = 1;
-  else if (pivot_ == Editor::PivotManual)
+  else if (pivotMode_ == Editor::PivotManual)
     pivot = 2;
   else
     return -1;

@@ -39,16 +39,21 @@ namespace Konstruktor
 class MainWindow;
 class VisibilityExtension;
 
+void initializeGridVbo();
+
 class RenderWidget : public QGLWidget
 {
   Q_OBJECT;
   
  public:
   enum ViewportMode { Top, Bottom, Front, Back, Left, Right, Free, Uninitialized };
-  enum Behavior { Idle, Placing, Moving, Dragging, Rotating, Panning };
+  enum Behavior { Idle, Placing, Moving, MovingByAxis,
+                  Dragging, Rotating, RotatingByAxis, Panning };
   enum SelectionMethod { Normal, Addition, Subtraction, Intersection };
+  enum AnchorMode { AxisNone, AxisX, AxisY, AxisZ };
   
-  RenderWidget(MainWindow *mainwindow, Document **document, ViewportMode viewport, QGLContext *context, QGLWidget *shareWidget, QWidget *parent = 0L);
+  RenderWidget(MainWindow *mainwindow, Document **document, ViewportMode viewport,
+               QGLContext *context, QGLWidget *shareWidget, QWidget *parent = 0L);
   ~RenderWidget();
   
   ViewportMode viewportMode() const;
@@ -59,27 +64,32 @@ class RenderWidget : public QGLWidget
   static ViewportMode getViewportMode(int idx);
   
  signals:
-  void objectDropped(const QString &filename, const ldraw::matrix &matrix, const ldraw::color &color);
-  void madeSelection(const std::list<int> &selection, RenderWidget::SelectionMethod method = Normal);
-  void translateObject(const ldraw::vector &vector);
+  void objectDropped(const QString &filename, const ldraw::matrix &matrix,
+                     const ldraw::color &color);
+  void madeSelection(const std::list<int> &selection,
+                     RenderWidget::SelectionMethod method = Normal);
+  void translateObject(const ldraw::matrix &matrix);
                                                    
  public slots:
   void modelChanged(ldraw::model *model);
   void selectionChanged(const QSet<int> &set);
   void setViewport(ViewportMode mode);
   void readConfig();
+  void anchorChanged();
   
  private:
   void set3DViewport();
   void updatePositionVector(const QPoint &pos);
-  ldraw::matrix retranslate() const;
   void rotate();
+  ldraw::matrix retranslate(const ldraw::matrix &original) const;
+  ldraw::vector unproject(const QPoint &position);
   
-  void renderPointArray();
-  void renderGrid(float xg, float yg, int xc, int yc, float xo, float yo, float zo);
+  AnchorMode anchorHitTest(int x, int y);
+  void renderPointArray() const;
+  void renderGrid(float xg, float yg, int xc, int yc, float xo, float yo, float zo) const;
+  void renderAnchor() const;
   
   void reapplyConfigurations();
-  void initializeGridVbo();
   
   void initializeGL();
   void paintGL();
@@ -117,14 +127,18 @@ class RenderWidget : public QGLWidget
   float length_;
   
   Behavior behavior_;
+  ldraw::matrix anchor_;
+  bool anchorEnabled_;
+  AnchorMode anchorMode_, anchorHover_;
   QPoint lastPos_;
   QRect region_;
   bool isRegion_;
   SelectionMethod selectionMethod_;
-  ldraw::vector translation_;
+  ldraw::matrix translation_;
   ldraw::metrics objectmetrics_;
   ldraw::matrix objectmatrix_;
   ldraw::color objectcolor_;
+  ldraw::vector anchorstart_;
   Viewport stretched_;
   
   QAction *viewportActions_[VIEWPORT_TYPES];

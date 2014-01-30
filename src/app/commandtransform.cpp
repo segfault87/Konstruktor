@@ -13,21 +13,20 @@
 namespace Konstruktor
 {
 
-CommandTransform::CommandTransform(const ldraw::matrix &premult, const ldraw::matrix &postmult, const QSet<int> &selection, ldraw::model *model, Editor::RotationPivot pivot)
-	: CommandBase(selection, model)
+CommandTransform::CommandTransform(const ldraw::matrix &premult,
+                                   const ldraw::matrix &postmult,
+                                   const QSet<int> &selection,
+                                   ldraw::model *model,
+                                   Editor::RotationPivot pivotMode,
+                                   const ldraw::vector &pivot)
+    : CommandBase(selection, model)
 {
   setText(QObject::tr("Transform"));
   
   premult_ = premult;
   postmult_ = postmult;
+  pivotMode_ = pivotMode;
   pivot_ = pivot;
-  
-  bool center = false;
-  if (pivot_ == Editor::PivotCenter)
-    center = true;
-  
-  CommandSelectionFilter csf(this);
-  pivotpoint_ = PivotExtension::queryPivot(model_, center, &csf);
   
   for (QSet<int>::ConstIterator it = selection.constBegin(); it != selection.constEnd(); ++it) {
     if (model->elements()[*it]->get_type() == ldraw::type_ref)
@@ -35,19 +34,16 @@ CommandTransform::CommandTransform(const ldraw::matrix &premult, const ldraw::ma
   }
 }
 
-CommandTransform::CommandTransform(const QSet<int> &selection, ldraw::model *model, Editor::RotationPivot pivot)
+CommandTransform::CommandTransform(const QSet<int> &selection,
+                                   ldraw::model *model,
+                                   Editor::RotationPivot pivotMode,
+                                   const ldraw::vector &pivot)
     : CommandBase(selection, model)
 {
   setText(QObject::tr("Transform"));
   
+  pivotMode_ = pivotMode;
   pivot_ = pivot;
-  
-  bool center = false;
-  if (pivot_ == Editor::PivotCenter)
-    center = true;
-  
-  CommandSelectionFilter csf(this);
-  pivotpoint_ = PivotExtension::queryPivot(model_, center, &csf);
   
   for (QSet<int>::ConstIterator it = selection.constBegin(); it != selection.constEnd(); ++it) {
     if (model->elements()[*it]->get_type() == ldraw::type_ref)
@@ -75,10 +71,10 @@ void CommandTransform::redo()
       if (!r->get_model())
         continue;
       
-      if (pivot_ != Editor::PivotEach) {
+      if (pivotMode_ != Editor::PivotEach) {
         ldraw::matrix pretrans, posttrans;
-        pretrans.set_translation_vector(pivotpoint_);
-        posttrans.set_translation_vector(-pivotpoint_);
+        pretrans.set_translation_vector(pivot_);
+        posttrans.set_translation_vector(-pivot_);
 	
         cmat = pretrans * premult_ * postmult_ * posttrans * r->get_matrix();
       } else {
@@ -95,7 +91,7 @@ void CommandTransform::redo()
           else if (std::fabs(std::fabs(e) - 0.707106f) < LDR_EPSILON)
             cmat.value(i, j) = e > 0.0f ? 0.707106f:-0.707106f;
           else if (std::fabs(std::fabs(e) - 0.5f) < LDR_EPSILON)
-						cmat.value(i, j) = e > 0.0f ? 0.5f:-0.5f;
+            cmat.value(i, j) = e > 0.0f ? 0.5f:-0.5f;
           else if (std::fabs(std::fabs(e) - 0.866025f) < LDR_EPSILON)
             cmat.value(i, j) = e > 0.0f ? 0.866025f:-0.866025f;
         }

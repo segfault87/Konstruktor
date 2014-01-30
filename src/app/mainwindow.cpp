@@ -167,6 +167,11 @@ void MainWindow::colorActionTriggered(QAction *action)
 void MainWindow::rotationPivotActionTriggered(QAction *action)
 {
   editor_->setRotationPivotMode((Editor::RotationPivot) action->data().toInt());
+
+  for (int i = 0; i < 4; ++i)
+    renderWidget_[i]->anchorChanged();
+  
+  emit viewChanged();
 }
 
 void MainWindow::about()
@@ -889,10 +894,11 @@ void MainWindow::initConnections()
   connect(qApp->clipboard(), SIGNAL(dataChanged()), this, SLOT(clipboardChanged()));
   
   for (int i = 0; i < 4; ++i) {
+    connect(editor_, SIGNAL(modified()), renderWidget_[i], SLOT(anchorChanged()));
     connect(this, SIGNAL(activeModelChanged(ldraw::model *)), renderWidget_[i], SLOT(modelChanged(ldraw::model *)));
     connect(contentList_, SIGNAL(selectionChanged(const QSet<int> &)), renderWidget_[i], SLOT(selectionChanged(const QSet<int> &)));
     connect(renderWidget_[i], SIGNAL(madeSelection(const std::list<int> &, RenderWidget::SelectionMethod)), contentList_, SLOT(updateSelection(const std::list<int> &, RenderWidget::SelectionMethod)));
-    connect(renderWidget_[i], SIGNAL(translateObject(const ldraw::vector &)), editor_, SLOT(move(const ldraw::vector &)));
+    connect(renderWidget_[i], SIGNAL(translateObject(const ldraw::matrix &)), editor_, SLOT(translate(const ldraw::matrix &)));
     connect(renderWidget_[i], SIGNAL(objectDropped(const QString &, const ldraw::matrix &, const ldraw::color &)), editor_, SLOT(insert(const QString &, const ldraw::matrix &, const ldraw::color &)));
   }
 }

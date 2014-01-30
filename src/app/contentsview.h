@@ -23,34 +23,34 @@ namespace Konstruktor
 
 class ContentsView : public QTreeView
 {
-	Q_OBJECT;
+  Q_OBJECT;
 	
-  public:
-	ContentsView(QWidget *parent = 0L);
-	virtual ~ContentsView();
-
-	const QSet<int>& selected() const { return selectedIndices_; }
-	int uniqueSelection() const;
-
-  signals:
-	void selectionChanged(const QSet<int> &selectionSet);
-
-  public slots:
-	void hide(const QModelIndex &index);
-	void unhide(const QModelIndex &index);
-	void hideSelected();
-	void unhideAll();
-	void modelChanged(ldraw::model *model);
-	void updateSelection(const std::list<int> &selection, RenderWidget::SelectionMethod method);
-	void rowsChanged(const QPair<CommandBase::AffectedRow, QSet<int> > &rows);
-
-  private slots:
-	void selectionChanged(const QItemSelection &selected, const QItemSelection &unselected);
-
-  private:
-	QSet<int> selectedIndices_;
-	std::set<int> *hiddenIndices_;
-	ldraw::model *model_;
+ public:
+  ContentsView(QWidget *parent = 0L);
+  virtual ~ContentsView();
+  
+  const QSet<int>& selected() const { return selectedIndices_; }
+  int uniqueSelection() const;
+  
+ signals:
+  void selectionChanged(const QSet<int> &selectionSet);
+                                                      
+ public slots:
+  void hide(const QModelIndex &index);
+  void unhide(const QModelIndex &index);
+  void hideSelected();
+  void unhideAll();
+  void modelChanged(ldraw::model *model);
+  void updateSelection(const std::list<int> &selection, RenderWidget::SelectionMethod method);
+  void rowsChanged(const QPair<CommandBase::AffectedRow, QSet<int> > &rows);
+                                                                           
+ private slots:
+  void selectionChanged(const QItemSelection &selected, const QItemSelection &unselected);
+  
+ private:
+  QSet<int> selectedIndices_;
+  std::set<int> *hiddenIndices_;
+  ldraw::model *model_;
 };
 
 }

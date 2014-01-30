@@ -45,7 +45,9 @@ class Editor : public QUndoGroup
  public:
   enum GridMode { Grid20, Grid10, Grid5, Grid1 };
   enum RotationPivot { PivotEach, PivotCenter, PivotManual };
-  enum Axis { AxisX, AxisY, AxisZ };	
+  enum Axis { AxisX, AxisY, AxisZ };
+
+  static Editor* instance() { return instance_; }
   
   Editor(QObject *parent = 0L);
   ~Editor();
@@ -53,6 +55,7 @@ class Editor : public QUndoGroup
   QAction* createRedoAction();
   QAction* createUndoAction();
   
+  RotationPivot rotationPivotMode() const { return pivotMode_; }
   GridMode gridMode() const { return gridMode_; }
   
   float snap(float v) const;
@@ -64,8 +67,10 @@ class Editor : public QUndoGroup
   QAction* getColor(const ldraw::color &color) const;
   QList<QAction *> getFavoriteColors() const;
   QList<QAction *> getRecentlyUsedColors() const;
+  const ldraw::vector& getPivot() const;
 
   void setRotationPivotMode(RotationPivot pivot);
+  void setPivot(const ldraw::vector &pos);
   
  signals:
   void selectionIndexModified(const QSet<int> &selection);
@@ -81,6 +86,7 @@ class Editor : public QUndoGroup
   void modelChanged(ldraw::model *model);
   void activeChanged(QUndoStack *stack);
   void stackAdded(QUndoStack *stack);
+  void updatePivot();
   
   void setGridMode(GridMode mode);
   
@@ -91,7 +97,7 @@ class Editor : public QUndoGroup
   void deleteSelected();
   void editColor();
   void setColor(const ldraw::color &c);
-  void move(const ldraw::vector &vector);
+  void translate(const ldraw::matrix &matrix);
   void moveByXPositive();
   void moveByXNegative();
   void moveByYPositive();
@@ -110,8 +116,10 @@ class Editor : public QUndoGroup
   void indexChanged(int index);
   
  private:
+  static Editor *instance_;
+  
   GridMode gridMode_;
-  RotationPivot pivot_;
+  RotationPivot pivotMode_;
   
   // Stacks
   QUndoStack *activeStack_;
@@ -120,6 +128,7 @@ class Editor : public QUndoGroup
   
   const QSet<int> *selection_;
   ldraw::model *model_;
+  ldraw::vector pivot_;
 };
 
 }

@@ -1,8 +1,6 @@
 // Konstruktor - An interactive LDraw modeler for KDE
 // Copyright (c)2006-2011 Park "segfault" J. K. <mastermind@planetmono.org>
 
-#include <stdio.h>
-
 #include <QList>
 #include <QPixmapCache>
 #include <QSortFilterProxyModel>
@@ -112,24 +110,42 @@ PartsWidget::PartsWidget(QWidget *parent)
   ui_->setupUi(this);
   
   model_ = new PartsModel(categories_, categorymap_, list_, this);
-  sortModel_ = new QSortFilterProxyModel(this);
+  //sortModel_ = new QSortFilterProxyModel(this);
   
   initialize();
   resetItems(search_, hideUnofficial_);
   
-  sortModel_->setSourceModel(model_);
-  ui_->partView->setModel(sortModel_);
-  ui_->partView->setSortingEnabled(true);
-  ui_->partView->sortByColumn(0, Qt::AscendingOrder);
+  //sortModel_->setSourceModel(model_);
+  ui_->partView->setModel(model_);
+  ui_->partView->setSortingEnabled(false);
+  //ui_->partView->sortByColumn(0, Qt::AscendingOrder);
 
   pixmapLoader_ = new PixmapLoader(ui_->iconView, this);
   
-  connect(searchDelay_, SIGNAL(timeout()), this, SLOT(search()));
-  connect(ui_->searchEdit, SIGNAL(textEdited(const QString &)), this, SLOT(searchTextChanged(const QString &)));
-  connect(ui_->hideUnofficial, SIGNAL(stateChanged(int)), this, SLOT(hideUnofficial(int)));
-  connect(ui_->partView->selectionModel(), SIGNAL(currentChanged(const QModelIndex &, const QModelIndex &)), this, SLOT(selectionChanged(const QModelIndex &, const QModelIndex &)));
-  connect(ui_->iconView, SIGNAL(itemClicked(QListWidgetItem *)), this, SLOT(iconSelected(QListWidgetItem *)));
-  connect(pixmapLoader_, SIGNAL(loadImage(int, QListWidgetItem *, const QImage &)), this, SLOT(updateIcon(int, QListWidgetItem *, const QImage &)));
+  connect(searchDelay_,
+          SIGNAL(timeout()),
+          this,
+          SLOT(search()));
+  connect(ui_->searchEdit,
+          SIGNAL(textEdited(const QString &)),
+          this,
+          SLOT(searchTextChanged(const QString &)));
+  connect(ui_->hideUnofficial,
+          SIGNAL(stateChanged(int)),
+          this,
+          SLOT(hideUnofficial(int)));
+  connect(ui_->partView->selectionModel(),
+          SIGNAL(currentChanged(const QModelIndex &, const QModelIndex &)),
+          this,
+          SLOT(selectionChanged(const QModelIndex &, const QModelIndex &)));
+  connect(ui_->iconView,
+          SIGNAL(itemClicked(QListWidgetItem *)),
+          this,
+          SLOT(iconSelected(QListWidgetItem *)));
+  connect(pixmapLoader_,
+          SIGNAL(loadImage(int, QListWidgetItem *, const QImage &)),
+          this,
+          SLOT(updateIcon(int, QListWidgetItem *, const QImage &)));
 
   pixmapLoader_->start();
 }
@@ -148,7 +164,9 @@ void PartsWidget::resetItems(const QString &search, bool hideUnofficial)
   if (hideUnofficial)
     subq1 = QString("p.unofficial = 0 AND");
   if (!search.isEmpty())
-    subq2 = QString("(id IN (SELECT partid AS id FROM part_keywords WHERE keyword LIKE '%%1%') OR p.desc LIKE '%%1%' OR p.partid LIKE '%%1%') AND").arg(search);
+    subq2 = QString("(id IN (SELECT partid AS id FROM part_keywords " \
+                    "WHERE keyword LIKE '%%1%') OR p.desc LIKE '%%1%' OR " \
+                    "      p.partid LIKE '%%1%') AND").arg(search);
   
   list_.clear();
   catidmap_.clear();
@@ -157,7 +175,11 @@ void PartsWidget::resetItems(const QString &search, bool hideUnofficial)
   
   DBManager *db = Application::self()->database();
   
-  QString query = QString("SELECT p.desc, p.filename, p.minx, p.miny, p.minz, p.maxx, p.maxy, p.maxz, pc.catid FROM parts AS p, part_categories AS pc WHERE %1 %2 pc.partid = p.id ORDER BY p.desc ASC").arg(subq1, subq2);
+  QString query = QString("SELECT p.desc, p.filename, p.minx, p.miny, p.minz, " \
+                          "       p.maxx, p.maxy, p.maxz, pc.catid "    \
+                          "FROM parts AS p, part_categories AS pc "     \
+                          "WHERE %1 %2 pc.partid = p.id ORDER BY p.desc ASC")
+      .arg(subq1, subq2);
   
   QStringList parts = db->query(query);
   for (QStringList::Iterator it = parts.begin(); it != parts.end(); ++it) {
@@ -175,7 +197,12 @@ void PartsWidget::resetItems(const QString &search, bool hideUnofficial)
     maxy = (*it++).toFloat();
     maxz = (*it++).toFloat();
     
-    list_[(*it).toInt()].append(PartItem(categorymap_[(*it).toInt()], desc, fn, ldraw::metrics(ldraw::vector(minx, miny, minz), ldraw::vector(maxx, maxy, maxz))));
+    list_[(*it).toInt()].append(
+        PartItem(categorymap_[(*it).toInt()],
+                 desc,
+                 fn,
+                 ldraw::metrics(ldraw::vector(minx, miny, minz),
+                                ldraw::vector(maxx, maxy, maxz))));
   }
   
   // Delete if there is no part in the category
@@ -207,7 +234,7 @@ void PartsWidget::selectionChanged(const QModelIndex &current, const QModelIndex
   if (!current.isValid())
     return;
   
-  QModelIndex index = sortModel_->mapToSource(current);
+  QModelIndex index = current/*sortModel_->mapToSource(current)*/;
   
   int cat;
   if (index.parent().isValid())
@@ -224,7 +251,9 @@ void PartsWidget::selectionChanged(const QModelIndex &current, const QModelIndex
     
     ++stateCounter_;
     QList<IconViewItem> itemlist;
-    for (QList<PartItem>::ConstIterator it = list_[categories_[cat].id()].constBegin(); it != list_[categories_[cat].id()].constEnd(); ++it) {
+    for (QList<PartItem>::ConstIterator it = list_[categories_[cat].id()].constBegin();
+         it != list_[categories_[cat].id()].constEnd();
+         ++it) {
       QListWidgetItem *obj = new QListWidgetItem(ui_->iconView);
 
       itemlist.append(IconViewItem(stateCounter_, obj, &(*it)));
@@ -274,7 +303,8 @@ void PartsWidget::initialize()
 {
   DBManager *db = Application::self()->database();
   
-  QStringList cats = db->query("SELECT category, id, visibility FROM categories WHERE visibility < 2 ORDER BY category ASC");
+  QStringList cats = db->query("SELECT category, id, visibility FROM categories "
+                               "WHERE visibility < 2 ORDER BY category ASC");
   int i = 0;
   for (QStringList::Iterator it = cats.begin(); it != cats.end(); ++it, ++i) {
     QString name = *it++;

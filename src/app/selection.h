@@ -27,18 +27,22 @@ class Selection : public ldraw::filter
 {
  public:
   Selection();
+  Selection(const QSet<int> &set, ldraw::model *m);
   ~Selection();
   
   void setSelection(const QSet<int> &set);
-  void setModel(const ldraw::model *m);
+  void setModel(ldraw::model *m);
   
   void resetSelection();
   void setInverted(bool i);
   
   const QSet<int>* getSelection() const;
   bool hasSelection() const;
+
+  ldraw::vector calculateCenter() const;
   
   /* utility */
+  const ldraw::element_ref* getUniqueRef() const;
   const ldraw::element_ref* getLastRef() const;
   ldraw::matrix getLastMatrix() const;
   ldraw::color getLastColor() const;
@@ -47,7 +51,7 @@ class Selection : public ldraw::filter
   
  private:
   const QSet<int> *tsset_;
-  const ldraw::model *model_;
+  ldraw::model *model_;
   const VisibilityExtension *visibility_;
   
   bool inverted_;

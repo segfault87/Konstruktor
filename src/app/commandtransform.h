@@ -16,23 +16,28 @@ namespace Konstruktor
 
 class CommandTransform : public CommandBase
 {
-  public:
-	CommandTransform(const ldraw::matrix &premult, const ldraw::matrix &postmult, const QSet<int> &selection, ldraw::model *model, Editor::RotationPivot pivot = Editor::PivotEach);
-	CommandTransform(const QSet<int> &selection, ldraw::model *model, Editor::RotationPivot pivot = Editor::PivotEach);
-	virtual ~CommandTransform();
-
-	bool needUpdateDimension() const;
-	
-	void redo();
-	void undo();
-
-  protected:
-	Editor::RotationPivot pivot_;
-	ldraw::matrix premult_;
-	ldraw::matrix postmult_;
-	ldraw::vector pivotpoint_;
-	std::map<int, ldraw::matrix> oldmatrices_;
-	bool inverse_;
+ public:
+  CommandTransform(const ldraw::matrix &premult, const ldraw::matrix &postmult,
+                   const QSet<int> &selection, ldraw::model *model,
+                   Editor::RotationPivot pivotMode = Editor::PivotEach,
+                   const ldraw::vector &pivot = ldraw::vector());
+  CommandTransform(const QSet<int> &selection, ldraw::model *model,
+                   Editor::RotationPivot pivotMode = Editor::PivotEach,
+                   const ldraw::vector &pivot = ldraw::vector());
+  virtual ~CommandTransform();
+  
+  bool needUpdateDimension() const;
+  
+  void redo();
+  void undo();
+  
+ protected:
+  Editor::RotationPivot pivotMode_;
+  ldraw::matrix premult_;
+  ldraw::matrix postmult_;
+  ldraw::vector pivot_;
+  std::map<int, ldraw::matrix> oldmatrices_;
+  bool inverse_;
 };
 
 }
