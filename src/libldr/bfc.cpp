@@ -79,28 +79,28 @@ bfc_state_tracker::~bfc_state_tracker()
 
 bool bfc_state_tracker::culling() const
 {
-	return m_cullstack.top();
+	return m_cullstack.top() > 0;
 }
 	
 bool bfc_state_tracker::inverted() const
 {
-	return m_invertstack.top();
+	return m_invertstack.top() > 0;
 }
 
 bool bfc_state_tracker::localinverted() const
 {
-	return m_localinvertstack.top();
+	return m_localinvertstack.top() > 0;
 }
 
 void bfc_state_tracker::accumulate_culling(bool b)
 {
-	m_cullstack.push(m_cullstack.top() & b ? 1 : 0);
+	m_cullstack.push(culling() & b ? 1 : 0);
 }
 	
 void bfc_state_tracker::accumulate_invert(bool b, bool r)
 {
-	m_invertstack.push(m_invertstack.top() ^ (b ^ r) ? 1 : 0);
-	m_localinvertstack.push(m_localinvertstack.top() ^ b ? 1 : 0);
+	m_invertstack.push(inverted() ^ (b ^ r) ? 1 : 0);
+	m_localinvertstack.push(localinverted() ^ b ? 1 : 0);
 }
 
 void bfc_state_tracker::pop_culling()

@@ -54,6 +54,7 @@ class LIBLDR_EXPORT part_library
   void set_unlink_policy(int u) { m_unlink_policy = u; }
   
   std::string ldrawpath(path_type path_type = ldraw_path) const;
+  std::string ldrawpath(const std::string &filename, path_type path_type = ldraw_parts_path) const;
   
   bool find(const std::string &name) const;
   int size() const { return m_data.size(); }
@@ -64,7 +65,7 @@ class LIBLDR_EXPORT part_library
   void unlink_element(element_ref *r);
   
  private:
-  bool init(const std::string &path);
+  bool read_fs(const std::string &path);
   void link_model(model *m);
   
   std::map<std::string, std::string> m_partlist;

@@ -8,6 +8,8 @@ set(libldr_SOURCES
   metrics.cpp
   model.cpp
   part_library.cpp
+  part_library_win32.cpp
+  part_library_posix.cpp
   reader.cpp
   utils.cpp
   writer.cpp
@@ -32,7 +34,7 @@ set(libldr_HEADERS
 
 add_definitions(-DMAKE_LIBLDR_LIB)
 
-add_library(libldr SHARED ${libldr_SOURCES})
+add_library(libldr SHARED ${libldr_SOURCES} ${libldr_HEADERS})
 set_target_properties(libldr PROPERTIES OUTPUT_NAME ldraw)
 set_target_properties(libldr PROPERTIES VERSION 0.5.0 SOVERSION 1)
 

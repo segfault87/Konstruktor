@@ -1,6 +1,6 @@
-if(UNIX)
+if(UNIX AND NOT APPLE)
   find_package(SharedMimeInfo REQUIRED)
-endif(UNIX)
+endif(UNIX AND NOT APPLE)
 
 if(WIN32)
 set(GUI_TYPE WIN32)
@@ -110,7 +110,7 @@ set(konstruktor_SRCS
   main.cpp
 )
 
-qt4_wrap_ui(konstruktor_UIS
+qt5_wrap_ui(konstruktor_UIS
   aboutdialog.ui
   colordialog.ui
   configdialog.ui
@@ -122,11 +122,13 @@ qt4_wrap_ui(konstruktor_UIS
   partswidget.ui
 )
 
-qt4_add_resources(konstruktor_RCC_SRCS konstruktor.qrc)
-qt4_wrap_cpp(konstruktor_HEADERS_MOC ${konstruktor_HEADERS})
+qt5_add_resources(konstruktor_RCC_SRCS konstruktor.qrc)
+qt5_wrap_cpp(konstruktor_HEADERS_MOC ${konstruktor_HEADERS})
 
-add_executable(konstruktor ${GUI_TYPE} ${konstruktor_SRCS} ${konstruktor_UIS} ${konstruktor_HEADERS_MOC} ${konstruktor_RCC_SRCS})
+add_executable(konstruktor ${GUI_TYPE} ${konstruktor_SRCS} ${konstruktor_HEADERS} ${konstruktor_UIS} ${konstruktor_HEADERS_MOC} ${konstruktor_RCC_SRCS})
 target_link_libraries(konstruktor libldr libldrawrenderer ${SQLITE_LIBRARIES} ${QT_QTCORE_LIBRARY} ${QT_QTGUI_LIBRARY} ${QT_QTOPENGL_LIBRARY} )
+
+qt5_use_modules(konstruktor Widgets OpenGL)
 
 # Konstruktor DB Updater
 
@@ -146,18 +148,20 @@ set(konstruktor_db_updater_SRCS
   main_dbupdater.cpp
 )
 
-qt4_wrap_cpp(konstruktor_db_updater_HEADERS_MOC ${konstruktor_db_updater_HEADERS})
+qt5_wrap_cpp(konstruktor_db_updater_HEADERS_MOC ${konstruktor_db_updater_HEADERS})
 
-add_executable(konstruktor_db_updater ${konstruktor_db_updater_SRCS} ${konstruktor_db_updater_HEADERS_MOC})
+add_executable(konstruktor_db_updater ${konstruktor_db_updater_SRCS} ${konstruktor_db_updater_HEADERS} ${konstruktor_db_updater_HEADERS_MOC})
 set_target_properties(konstruktor_db_updater PROPERTIES COMPILE_FLAGS -DKONSTRUKTOR_DB_UPDATER)
 target_link_libraries(konstruktor_db_updater libldr libldrawrenderer ${SQLITE_LIBRARIES} ${QT_QTCORE_LIBRARY} ${QT_QTGUI_LIBRARY} ${QT_QTOPENGL_LIBRARY})
+
+qt5_use_modules(konstruktor_db_updater Widgets OpenGL)
 
 # install
 install(TARGETS konstruktor konstruktor_db_updater DESTINATION bin)
 
-if(UNIX)
+if(UNIX AND NOT APPLE)
   install(FILES konstruktor.desktop DESTINATION share/applications)
   install(FILES ldraw-mime.xml DESTINATION share/mime/packages)
   update_xdg_mimetypes(share/mime/packages)
-endif(UNIX)
+endif(UNIX AND NOT APPLE)
 

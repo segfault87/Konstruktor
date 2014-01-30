@@ -154,62 +154,62 @@ void renderer_opengl_retained::render(ldraw::model *m, const ldraw::filter *filt
 
 void renderer_opengl_retained::render_bounding_box(const ldraw::metrics &metrics)
 {
-  opengl_extension_vbo *vbo = opengl_extension_vbo::self();
-  
-  glEnableClientState(GL_VERTEX_ARRAY);
-  glDisableClientState(GL_COLOR_ARRAY);
+	opengl_extension_vbo *vbo = opengl_extension_vbo::self();
+	
+	glEnableClientState(GL_VERTEX_ARRAY);
+	glDisableClientState(GL_COLOR_ARRAY);
 
-  const ldraw::vector &pos = metrics.min();
-  ldraw::vector len = metrics.max() - metrics.min();
-  
-  glPushMatrix();
-  glTranslatef(pos.x(), pos.y(), pos.z());
-  glScalef(len.x(), len.y(), len.z());
-  
-  const float *bbox = 0L;
-  
-  if (m_vbo)
-    vbo->glBindBuffer(GL_ARRAY_BUFFER_ARB, m_vbo_bbox_lines);
-  else
-    bbox = m_bbox_lines;
-  glVertexPointer(3, GL_FLOAT, 0, bbox);
-  
-  glDrawArrays(GL_LINES, 0, sizeof(m_bbox_lines) / sizeof(float) / 3);
-  
-  glPopMatrix();
-  
-  if (m_vbo)
-    vbo->glBindBuffer(GL_ARRAY_BUFFER_ARB, 0);
+	const ldraw::vector &pos = metrics.min_();
+	ldraw::vector len = metrics.max_() - metrics.min_();
+
+	glPushMatrix();
+	glTranslatef(pos.x(), pos.y(), pos.z());
+	glScalef(len.x(), len.y(), len.z());
+
+	const float *bbox = 0L;
+	
+	if (m_vbo)
+		vbo->glBindBuffer(GL_ARRAY_BUFFER_ARB, m_vbo_bbox_lines);
+	else
+		bbox = m_bbox_lines;
+	glVertexPointer(3, GL_FLOAT, 0, bbox);
+
+	glDrawArrays(GL_LINES, 0, sizeof(m_bbox_lines) / sizeof(float) / 3);
+
+	glPopMatrix();
+
+	if (m_vbo)
+		vbo->glBindBuffer(GL_ARRAY_BUFFER_ARB, 0);
 }
 
 void renderer_opengl_retained::render_bounding_box_filled(const ldraw::metrics &metrics)
 {
-  opengl_extension_vbo *vbo = opengl_extension_vbo::self();
-  
-  glEnableClientState(GL_VERTEX_ARRAY);
-  glDisableClientState(GL_COLOR_ARRAY);
-  
-  const ldraw::vector &pos = metrics.min();
-  ldraw::vector len = metrics.max() - metrics.min();
-  
-  glPushMatrix();
-  glTranslatef(pos.x(), pos.y(), pos.z());
-  glScalef(len.x(), len.y(), len.z());
-  
-  const float *bbox = 0L;
-  
-  if (m_vbo)
-    vbo->glBindBuffer(GL_ARRAY_BUFFER_ARB, m_vbo_bbox_filled);
-  else
-    bbox = m_bbox_filled;
-  glVertexPointer(3, GL_FLOAT, 0, bbox);
-  
-  glDrawArrays(GL_QUADS, 0, sizeof(m_bbox_filled) / sizeof(float) / 3);
-  
-  glPopMatrix();
-  
-  if (m_vbo)
-    vbo->glBindBuffer(GL_ARRAY_BUFFER_ARB, 0);
+	opengl_extension_vbo *vbo = opengl_extension_vbo::self();
+	
+	glEnableClientState(GL_VERTEX_ARRAY);
+	glDisableClientState(GL_COLOR_ARRAY);
+
+	const ldraw::vector &pos = metrics.min_();
+	ldraw::vector len = metrics.max_() - metrics.min_();
+
+	glPushMatrix();
+	glTranslatef(pos.x(), pos.y(), pos.z());
+	glScalef(len.x(), len.y(), len.z());
+
+	const float *bbox = 0L;
+	
+	if (m_vbo)
+		vbo->glBindBuffer(GL_ARRAY_BUFFER_ARB, m_vbo_bbox_filled);
+	else
+		bbox = m_bbox_filled;
+	glVertexPointer(3, GL_FLOAT, 0, bbox);
+
+	glDrawArrays(GL_QUADS, 0, sizeof(m_bbox_filled) / sizeof(float) / 3);
+
+	glPopMatrix();
+
+	if (m_vbo)
+		vbo->glBindBuffer(GL_ARRAY_BUFFER_ARB, 0);
 }
 
 void renderer_opengl_retained::render_bounding_boxes(ldraw::model *m,

@@ -1,6 +1,7 @@
 // Konstruktor - An interactive LDraw modeler for KDE
 // Copyright (c)2006-2011 Park "segfault" J. K. <mastermind@planetmono.org>
 
+#define _USE_MATH_DEFINES
 #include <cmath>
 
 #include <QIODevice>
@@ -316,7 +317,7 @@ void POVRayExporter::fillPartsRecursive(const ldraw::model_multipart *main, cons
           // Seam width
           ldraw::metrics metrics(elem->get_model());
           metrics.update();
-          float distance = ldraw::vector::distance(metrics.min(), metrics.max());
+          float distance = ldraw::vector::distance(metrics.min_(), metrics.max_());
           float scale = (distance - params_->seamWidth()) / distance;
           
           ldraw::matrix sm;
@@ -366,7 +367,7 @@ void POVRayExporter::setPlane(const ldraw::metrics &metrics)
   const QColor &c = params_->planeColor();
   
   stream_ << "object {\n";
-  stream_ << "\tplane { y, " << (params_->planePositionAuto() ? metrics.max().y() : params_->planePosition()) << " hollow }\n";
+  stream_ << "\tplane { y, " << (params_->planePositionAuto() ? metrics.max_().y() : params_->planePosition()) << " hollow }\n";
   stream_ << "\ttexture { pigment { color rgb <" << (float)c.red()/255.0f << ", " << (float)c.green()/255.0f << ", " << (float)c.blue()/255.0f << "> } finish { ambient 0.4 diffuse 0.4 } }\n";
   stream_ << "}\n\n";
 }
@@ -386,8 +387,8 @@ void POVRayExporter::setCamera(const ldraw::metrics &metrics)
   const float latitude = RADIAN(params_->cameraLatitude());
   const float longitude = RADIAN(params_->cameraLongitude());
   
-  ldraw::vector center = (metrics.min() + metrics.max()) * 0.5f;
-  const ldraw::vector lv = metrics.max() - center;
+  ldraw::vector center = (metrics.min_() + metrics.max_()) * 0.5f;
+  const ldraw::vector lv = metrics.max_() - center;
   const float diameter = sqrt(lv.x()*lv.x() + lv.y()*lv.y() + lv.z()*lv.z()) * 2.0f;
   const ldraw::vector camera = ldraw::vector(std::sin(latitude) * std::cos(longitude), -std::sin(longitude), std::cos(latitude) * std::cos(longitude)) * diameter * params_->cameraRadius() + center;
   
@@ -406,8 +407,8 @@ void POVRayExporter::setCamera(const ldraw::metrics &metrics)
 void POVRayExporter::setLights(const ldraw::metrics &metrics)
 {
   const float longitude = RADIAN(params_->lightsLongitude());
-  const ldraw::vector center = (metrics.min() + metrics.max()) * 0.5f;
-  const ldraw::vector lv = metrics.max() - center;
+  const ldraw::vector center = (metrics.min_() + metrics.max_()) * 0.5f;
+  const ldraw::vector lv = metrics.max_() - center;
   const float diameter = std::sqrt(lv.x()*lv.x() + lv.y()*lv.y() + lv.z()*lv.z()) * 2.0f;
   const QColor color = params_->lightsColor();
   

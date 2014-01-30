@@ -29,7 +29,7 @@ set(libldrawrenderer_HEADERS
 )
 add_definitions(-DMAKE_LIBLDRAWRENDERER_LIB)
 
-add_library(libldrawrenderer SHARED ${libldrawrenderer_SOURCES})
+add_library(libldrawrenderer SHARED ${libldrawrenderer_SOURCES} ${libldrawrenderer_HEADERS})
 target_link_libraries(libldrawrenderer libldr ${OPENGL_gl_LIBRARY} ${OPENGL_glu_LIBRARY})
 set_target_properties(libldrawrenderer PROPERTIES OUTPUT_NAME ldrawrenderer)
 set_target_properties(libldrawrenderer PROPERTIES VERSION 0.4.0 SOVERSION 1)

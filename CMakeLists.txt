@@ -1,6 +1,6 @@
 project(Konstruktor)
 
-cmake_minimum_required(VERSION 2.6)
+cmake_minimum_required(VERSION 2.8.9)
 
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/modules")
 
@@ -13,7 +13,7 @@ include_directories(${CMAKE_SOURCE_DIR}/3rdparty)
 include_directories(${CMAKE_SOURCE_DIR}/src)
 
 find_package(OpenGL REQUIRED)
-find_package(Qt4 4.5.0 COMPONENTS QtCore QtGui QtOpenGL REQUIRED)
+find_package(Qt5Widgets)
 find_package(Sqlite REQUIRED)
 
 if (WIN32)

@@ -216,7 +216,8 @@ void PartsWidget::resetItems(const QString &search, bool hideUnofficial)
     catidmap_[categories_[i].index()] = j++;
   }
   
-  model_->reset();
+  model_->beginResetModel();
+  model_->endResetModel();
 }
 
 void PartsWidget::hideUnofficial(int checkState)

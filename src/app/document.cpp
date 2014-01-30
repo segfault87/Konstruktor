@@ -222,8 +222,8 @@ void Document::recalibrateScreenDimension()
       // Update bounding box
       activeModel_->update_custom_data<ldraw::metrics>();
       const ldraw::metrics *metrics = activeModel_->custom_data<ldraw::metrics>();
-      const ldraw::vector &min = metrics->min();
-      const ldraw::vector &max = metrics->max();
+      const ldraw::vector &min = metrics->min_();
+      const ldraw::vector &max = metrics->max_();
       
       center_ = (min+max) * 0.5f;
       length_ = ldraw::vector(fabs(max.x()-min.x()), fabs(max.y()-min.y()), fabs(max.z()-min.z()));

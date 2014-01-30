@@ -321,7 +321,7 @@ void renderer_opengl_immediate::draw_model_bounding_boxes(const ldraw::model_mul
 			
 			if (l->get_model()) {
 				const ldraw::metrics *metrics = l->get_model()->custom_data<ldraw::metrics>();
-				ldraw::vector center = (metrics->min() + metrics->max()) * 0.5f;
+				ldraw::vector center = (metrics->min_() + metrics->max_()) * 0.5f;
 				glColor4ub(0, 0, 0, 160);
 				glBegin(GL_POINTS);
 				glVertex3fv(center.get_pointer());
@@ -465,7 +465,7 @@ selection_list renderer_opengl_immediate::select(float *projection_matrix, float
 			
 			glLoadName(i);
 			const ldraw::metrics *metrics = l->get_model()->custom_data<ldraw::metrics>();
-			ldraw::vector center = (metrics->min() + metrics->max()) * 0.5;
+			ldraw::vector center = (metrics->min_() + metrics->max_()) * 0.5;
 			
 			glBegin(GL_POINTS);
 			glVertex3fv(center.get_pointer());
@@ -489,8 +489,8 @@ selection_list renderer_opengl_immediate::select(float *projection_matrix, float
 // Draw a filled bounding box
 void renderer_opengl_immediate::render_filled_bounding_box(const ldraw::metrics &metrics)
 {
-	const ldraw::vector &min = metrics.min();
-	const ldraw::vector &max = metrics.max();
+	const ldraw::vector &min = metrics.min_();
+	const ldraw::vector &max = metrics.max_();
 	
 	glBegin(GL_QUADS);
 	
@@ -530,8 +530,8 @@ void renderer_opengl_immediate::render_filled_bounding_box(const ldraw::metrics 
 // Draw a bounding box
 void renderer_opengl_immediate::render_bounding_box(const ldraw::metrics &metrics)
 {
-	const ldraw::vector &min = metrics.min();
-	const ldraw::vector &max = metrics.max();
+	const ldraw::vector &min = metrics.min_();
+	const ldraw::vector &max = metrics.max_();
 	
 	glBegin(GL_LINES);
 	

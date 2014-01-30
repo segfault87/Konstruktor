@@ -5,10 +5,11 @@
 
 #include <QDir>
 #include <QDirIterator>
-#include <QFSFileEngine>
+#include <QFile>
 #include <QGLWidget>
 #include <QSet>
 #include <QStringList>
+#include <QStandardPaths>
 
 #include <libldr/color.h>
 #include <libldr/metrics.h>
@@ -251,8 +252,8 @@ int DBUpdater::start()
     if (!m->main_model()->custom_data<ldraw::metrics>())
       m->main_model()->update_custom_data<ldraw::metrics>();
     const ldraw::metrics *metrics = m->main_model()->custom_data<ldraw::metrics>();
-    const ldraw::vector &min = metrics->min();
-    const ldraw::vector &max = metrics->max();
+    const ldraw::vector &min = metrics->min_();
+    const ldraw::vector &max = metrics->max_();
     
     QString qPartno = escape(qFilename.section('.', 0, 0));
     QString qDesc = escape(m->main_model()->desc().c_str());
@@ -343,8 +344,7 @@ int DBUpdater::start()
     manager_->query(QString("DELETE FROM part_keywords WHERE partid=%1").arg(pcnt));
     manager_->query(QString("DELETE FROM favorites WHERE partid='%1'").arg(*it++));
     
-    QFSFileEngine fs(path + (*it) + ".png");
-    fs.remove();
+    QFile::remove(path + (*it) + ".png");
   }
   
   std::cout << (totalSize - 1) << " " << (totalSize - 1) << " Finished" << std::endl;
@@ -367,8 +367,9 @@ bool DBUpdater::checkTable(const QString &name)
 
 QString DBUpdater::saveLocation(const QString &directory)
 {
-  QString result;
+  QString result = QStandardPaths::writableLocation(QStandardPaths::DataLocation) + "/" + directory;
 
+#if 0
 #if defined(Q_WS_MAC)
   result = QDir::homePath() +
       "/Library/Application Support/Konstruktor/" + directory + "/";
@@ -379,6 +380,7 @@ QString DBUpdater::saveLocation(const QString &directory)
 #elif defined(Q_OS_WIN32)
   result = QDir::homePath() +
       "/Application Data/Konstruktor/" + directory + "/";
+#endif
 #endif
 
   QDir().mkpath(result);
@@ -443,8 +445,7 @@ void DBUpdater::deletePartImages()
   QDirIterator it(dir);
   
   while (it.hasNext()) {
-    QFSFileEngine fs(it.next());
-    fs.remove();
+    QFile::remove(it.next());
   }
 }
 
