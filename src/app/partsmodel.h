@@ -33,13 +33,13 @@ class ItemModelBase : public QAbstractItemModel
 
   QStringList mimeTypes() const;
   QMimeData* mimeData(const QModelIndexList &indexes) const;
-}
+};
 
 class FavoritesModel : public ItemModelBase
 {
  public:
   FavoritesModel(QObject *parent = 0L);
-  virtual ~FavouritesModel();
+  virtual ~FavoritesModel();
 
   int rowCount(const QModelIndex &parent = QModelIndex()) const;
 };
@@ -86,10 +86,11 @@ class MetaPartsModel : public QAbstractItemModel
 
   QVariant headerData(int section,
                       Qt::Orientation orientation,
-                      int role = Qt::DisplayRole);
+                      int role = Qt::DisplayRole) const;
   QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
   
-  QModelIndex index(int row,int column, const QModelIndex &parent = QModelIndex()) const;
+  QModelIndex index(int row, int column,
+		    const QModelIndex &parent = QModelIndex()) const;
   QModelIndex parent(const QModelIndex &) const;
 
  private:

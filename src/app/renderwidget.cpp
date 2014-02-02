@@ -483,7 +483,7 @@ ldraw::vector RenderWidget::unproject(const QPoint &position)
   GLdouble modelviewCoerced[16];
   GLint viewport[4];
   GLdouble x, y, z;
-  GLdouble depth;
+  GLfloat depth;
   ldraw::matrix identity;
   
   for (int i = 0; i < 16; ++i) {
@@ -493,9 +493,9 @@ ldraw::vector RenderWidget::unproject(const QPoint &position)
   
   glGetIntegerv(GL_VIEWPORT, viewport);
 
-  glReadPixels(position.x(), position.y(), 1, 1, GL_DEPTH_COMPONENT, &depth);
+  glReadPixels(position.x(), position.y(), 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &depth);
 
-  gluUnProject(position.x(), position.y(), depth,
+  gluUnProject(position.x(), position.y(), (GLdouble) depth,
                modelviewCoerced, projectionCoerced, viewport,
                &x, &y, &z);
 

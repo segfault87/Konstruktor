@@ -50,7 +50,7 @@ QMimeData* ItemModelBase::mimeData(const QModelIndexList &indexes) const
     return 0L;
   
   PartItemBase *item = static_cast<PartItemBase *>(index.internalPointer());
-  if (item->type() != PartItemBase::TypePartItem)
+  if (item->type() != PartItemBase::kTypePartItem)
     return 0L;
   
   return dynamic_cast<PartItem *>(item)->mimeData();
@@ -81,7 +81,7 @@ int PartsModel::rowCount(const QModelIndex &parent) const
   
   PartItemBase *i = static_cast<PartItemBase *>(parent.internalPointer());
   
-  if (i->type() == PartItemBase::TypeCategory) {
+  if (i->type() == PartItemBase::kTypeCategory) {
     PartCategory *c = dynamic_cast<PartCategory *>(i);
     return list_[c->id()].size();
   } else {
@@ -95,11 +95,11 @@ QVariant PartsModel::data(const QModelIndex &index, int role) const
     return QVariant();
   
   switch (static_cast<PartItemBase *>(index.internalPointer())->type()) {
-    case PartItemBase::TypeCategory:
+    case PartItemBase::kTypeCategory:
       return dataCategory(index, role);
-    case PartItemBase::TypePartItem:
+    case PartItemBase::kTypePartItem:
       return dataPart(index, role);
-    case PartItemBase::TypeFavorite:
+    case PartItemBase::kTypeFavorites:
       return dataFavorite(index, role);
     default:
       return QVariant();
@@ -163,14 +163,11 @@ QModelIndex PartsModel::index(int row, int column, const QModelIndex &parent) co
   
   if (parent.isValid()) {
     PartItemBase *s = static_cast<PartItemBase *>(parent.internalPointer());
-    if (s->type() == PartItemBase::TypeCategory) {
+    if (s->type() == PartItemBase::kTypeCategory) {
       ptr = (void *)&list_[dynamic_cast<PartCategory *>(s)->id()][row];
     }
   } else {
-    if (row == favoriteRow())
-      ptr = (void *)&favorites_;
-    else
-      ptr = (void *)&categories_[partRow(row)];
+    ptr = (void *)&categories_[row];
   }
   
   return createIndex(row, column, ptr);
@@ -182,9 +179,9 @@ QModelIndex PartsModel::parent(const QModelIndex &index) const
     return QModelIndex();
   
   PartItemBase *s = static_cast<PartItemBase *>(index.internalPointer());
-  if (s->type() == PartItemBase::TypeCategory) {
+  if (s->type() == PartItemBase::kTypeCategory) {
     return QModelIndex();
-  } else if (s->type() == PartItemBase::TypePartItem) {
+  } else if (s->type() == PartItemBase::kTypePartItem) {
     PartItem *c = dynamic_cast<PartItem *>(s);
     return createIndex(c->parent()->index(), 0, (void *)c->parent());
   }
@@ -200,7 +197,7 @@ Qt::ItemFlags PartsModel::flags(const QModelIndex &index) const
   Qt::ItemFlags flags = Qt::ItemIsEnabled | Qt::ItemIsSelectable;
   
   PartItemBase *s = static_cast<PartItemBase *>(index.internalPointer());
-  if (s->type() == PartItemBase::TypePartItem)
+  if (s->type() == PartItemBase::kTypePartItem)
     flags |= Qt::ItemIsDragEnabled;
   
   return flags;  
@@ -209,7 +206,7 @@ Qt::ItemFlags PartsModel::flags(const QModelIndex &index) const
 MetaPartsModel::MetaPartsModel(FavoritesModel *favorites,
                                PartsModel *parts,
                                QObject *parent)
-    : QAbstratItemModel(parent), favorites_(favorites), parts_(parts)
+    : QAbstractItemModel(parent), favorites_(favorites), parts_(parts)
 {
   
 }
@@ -244,6 +241,26 @@ QVariant MetaPartsModel::data(const QModelIndex &index, int role) const
   return parentModel(index)->data(index, role);
 }
 
+QModelIndex MetaPartsModel::index(int row, int column,
+				  const QModelIndex &parent) const
+{
+  if (row == parts_->rowCount())
+    return favorites_->index(0, column, parent);
+  else
+    return parts_->index(row, column, parent);
+}
 
+QModelIndex MetaPartsModel::parent(const QModelIndex &index) const
+{
+  return parentModel(index)->parent(index);
+}
+
+const QAbstractItemModel* MetaPartsModel::parentModel(const QModelIndex &index) const
+{
+  if (index.row() == parts_->rowCount())
+    return favorites_;
+  else
+    return parts_;
+}
 
 }

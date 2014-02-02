@@ -68,7 +68,7 @@ ldraw::vector Selection::calculateCenter() const
 
   m.update(this);
 
-  return (m.min() + m.max()) * 0.5f;
+  return (m.min_() + m.max_()) * 0.5f;
 }
 
 const ldraw::element_ref* Selection::getUniqueRef() const

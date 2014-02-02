@@ -389,7 +389,7 @@ selection_list renderer_opengl_retained::select(float *projection_matrix,
       const ldraw::matrix &rmt = l->get_matrix();
       
       if (m_selection == selection_points) {
-        ldraw::vector center = (rmt * rmm->min() + rmt * rmm->max()) * 0.5f;
+        ldraw::vector center = (rmt * rmm->min_() + rmt * rmm->max_()) * 0.5f;
 	
         glBegin(GL_POINTS);
         glVertex3fv(center.get_pointer());
