@@ -249,7 +249,7 @@ void renderer_opengl_immediate::draw_model_edges(const ldraw::model_multipart *b
 	float *tmp = new float[16];
 	glGetFloatv(GL_MODELVIEW_MATRIX, tmp);
 	ldraw::matrix proj = ldraw::matrix(tmp).transpose();
-	delete tmp;
+	delete [] tmp;
 	
 	// Iterate!
 	int i = 0;
