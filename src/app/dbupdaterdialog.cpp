@@ -1,6 +1,8 @@
 // Konstruktor - An interactive LDraw modeler for KDE
 // Copyright (c)2006-2011 Park "segfault" J. K. <mastermind@planetmono.org>
 
+#include <QApplication>
+#include <QDir>
 #include <QMessageBox>
 
 #include <libldr/part_library.h>
@@ -42,7 +44,9 @@ void DBUpdaterDialog::start(const QString &path)
   QStringList args;
   args << path;
 
-  process_->start("konstruktor_db_updater", args);
+  QDir dir(qApp->applicationDirPath());
+
+  process_->start(dir.absoluteFilePath("konstruktor_db_updater"), args);
 }
 
 void DBUpdaterDialog::dbUpdateStatus()
