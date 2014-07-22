@@ -197,6 +197,9 @@ Qt::ItemFlags PartsModel::flags(const QModelIndex &index) const
   Qt::ItemFlags flags = Qt::ItemIsEnabled | Qt::ItemIsSelectable;
   
   PartItemBase *s = static_cast<PartItemBase *>(index.internalPointer());
+  if (!s)
+    return 0;
+  
   if (s->type() == PartItemBase::kTypePartItem)
     flags |= Qt::ItemIsDragEnabled;
   
