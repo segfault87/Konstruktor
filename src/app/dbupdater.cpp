@@ -294,7 +294,7 @@ int DBUpdater::start()
     std::list<std::string> catheader = m->main_model()->header("CATEGORY");
     
     QString qCategory = qDesc.section(' ', 0, 0);
-    if (qCategory[0] == '_' || qCategory[0] == '~') // Colored parts
+    if (qCategory[0] == '_' || qCategory[0] == '~' || qCategory[0] == '=') // Colored parts
       qCategory = qCategory.right(qCategory.length()-1);
     setCats.insert(qCategory);
     for (std::list<std::string>::iterator it = catheader.begin(); it != catheader.end(); ++it)

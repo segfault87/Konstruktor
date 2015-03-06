@@ -73,11 +73,8 @@ PartsModel::~PartsModel()
 
 int PartsModel::rowCount(const QModelIndex &parent) const
 {
-  if (parent.column() > 0)
-    return 0;
-  
   if (!parent.isValid())
-    return categories_.size() + 1;
+    return categories_.size();
   
   PartItemBase *i = static_cast<PartItemBase *>(parent.internalPointer());
   
@@ -93,17 +90,17 @@ QVariant PartsModel::data(const QModelIndex &index, int role) const
 {
   if (!index.isValid() || !index.internalPointer())
     return QVariant();
+
+  int type = static_cast<PartItemBase *>(index.internalPointer())->type();
+
+  if (type & PartItemBase::kTypeCategory)
+    return dataCategory(index, role);
+  else if (type & PartItemBase::kTypePartItem)
+    return dataPart(index, role);
+  else if (type & PartItemBase::kTypeFavorites)
+    return dataFavorite(index, role);
   
-  switch (static_cast<PartItemBase *>(index.internalPointer())->type()) {
-    case PartItemBase::kTypeCategory:
-      return dataCategory(index, role);
-    case PartItemBase::kTypePartItem:
-      return dataPart(index, role);
-    case PartItemBase::kTypeFavorites:
-      return dataFavorite(index, role);
-    default:
-      return QVariant();
-  }
+  return QVariant();
 }
 
 QVariant PartsModel::dataCategory(const QModelIndex &index, int role) const
