@@ -54,6 +54,8 @@ class Application : public QObject
   void startup();
   
   static Application* self() { return instance_; }
+
+  void setForceRescan(bool v) { forceRescan_ = v; }
   
   void testPovRay(bool overrideconfig = false);
   void initializeRenderer(QGLWidget *glBase);
@@ -86,6 +88,8 @@ class Application : public QObject
   
   QMutex globalDirsMutex_;
   bool hasPovRay_;
+
+  bool forceRescan_;
 };
 
 }

@@ -10,6 +10,7 @@
 #include <QSet>
 #include <QStringList>
 #include <QStandardPaths>
+#include <QThread>
 
 #include <libldr/color.h>
 #include <libldr/metrics.h>
@@ -29,48 +30,16 @@ namespace Konstruktor
 {
 
 DBUpdater::DBUpdater(const std::string &path, bool forceRescan, QObject *parent)
-    : QObject(parent)
+    : QThread(parent)
 {
   config_ = 0L;
   reader_ = 0L;
   library_ = 0L;
-  status_ = false;
-  
+
+  path_ = path;
   forceRescan_ = forceRescan;
-  
-  try {
-    library_ = new ldraw::part_library(path);
-  } catch (const ldraw::exception &e) {
-    std::cerr << e.what() << std::endl;
-    return;
-  }
-  
-  QString dbfile = saveLocation("") + "parts.db";
-  if (!QFile(dbfile).exists()) {
-    forceRescan_ = true;
-  }
-  
+
   manager_ = new DBManager(this);
-  manager_->initialize(dbfile);
-  if (!manager_->isInitialized()) {
-    std::cerr << "could not open database file" << std::endl;
-    delete manager_;
-    return;
-  }
-  
-  status_ = true;
-  
-  library_->set_unlink_policy(ldraw::part_library::parts);
-  ldraw::color::init();
-  reader_ = new ldraw::reader(library_->ldrawpath(ldraw::part_library::ldraw_parts_path));
-  
-  config_ = new Config;
-  
-  QSize pixsize = config_->thumbnailSize();
-  renderer_ = new PixmapRenderer(pixsize.width(), pixsize.height());
-  
-  dropOutdatedTables();
-  constructTables();
 }
 
 DBUpdater::~DBUpdater()
@@ -170,11 +139,40 @@ void DBUpdater::deleteAll()
   config_->writeConfig();
 }
 
-int DBUpdater::start()
+void DBUpdater::run()
 {
-  if (!status_)
-    return 1;
+  try {
+    library_ = new ldraw::part_library(path_);
+  } catch (const ldraw::exception &e) {
+    printf("!!!\n");
+    return;
+  }
   
+  QString dbfile = saveLocation("") + "parts.db";
+  if (!QFile(dbfile).exists()) {
+    forceRescan_ = true;
+  }
+  
+  manager_->initialize(dbfile);
+  if (!manager_->isInitialized()) {
+    std::cerr << "could not open database file" << std::endl;
+    delete manager_;
+    printf("2\n");
+    return;
+  }
+  
+  library_->set_unlink_policy(ldraw::part_library::parts);
+  ldraw::color::init();
+  reader_ = new ldraw::reader(library_->ldrawpath(ldraw::part_library::ldraw_parts_path));
+  
+  config_ = new Config;
+  
+  QSize pixsize = config_->thumbnailSize();
+  renderer_ = new PixmapRenderer(pixsize.width(), pixsize.height());
+  
+  dropOutdatedTables();
+  constructTables();
+
   QHash<QString, int> categories;
   
   QDir dir(library_->ldrawpath(ldraw::part_library::ldraw_parts_path).c_str());
@@ -186,12 +184,15 @@ int DBUpdater::start()
   if (forceRescan_) {
     deleteAll();
   } else if (config_->partCount() == totalSize) {
-    return 0;
+    printf("Asdasd\n");
+    return;
   } else {
     // To rescan when interrupted
     config_->setPartCount(-1);
     config_->writeConfig();
   }
+
+  printf("asdasd3\n");
 
   int i = 0;
   bool intransaction = false;
@@ -240,7 +241,7 @@ int DBUpdater::start()
       continue;
     }
     
-    std::cout << i << " " << totalSize - 1 << " " << m->main_model()->name() << " (" << m->main_model()->desc() << ")" << std::endl;
+    emit progress(i, totalSize - 1, m->main_model()->name(), m->main_model()->desc());
     
     library_->link(m);
     
@@ -347,14 +348,10 @@ int DBUpdater::start()
     QFile::remove(path + (*it) + ".png");
   }
   
-  std::cout << (totalSize - 1) << " " << (totalSize - 1) << " Finished" << std::endl;
-  
   config_->setDatabaseRevision(DB_REVISION_NUMBER);
   config_->setPartCount(totalSize);
   config_->setMagic(config_->magic() + 1);
   config_->writeConfig();
-  
-  return 0;
 }
 
 bool DBUpdater::checkTable(const QString &name)
@@ -450,3 +447,4 @@ void DBUpdater::deletePartImages()
 }
 
 }
+

@@ -35,17 +35,13 @@ Application::Application(QObject *parent)
 {
   renderer_ = 0L;
   instance_ = this;
+  forceRescan_ = false;
   
   ldraw::color::init();
   
   config_ = new Config;
   db_ = new DBManager(this);
   colorManager_ = new ColorManager;
-  
-  if (!initialize())
-    qApp->exit();
-  else
-    startup();
 }
 
 Application::~Application()
@@ -126,7 +122,9 @@ bool Application::initialize()
   testPovRay(true);
 
   DBUpdaterDialog dialog;
-  dialog.start();
+  if (forceRescan_)
+    printf("rescan!\n");
+  dialog.start(forceRescan_);
   
   if (dialog.exec() == QDialog::Rejected)
     return false;

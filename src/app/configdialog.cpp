@@ -122,7 +122,7 @@ void ConfigDialog::accept()
                               QMessageBox::Yes | QMessageBox::Cancel,
                               QMessageBox::Cancel) == QMessageBox::Yes) {
       DBUpdaterDialog updater;
-      updater.start(uiLDrawForm_->editLDrawPath->text());
+      updater.start(uiLDrawForm_->editLDrawPath->text().toLocal8Bit().constData(), true);
     } else {
       return;
     }

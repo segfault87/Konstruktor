@@ -14,9 +14,7 @@
 #include <QGLPixelBuffer>
 #include <QtDebug>
 
-#ifndef KONSTRUKTOR_DB_UPDATER
 #include "application.h"
-#endif
 #include "viewport.h"
 
 #include "pixmaprenderer.h"
@@ -97,7 +95,7 @@ class RendererPixelBuffer
       context->doneCurrent();
       convertFromGLImage(img, width, height, context->format().alpha(), true);
       return QPixmap::fromImage(img);
-		} else {
+    } else {
       printf("null\n");
       return QPixmap();
     }
@@ -178,7 +176,6 @@ PixmapRenderer::PixmapRenderer(int width, int height, QGLWidget *shareWidget)
     if (!buffer_->isValid()) {
       /* second fallback */
       delete buffer_;
-      
       buffer_ = new RendererPixelBuffer(width_, height_, QGLFormat::defaultFormat(), shareWidget_);
     }
   }
@@ -187,7 +184,6 @@ PixmapRenderer::PixmapRenderer(int width, int height, QGLWidget *shareWidget)
   
   // Initialize GL
   ldraw_renderer::renderer_opengl_factory::rendering_mode rmode;
-#ifndef KONSTRUKTOR_DB_UPDATER
   switch (Application::self()->config()->renderingMode()) {
     case Config::VBO:
     default:
@@ -203,20 +199,20 @@ PixmapRenderer::PixmapRenderer(int width, int height, QGLWidget *shareWidget)
   
   params_ = new ldraw_renderer::parameters(*Application::self()->renderer_params());
   rmode = ldraw_renderer::renderer_opengl_factory::mode_vbo;
-#else
+  /*
   params_ = new ldraw_renderer::parameters();
   params_->set_stud_rendering_mode(ldraw_renderer::parameters::stud_regular);
   params_->set_vbuffer_criteria(ldraw_renderer::parameters::vbuffer_everything);
   params_->set_shading(true);
   rmode = ldraw_renderer::renderer_opengl_factory::mode_varray;
-#endif
+  */
   
   ldraw_renderer::renderer_opengl_factory ro(params_, rmode);
   renderer_ = ro.create_renderer();
   renderer_->set_base_color(ldraw::color(7));
   renderer_->setup();
   
-  glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+  glClearColor(1.0f, 1.0f, 1.0f, 0.0f);
   glClearDepth(1.0f);
   
   glMatrixMode(GL_PROJECTION);

@@ -6,7 +6,7 @@
 
 #include <string>
 
-#include <QObject>
+#include <QThread>
 
 #define DB_REVISION_NUMBER 3
 
@@ -23,16 +23,22 @@ class DBManager;
 class PixmapRenderer;
 class Config;
 
-class DBUpdater : public QObject
+class DBUpdater : public QThread
 {
+  Q_OBJECT;
+
  public:
-  DBUpdater(const std::string &path, bool forceRescan, QObject *parent = 0L);
+  DBUpdater(const std::string &path, bool forceRescan = false, QObject *parent = 0L);
   ~DBUpdater();
   
   void dropOutdatedTables();
   void constructTables();
   void deleteAll();
-  int start();
+
+  virtual void run();
+
+ signals:
+  void progress(int current, int total, const std::string &name, const std::string &desc);
   
  private:
   bool checkTable(const QString &name);
@@ -51,7 +57,7 @@ class DBUpdater : public QObject
   ldraw::part_library *library_;
   ldraw::reader *reader_;
   
-  bool status_;
+  std::string path_;
   bool forceRescan_;
 };
 

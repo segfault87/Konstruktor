@@ -31,6 +31,7 @@ set(konstruktor_HEADERS
   contentsmodel.h
   contentsview.h
   dbmanager.h
+  dbupdater.h
   dbupdaterdialog.h
   document.h
   editor.h
@@ -79,6 +80,7 @@ set(konstruktor_SRCS
   contentsmodel.cpp
   contentsview.cpp
   dbmanager.cpp
+  dbupdater.cpp
   dbupdaterdialog.cpp
   document.cpp
   editor.cpp
@@ -148,16 +150,16 @@ set(konstruktor_db_updater_SRCS
   main_dbupdater.cpp
 )
 
-qt5_wrap_cpp(konstruktor_db_updater_HEADERS_MOC ${konstruktor_db_updater_HEADERS})
+#qt5_wrap_cpp(konstruktor_db_updater_HEADERS_MOC ${konstruktor_db_updater_HEADERS})
 
-add_executable(konstruktor_db_updater ${konstruktor_db_updater_SRCS} ${konstruktor_db_updater_HEADERS} ${konstruktor_db_updater_HEADERS_MOC})
-set_target_properties(konstruktor_db_updater PROPERTIES COMPILE_FLAGS -DKONSTRUKTOR_DB_UPDATER)
-target_link_libraries(konstruktor_db_updater libldr libldrawrenderer ${SQLITE_LIBRARIES} ${QT_QTCORE_LIBRARY} ${QT_QTGUI_LIBRARY} ${QT_QTOPENGL_LIBRARY})
+#add_executable(konstruktor_db_updater ${konstruktor_db_updater_SRCS} ${konstruktor_db_updater_HEADERS} ${konstruktor_db_updater_HEADERS_MOC})
+#set_target_properties(konstruktor_db_updater PROPERTIES COMPILE_FLAGS -DKONSTRUKTOR_DB_UPDATER)
+#target_link_libraries(konstruktor_db_updater libldr libldrawrenderer ${SQLITE_LIBRARIES} ${QT_QTCORE_LIBRARY} ${QT_QTGUI_LIBRARY} ${QT_QTOPENGL_LIBRARY})
 
-qt5_use_modules(konstruktor_db_updater Widgets OpenGL)
+#qt5_use_modules(konstruktor_db_updater Widgets OpenGL)
 
 # install
-install(TARGETS konstruktor konstruktor_db_updater DESTINATION bin)
+install(TARGETS konstruktor DESTINATION bin)
 
 if(UNIX AND NOT APPLE)
   install(FILES konstruktor.desktop DESTINATION share/applications)

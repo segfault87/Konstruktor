@@ -12,6 +12,8 @@ class QProgressDialog;
 namespace Konstruktor
 {
 
+class DBUpdater;
+
 class DBUpdaterDialog : public QProgressDialog
 {
   Q_OBJECT;
@@ -21,21 +23,20 @@ class DBUpdaterDialog : public QProgressDialog
   ~DBUpdaterDialog();
 
  public slots:
-  void start();
-  void start(const QString &path);
+  void start(bool rescan = false);
+  void start(const std::string &path, bool rescan = false);
 
  signals:
   void updateFinished();
 
  private slots:
-  void dbUpdateStatus();
-  void dbUpdateFinished(int, QProcess::ExitStatus);
-  void dbUpdateError(QProcess::ProcessError);
+  void progress(int current, int total, const std::string &name, const std::string &desc);
+  void finished();
 
  private:
   QWidget *parent_;
-  QProcess *process_;
   int lines_;
+  DBUpdater *worker_;
 };
 
 }

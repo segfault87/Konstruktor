@@ -77,8 +77,8 @@ int PartsModel::rowCount(const QModelIndex &parent) const
     return categories_.size();
   
   PartItemBase *i = static_cast<PartItemBase *>(parent.internalPointer());
-  
-  if (i->type() == PartItemBase::kTypeCategory) {
+
+  if (i->type() & PartItemBase::kTypeCategory) {
     PartCategory *c = dynamic_cast<PartCategory *>(i);
     return list_[c->id()].size();
   } else {
@@ -160,7 +160,7 @@ QModelIndex PartsModel::index(int row, int column, const QModelIndex &parent) co
   
   if (parent.isValid()) {
     PartItemBase *s = static_cast<PartItemBase *>(parent.internalPointer());
-    if (s->type() == PartItemBase::kTypeCategory) {
+    if (s->type() & PartItemBase::kTypeCategory) {
       ptr = (void *)&list_[dynamic_cast<PartCategory *>(s)->id()][row];
     }
   } else {
@@ -176,9 +176,9 @@ QModelIndex PartsModel::parent(const QModelIndex &index) const
     return QModelIndex();
   
   PartItemBase *s = static_cast<PartItemBase *>(index.internalPointer());
-  if (s->type() == PartItemBase::kTypeCategory) {
+  if (s->type() & PartItemBase::kTypeCategory) {
     return QModelIndex();
-  } else if (s->type() == PartItemBase::kTypePartItem) {
+  } else if (s->type() & PartItemBase::kTypePartItem) {
     PartItem *c = dynamic_cast<PartItem *>(s);
     return createIndex(c->parent()->index(), 0, (void *)c->parent());
   }
@@ -197,7 +197,7 @@ Qt::ItemFlags PartsModel::flags(const QModelIndex &index) const
   if (!s)
     return 0;
   
-  if (s->type() == PartItemBase::kTypePartItem)
+  if (s->type() & PartItemBase::kTypePartItem)
     flags |= Qt::ItemIsDragEnabled;
   
   return flags;  
