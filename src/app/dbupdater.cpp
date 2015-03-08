@@ -42,7 +42,10 @@ DBUpdater::DBUpdater(const std::string &path, bool forceRescan, QObject *parent)
   manager_ = new DBManager(this);
   config_ = new Config;
 
-	connect(this, SIGNAL(nextStep()), this, SLOT(step()), Qt::QueuedConnection);
+  QSize pixsize = config_->thumbnailSize();
+  renderer_ = new PixmapRenderer(pixsize.width(), pixsize.height());
+
+  connect(this, SIGNAL(nextStep()), this, SLOT(step()), Qt::QueuedConnection);
 }
 
 DBUpdater::~DBUpdater()
@@ -165,9 +168,6 @@ void DBUpdater::setup()
   library_->set_unlink_policy(ldraw::part_library::parts);
   ldraw::color::init();
   reader_ = new ldraw::reader(library_->ldrawpath(ldraw::part_library::ldraw_parts_path));
-
-  QSize pixsize = config_->thumbnailSize();
-  renderer_ = new PixmapRenderer(pixsize.width(), pixsize.height());
   
   dropOutdatedTables();
   constructTables();
@@ -196,7 +196,7 @@ void DBUpdater::setup()
 
 void DBUpdater::finalize()
 {
-	if (inTransaction_)
+  if (inTransaction_)
     manager_->insert("COMMIT TRANSACTION");
   
   // Delete remainings
@@ -217,27 +217,27 @@ void DBUpdater::finalize()
   config_->setMagic(config_->magic() + 1);
   config_->writeConfig();
 
-	if (runningInThread_) {
-		exit();
-	} else {
-		emit scanFinished();
-	}
+  if (runningInThread_) {
+    exit();
+  } else {
+    emit scanFinished();
+  }
 }
 
 void DBUpdater::step()
 {
   if (iterator_ == end_) {
-	  finalize();
-		return;
-	}
-
-	// Omit subparts
+    finalize();
+    return;
+  }
+  
+  // Omit subparts
   std::string fn = ldraw::utils::translate_string((*iterator_).second);
   if (fn[0] == 's' && fn[1] == DIRECTORY_SEPARATOR[0]) {
     increment();
-		return;
-	}
-    
+    return;
+  }
+  
   QString qFilename = QString((*iterator_).second.c_str());
   int fsize = (int)QFileInfo(directory_, qFilename).size();
   bool insert = true;
@@ -256,7 +256,7 @@ void DBUpdater::step()
     if (fsizeresult[1].toInt() == fsize) {
       manager_->query(QString("UPDATE parts SET magic=%1 WHERE id=%2").arg(config_->magic()).arg(idx));
       increment();
-			return;
+      return;
     } else {
       insert = false;
     }
@@ -269,7 +269,7 @@ void DBUpdater::step()
   } catch (const ldraw::exception &e) {
     std::cerr << e.what() << std::endl;
     increment();
-		return;
+    return;
   }
     
   // If current part is a link to other one, skip it.
@@ -277,7 +277,7 @@ void DBUpdater::step()
       m->main_model()->desc()[0] == '~') {
     delete m;
     increment();
-		return;
+    return;
   }
     
   emit progress(round_, totalSize_ - 1, m->main_model()->name(), m->main_model()->desc());
@@ -370,31 +370,31 @@ void DBUpdater::step()
     
   delete m;
 
-	increment();
+  increment();
 }
 
 void DBUpdater::increment()
 {
-	++iterator_;
-	++round_;
-	emit nextStep();
+  ++iterator_;
+  ++round_;
+  emit nextStep();
 }
 
 void DBUpdater::run()
 {
   runningInThread_ = true;
-
-	setup();
-	step();
-	exec();
+  
+  setup();
+  step();
+  exec();
 }
 
 void DBUpdater::runSingleThreaded()
 {
-	runningInThread_ = false;
-
-	setup();
-	step();
+  runningInThread_ = false;
+  
+  setup();
+  step();
 }
 
 bool DBUpdater::checkTable(const QString &name)

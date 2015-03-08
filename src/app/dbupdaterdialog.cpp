@@ -45,14 +45,14 @@ void DBUpdaterDialog::start(const std::string &path, bool rescan)
           this, SLOT(progress(int, int, const std::string &, const std::string &)));
   connect(worker_, SIGNAL(finished()),
           this, SLOT(finished()));
-	connect(worker_, SIGNAL(scanFinished()),
+  connect(worker_, SIGNAL(scanFinished()),
           this, SLOT(finished()));
 
 #ifdef Q_OS_WIN32
   /* we have threading issue in Win32 so do not run as a separate thread */
   worker_->runSingleThreaded();
 #else
-  worker_->start();
+  worker_->runSingleThreaded();
 #endif
 }
 
