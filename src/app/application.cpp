@@ -122,8 +122,6 @@ bool Application::initialize()
   testPovRay(true);
 
   DBUpdaterDialog dialog;
-  if (forceRescan_)
-    printf("rescan!\n");
   dialog.start(forceRescan_);
   
   if (dialog.exec() == QDialog::Rejected)
@@ -159,8 +157,6 @@ QString Application::saveLocation(const QString &directory)
       "/Application Data/Konstruktor/" + directory + "/";
 #endif
 #endif
-
-  printf("%s\n", result.toLocal8Bit().data());
 
   QDir().mkpath(result);
   globalDirsMutex_.unlock();

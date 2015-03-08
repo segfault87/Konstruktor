@@ -59,6 +59,8 @@ void DBUpdaterDialog::progress(int current, int total, const std::string &name, 
   setMaximum(total);
   setValue(current);
   setLabelText(tr("<qt><p align=center>Building indexes from the LDraw part library. Please wait...<br/>%1 (%2)</p></qt>").arg(desc.c_str()).arg(name.c_str()));
+
+  ++lines_;
 }
 
 void DBUpdaterDialog::finished()

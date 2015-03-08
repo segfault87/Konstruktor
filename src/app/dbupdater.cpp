@@ -40,6 +40,10 @@ DBUpdater::DBUpdater(const std::string &path, bool forceRescan, QObject *parent)
   forceRescan_ = forceRescan;
 
   manager_ = new DBManager(this);
+  config_ = new Config;
+
+  QSize pixsize = config_->thumbnailSize();
+  renderer_ = new PixmapRenderer(pixsize.width(), pixsize.height());
 }
 
 DBUpdater::~DBUpdater()
@@ -144,7 +148,6 @@ void DBUpdater::run()
   try {
     library_ = new ldraw::part_library(path_);
   } catch (const ldraw::exception &e) {
-    printf("!!!\n");
     return;
   }
   
@@ -152,23 +155,17 @@ void DBUpdater::run()
   if (!QFile(dbfile).exists()) {
     forceRescan_ = true;
   }
-  
+
   manager_->initialize(dbfile);
   if (!manager_->isInitialized()) {
     std::cerr << "could not open database file" << std::endl;
     delete manager_;
-    printf("2\n");
     return;
   }
-  
+
   library_->set_unlink_policy(ldraw::part_library::parts);
   ldraw::color::init();
   reader_ = new ldraw::reader(library_->ldrawpath(ldraw::part_library::ldraw_parts_path));
-  
-  config_ = new Config;
-  
-  QSize pixsize = config_->thumbnailSize();
-  renderer_ = new PixmapRenderer(pixsize.width(), pixsize.height());
   
   dropOutdatedTables();
   constructTables();
@@ -184,15 +181,12 @@ void DBUpdater::run()
   if (forceRescan_) {
     deleteAll();
   } else if (config_->partCount() == totalSize) {
-    printf("Asdasd\n");
     return;
   } else {
     // To rescan when interrupted
     config_->setPartCount(-1);
     config_->writeConfig();
   }
-
-  printf("asdasd3\n");
 
   int i = 0;
   bool intransaction = false;
