@@ -40,27 +40,30 @@ void DBUpdaterDialog::start(const std::string &path, bool rescan)
   if (worker_)
     return;
 
-  lines_ = 0;
-
   worker_ = new DBUpdater(path, rescan);
   connect(worker_, SIGNAL(progress(int, int, const std::string &, const std::string &)),
           this, SLOT(progress(int, int, const std::string &, const std::string &)));
   connect(worker_, SIGNAL(finished()),
           this, SLOT(finished()));
+	connect(worker_, SIGNAL(scanFinished()),
+          this, SLOT(finished()));
 
+#ifdef Q_OS_WIN32
+  /* we have threading issue in Win32 so do not run as a separate thread */
+  worker_->runSingleThreaded();
+#else
   worker_->start();
+#endif
 }
 
 void DBUpdaterDialog::progress(int current, int total, const std::string &name, const std::string &desc)
 {
-  if (lines_ % 10 != 0)
+  if (current % 10 != 0)
     return;
 
   setMaximum(total);
   setValue(current);
   setLabelText(tr("<qt><p align=center>Building indexes from the LDraw part library. Please wait...<br/>%1 (%2)</p></qt>").arg(desc.c_str()).arg(name.c_str()));
-
-  ++lines_;
 }
 
 void DBUpdaterDialog::finished()

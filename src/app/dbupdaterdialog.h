@@ -35,7 +35,6 @@ class DBUpdaterDialog : public QProgressDialog
 
  private:
   QWidget *parent_;
-  int lines_;
   DBUpdater *worker_;
 };
 

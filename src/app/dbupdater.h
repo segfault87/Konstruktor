@@ -6,6 +6,8 @@
 
 #include <string>
 
+#include <QDir>
+#include <QHash>
 #include <QThread>
 
 #define DB_REVISION_NUMBER 3
@@ -35,12 +37,23 @@ class DBUpdater : public QThread
   void constructTables();
   void deleteAll();
 
-  virtual void run();
+  void setup();
+	void finalize();
 
- signals:
+  virtual void run();
+	void runSingleThreaded();
+
+signals:
+	void nextStep();
   void progress(int current, int total, const std::string &name, const std::string &desc);
+	void scanFinished();
+
+ private slots:
+	void step();
   
  private:
+	void increment();
+
   bool checkTable(const QString &name);
   QString saveLocation(const QString &path);
   
@@ -50,6 +63,8 @@ class DBUpdater : public QThread
   void determineSize(const QString &str, float &xs, float &ys, float &zs);
   float floatify(const QString &str);
   void deletePartImages();
+
+	bool runningInThread_;
   
   DBManager *manager_;
   PixmapRenderer *renderer_;
@@ -59,6 +74,13 @@ class DBUpdater : public QThread
   
   std::string path_;
   bool forceRescan_;
+  int round_;
+  std::map<std::string, std::string>::const_iterator iterator_, end_;
+  bool inTransaction_;
+	int totalSize_;
+	QHash<QString, int> categories_;
+	QDir directory_;
+	QString imagePath_;
 };
 
 }
