@@ -46,6 +46,8 @@ DBUpdater::DBUpdater(const std::string &path, bool forceRescan, QObject *parent)
   renderer_ = new PixmapRenderer(pixsize.width(), pixsize.height());
 
   connect(this, SIGNAL(nextStep()), this, SLOT(step()), Qt::QueuedConnection);
+
+  inTransaction_ = false;
 }
 
 DBUpdater::~DBUpdater()
@@ -145,12 +147,12 @@ void DBUpdater::deleteAll()
   config_->writeConfig();
 }
 
-void DBUpdater::setup()
+bool DBUpdater::setup()
 {
   try {
     library_ = new ldraw::part_library(path_);
   } catch (const ldraw::exception &e) {
-    return;
+    return false;
   }
   
   QString dbfile = saveLocation("") + "parts.db";
@@ -162,7 +164,7 @@ void DBUpdater::setup()
   if (!manager_->isInitialized()) {
     std::cerr << "could not open database file" << std::endl;
     delete manager_;
-    return;
+    return false;
   }
 
   library_->set_unlink_policy(ldraw::part_library::parts);
@@ -177,21 +179,23 @@ void DBUpdater::setup()
   
   const std::map<std::string, std::string> &partlist = library_->part_list();
   totalSize_ = partlist.size();
+  iterator_ = partlist.begin();
+  end_ = partlist.end();
 
   if (forceRescan_) {
     deleteAll();
   } else if (config_->partCount() == totalSize_) {
-    return;
+    return false;
   } else {
     // To rescan when interrupted
     config_->setPartCount(-1);
     config_->writeConfig();
   }
 
-  iterator_ = partlist.begin();
-  end_ = partlist.end();
   round_ = 0;
   inTransaction_ = false;
+
+  return true;
 }
 
 void DBUpdater::finalize()
@@ -201,6 +205,8 @@ void DBUpdater::finalize()
   
   // Delete remainings
   QStringList remainings = manager_->query(QString("SELECT id, partid, filename FROM parts WHERE magic != %1").arg(config_->magic()));
+  if (remainings.count() > 0)
+    manager_->query("BEGIN TRANSACTION");
   for (QStringList::Iterator it = remainings.begin(); it != remainings.end(); ++it) {
     int pcnt = (*it++).toInt();
     
@@ -211,6 +217,8 @@ void DBUpdater::finalize()
     
     QFile::remove(imagePath_ + (*it) + ".png");
   }
+  if (remainings.count() > 0)
+    manager_->query("COMMIT TRANSACTION");
   
   config_->setDatabaseRevision(DB_REVISION_NUMBER);
   config_->setPartCount(totalSize_);
@@ -384,17 +392,20 @@ void DBUpdater::run()
 {
   runningInThread_ = true;
   
-  setup();
-  step();
-  exec();
+  if (setup()) {
+    step();
+    exec();
+  }
 }
 
 void DBUpdater::runSingleThreaded()
 {
   runningInThread_ = false;
   
-  setup();
-  step();
+  if (setup())
+    step();
+  else
+    emit scanFinished();
 }
 
 bool DBUpdater::checkTable(const QString &name)

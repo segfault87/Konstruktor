@@ -37,7 +37,7 @@ class DBUpdater : public QThread
   void constructTables();
   void deleteAll();
 
-  void setup();
+  bool setup();
 	void finalize();
 
   virtual void run();

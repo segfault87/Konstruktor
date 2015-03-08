@@ -24,8 +24,6 @@ DBUpdaterDialog::DBUpdaterDialog(QWidget *parent)
 DBUpdaterDialog::~DBUpdaterDialog()
 {
   if (worker_) {
-    worker_->quit();
-    worker_->wait();
     delete worker_;
   }
 }
@@ -44,9 +42,9 @@ void DBUpdaterDialog::start(const std::string &path, bool rescan)
   connect(worker_, SIGNAL(progress(int, int, const std::string &, const std::string &)),
           this, SLOT(progress(int, int, const std::string &, const std::string &)));
   connect(worker_, SIGNAL(finished()),
-          this, SLOT(finished()));
+          this, SLOT(finished()), Qt::QueuedConnection);
   connect(worker_, SIGNAL(scanFinished()),
-          this, SLOT(finished()));
+          this, SLOT(finished()), Qt::QueuedConnection);
 
 #ifdef Q_OS_WIN32
   /* we have threading issue in Win32 so do not run as a separate thread */
