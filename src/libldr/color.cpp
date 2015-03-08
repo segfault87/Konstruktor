@@ -232,7 +232,7 @@ void color::link()
     color_entity *nc = new color_entity;
     nc->material = material_normal;
     nc->id = m_id;
-    nc->name = "MLCad custom color";
+    nc->name = "Custom color";
     nc->rgba[0] = (unsigned char) (((v & 0xf00) >> 8) * 255.0f / 15.0f);
     nc->rgba[1] = (unsigned char) (((v & 0x0f0) >> 4) * 255.0f / 15.0f);
     nc->rgba[2] = (unsigned char) (((v & 0x00f)     ) * 255.0f / 15.0f);
@@ -245,6 +245,27 @@ void color::link()
 
     m_entity = nc;
 
+    return;
+  } else if ((m_id & 0xff000000) == 0x02000000) {
+    m_custom_color = true;
+    unsigned int v = m_id & 0xffffff;
+
+    color_entity *nc = new color_entity;
+    nc->material = material_normal;
+    nc->id = m_id;
+    nc->name = "Custom color";
+    nc->rgba[0] = (unsigned char) ((v & 0xff0000) >> 16);
+    nc->rgba[1] = (unsigned char) ((v & 0x00ff00) >> 8);
+    nc->rgba[2] = (unsigned char) ((v & 0x0000ff));
+    nc->rgba[3] = 255;
+
+    nc->complement[0] = nc->rgba[0] / 2;
+    nc->complement[1] = nc->rgba[1] / 2;
+    nc->complement[2] = nc->rgba[2] / 2;
+    nc->complement[3] = nc->rgba[3] / 2;
+
+    m_entity = nc;
+    
     return;
   }
   

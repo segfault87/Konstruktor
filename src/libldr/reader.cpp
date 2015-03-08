@@ -244,7 +244,7 @@ element_base* reader::parse_line(const std::string &command, model *m)
   } else if (line[0] == '1') {
     // File reference
     std::istringstream s(line.substr(2, line.length()-2));
-    int col;
+    std::string col;
     float x, y, z, a, b, c, d, e, f, g, h, i;
     char fnbuf[255];
     
@@ -252,8 +252,8 @@ element_base* reader::parse_line(const std::string &command, model *m)
     s.getline(fnbuf, 255);
     
     std::string fn = utils::trim_string(std::string(fnbuf));
-    
-    return new element_ref(color(col), matrix(a, b, c, d, e, f, g, h, i, x, y, z), fn);
+
+    return new element_ref(color(std::stoi(col, nullptr, 0)), matrix(a, b, c, d, e, f, g, h, i, x, y, z), fn);
   } else if (line[0] == '2') {
     // Line
     std::istringstream s(line.substr(2, line.length()-2));
