@@ -476,7 +476,7 @@ ldraw::matrix RenderWidget::retranslate(const ldraw::matrix &original) const
   return o;
 }
 
-ldraw::vector RenderWidget::unproject(const QPoint &position)
+ldraw::vector RenderWidget::unproject(const QPoint &position, const ldraw::matrix &modelView)
 {
   makeCurrent();
 
@@ -485,12 +485,17 @@ ldraw::vector RenderWidget::unproject(const QPoint &position)
   GLint viewport[4];
   GLdouble x, y, z;
   GLfloat depth;
-  ldraw::matrix identity;
+
+  ldraw::matrix modelViewInv = modelView.transpose();
   
   for (int i = 0; i < 16; ++i) {
     projectionCoerced[i] = projectionMatrix_[i];
-    modelviewCoerced[i] = identity.value(i / 4, i % 4);
+    if (i / 4 == 3 || i % 4 == 3)
+      modelviewCoerced[i] = 0.0;
+    else
+      modelviewCoerced[i] = modelViewInv.value(i / 4, i % 4);
   }
+  modelviewCoerced[15] = 1.0;
   
   glGetIntegerv(GL_VIEWPORT, viewport);
 
@@ -963,7 +968,7 @@ void RenderWidget::mousePressEvent(QMouseEvent *event)
   
   if (anchorHover_ != AxisNone && event->button() & Qt::LeftButton) {
     anchorMode_ = anchorHover_;
-    anchorstart_ = unproject(event->pos());
+    anchorstart_ = unproject(event->pos(), tsset_->getLastMatrix());
     behavior_ = MovingByAxis;
 
     update();
@@ -1100,7 +1105,7 @@ void RenderWidget::mouseMoveEvent(QMouseEvent *event)
   } else if (behavior_ == MovingByAxis) {
     /* moving object(s) by dragging the anchor */
 
-    ldraw::vector v = unproject(event->pos()) - anchorstart_;
+    ldraw::vector v = unproject(event->pos(), tsset_->getLastMatrix()) - anchorstart_;
     ldraw::vector n;
 
     const Editor *editor = Editor::instance();

@@ -82,7 +82,7 @@ class RenderWidget : public QGLWidget
   void updatePositionVector(const QPoint &pos);
   void rotate();
   ldraw::matrix retranslate(const ldraw::matrix &original) const;
-  ldraw::vector unproject(const QPoint &position);
+  ldraw::vector unproject(const QPoint &position, const ldraw::matrix &modelView);
   
   AnchorMode anchorHitTest(int x, int y);
   void renderPointArray() const;
