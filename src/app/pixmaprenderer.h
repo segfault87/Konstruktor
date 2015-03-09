@@ -10,6 +10,7 @@
 
 class QGLContext;
 class QGLWidget;
+class QThread;
 
 namespace Konstruktor
 {
@@ -20,7 +21,7 @@ class PixmapRenderer
  public:
   PixmapRenderer(int width, int height, QGLWidget *shareWidget = 0L);
   ~PixmapRenderer();
-  
+
   void setNewSize(int width, int height);
   
   QPixmap renderToPixmap(ldraw::model *m, bool crop = false);

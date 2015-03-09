@@ -203,7 +203,7 @@ void color::link()
   }
   
   if (m_id >= 256 && m_id <= 512) {
-    // Dithered color (256 <= n <= 512)
+    // Blended color (256 <= n <= 512)
     m_custom_color = true;
     const color_entity *c1 = color((m_id - 256) / 16).get_entity();
     const color_entity *c2 = color((m_id - 256) % 16).get_entity();
@@ -211,7 +211,7 @@ void color::link()
     color_entity *nc = new color_entity;
     nc->material = material_normal;
     nc->id = m_id;
-    nc->name = "Dithered color";
+    nc->name = "Blended color";
     nc->rgba[0] = (unsigned char) (((int) c1->rgba[0] + (int) c2->rgba[0])/2);
     nc->rgba[1] = (unsigned char) (((int) c1->rgba[1] + (int) c2->rgba[1])/2);
     nc->rgba[2] = (unsigned char) (((int) c1->rgba[2] + (int) c2->rgba[2])/2);

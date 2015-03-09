@@ -81,6 +81,7 @@ class LIBLDR_EXPORT matrix
   
   vector get_translation_vector() const;
   void set_translation_vector(const vector &v);
+  void set_translation_vector(float x, float y, float z);
   
   inline float& value(int r, int c) { return m_matrix[r][c]; }
   inline const float& value(int r, int c) const { return m_matrix[r][c]; }

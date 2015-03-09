@@ -11,6 +11,7 @@
 
 #include <QAction>
 #include <QActionGroup>
+#include <QApplication>
 #include <QFontMetrics>
 #include <QMenu>
 #include <QMessageBox>
@@ -493,15 +494,15 @@ ldraw::vector RenderWidget::unproject(const QPoint &position)
   
   glGetIntegerv(GL_VIEWPORT, viewport);
 
-  glReadPixels(position.x(), position.y(), 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &depth);
+  glReadPixels(position.x(), viewport[3] - position.y(), 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &depth);
 
-  gluUnProject(position.x(), position.y(), (GLdouble) depth,
+  gluUnProject(position.x(), viewport[3] - position.y(), 0.1,
                modelviewCoerced, projectionCoerced, viewport,
                &x, &y, &z);
 
   doneCurrent();
 
-  return ldraw::vector(x, y, z);
+  return ldraw::vector(x, -y, -z);
 }
 
 RenderWidget::AnchorMode RenderWidget::anchorHitTest(int x, int y)
@@ -520,7 +521,7 @@ RenderWidget::AnchorMode RenderWidget::anchorHitTest(int x, int y)
   glMatrixMode(GL_PROJECTION);
   glPushMatrix();
   glLoadIdentity();
-  gluPickMatrix(x - 3, viewport[3] - (y + 3), 6, 6, viewport);
+  gluPickMatrix(x - 3, viewport[3] - (y - 3), 6, 6, viewport);
   glMultMatrixf(projectionMatrix_);
 
   glMatrixMode(GL_MODELVIEW);
@@ -966,7 +967,8 @@ void RenderWidget::mousePressEvent(QMouseEvent *event)
     behavior_ = MovingByAxis;
 
     update();
-  } else if (event->button() & Qt::MidButton) {
+  } else if ((event->button() & Qt::RightButton) &&
+             (viewportMode_ != Free || (QApplication::keyboardModifiers() & Qt::ShiftModifier))) {
     params_->set_rendering_mode(dragMode_);
     behavior_ = Panning;
     lastPos_ = event->pos();
@@ -1112,7 +1114,10 @@ void RenderWidget::mouseMoveEvent(QMouseEvent *event)
     else
       return;
 
-    translation_.set_translation_vector(n);
+    ldraw::matrix rotation = tsset_->getLastMatrix();
+    rotation.set_translation_vector(0.0f, 0.0f, 0.0f);
+
+    translation_.set_translation_vector(rotation * n);
 
     update();
   } else if (anchorEnabled_) {
@@ -1137,8 +1142,7 @@ void RenderWidget::mouseReleaseEvent(QMouseEvent *event)
 {
   EXIT_IF_NO_DOCUMENT;
   
-  if ((behavior_ == Rotating && event->button() & Qt::RightButton) ||
-      (behavior_ == Panning && event->button() & Qt::MidButton)) {
+  if (behavior_ == Rotating || behavior_ == Panning) {
     behavior_ = Idle;
     params_->set_rendering_mode(renderMode_);
     
@@ -1302,7 +1306,7 @@ void RenderWidget::dragLeaveEvent(QDragLeaveEvent *event)
 void RenderWidget::dragMoveEvent(QDragMoveEvent *event)
 {
   EXIT_IF_NO_DOCUMENT;
-  
+
   updatePositionVector(event->pos() - lastPos_);
   
   update();

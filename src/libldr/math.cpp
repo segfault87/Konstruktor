@@ -276,4 +276,11 @@ void matrix::set_translation_vector(const vector &v)
   value(2, 3) = v.z();
 }
 
+void matrix::set_translation_vector(float x, float y, float z)
+{
+  value(0, 3) = x;
+  value(1, 3) = y;
+  value(2, 3) = z;
+}
+
 }

@@ -2,10 +2,6 @@ if(UNIX AND NOT APPLE)
   find_package(SharedMimeInfo REQUIRED)
 endif(UNIX AND NOT APPLE)
 
-if(WIN32)
-set(GUI_TYPE WIN32)
-endif(WIN32)
-
 add_definitions(${SQLITE_DEFINITIONS})
 add_definitions(${QT_DEFINITIONS})
 include_directories(${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR} ${SQLITE_INCLUDE_DIR} ${QT_INCLUDES})
@@ -112,6 +108,10 @@ set(konstruktor_SRCS
   main.cpp
 )
 
+set(konstruktor_RESOURCES
+  konstruktor.icns
+)
+
 qt5_wrap_ui(konstruktor_UIS
   aboutdialog.ui
   colordialog.ui
@@ -127,8 +127,19 @@ qt5_wrap_ui(konstruktor_UIS
 qt5_add_resources(konstruktor_RCC_SRCS konstruktor.qrc)
 qt5_wrap_cpp(konstruktor_HEADERS_MOC ${konstruktor_HEADERS})
 
-add_executable(konstruktor ${GUI_TYPE} ${konstruktor_SRCS} ${konstruktor_HEADERS} ${konstruktor_UIS} ${konstruktor_HEADERS_MOC} ${konstruktor_RCC_SRCS})
+if(APPLE)
+set_source_files_properties(konstruktor.icns PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
+set(MACOSX_BUNDLE_ICON_FILE konstruktor.icns)
+set(MACOSX_BUNDLE_BUNDLE_NAME "Konstruktor")
+set(MACOSX_BUNDLE_INFO_STRING "LDraw Model Designer")
+endif(APPLE)
+
+add_executable(konstruktor MACOSX_BUNDLE WIN32 ${konstruktor_SRCS} ${konstruktor_HEADERS} ${konstruktor_UIS} ${konstruktor_HEADERS_MOC} ${konstruktor_RCC_SRCS} ${konstruktor_RESOURCES})
 target_link_libraries(konstruktor libldr libldrawrenderer ${SQLITE_LIBRARIES} ${QT_QTCORE_LIBRARY} ${QT_QTGUI_LIBRARY} ${QT_QTOPENGL_LIBRARY} )
+
+if(WIN32)
+target_link_libraries(konstruktor Qt5::WinMain)
+endif()
 
 qt5_use_modules(konstruktor Widgets OpenGL)
 
