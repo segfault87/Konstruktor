@@ -129,52 +129,31 @@ qt5_wrap_cpp(konstruktor_HEADERS_MOC ${konstruktor_HEADERS})
 
 if(APPLE)
 set_source_files_properties(konstruktor.icns PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
+set(PROGNAME Konstruktor)
 set(MACOSX_BUNDLE_ICON_FILE konstruktor.icns)
 set(MACOSX_BUNDLE_BUNDLE_NAME "Konstruktor")
 set(MACOSX_BUNDLE_INFO_STRING "LDraw Model Designer")
+else(APPLE)
+set(PROGNAME konstruktor)
 endif(APPLE)
 
-add_executable(konstruktor MACOSX_BUNDLE WIN32 ${konstruktor_SRCS} ${konstruktor_HEADERS} ${konstruktor_UIS} ${konstruktor_HEADERS_MOC} ${konstruktor_RCC_SRCS} ${konstruktor_RESOURCES})
-target_link_libraries(konstruktor libldr libldrawrenderer ${SQLITE_LIBRARIES} ${QT_QTCORE_LIBRARY} ${QT_QTGUI_LIBRARY} ${QT_QTOPENGL_LIBRARY} )
+add_executable(${PROGNAME} MACOSX_BUNDLE WIN32 ${konstruktor_SRCS} ${konstruktor_HEADERS} ${konstruktor_UIS} ${konstruktor_HEADERS_MOC} ${konstruktor_RCC_SRCS} ${konstruktor_RESOURCES})
+target_link_libraries(${PROGNAME} libldr libldrawrenderer ${SQLITE_LIBRARIES} ${QT_QTCORE_LIBRARY} ${QT_QTGUI_LIBRARY} ${QT_QTOPENGL_LIBRARY} )
 
 if(WIN32)
-target_link_libraries(konstruktor Qt5::WinMain)
+target_link_libraries(${PROGNAME} Qt5::WinMain)
 endif()
 
-qt5_use_modules(konstruktor Widgets OpenGL)
-
-# Konstruktor DB Updater
-
-set(konstruktor_db_updater_HEADERS
-  dbmanager.h
-  dbupdater.h
-  pixmaprenderer.h
-  viewport.h
-)
-
-set(konstruktor_db_updater_SRCS
-  config.cpp
-  dbmanager.cpp
-  dbupdater.cpp
-  pixmaprenderer.cpp
-  viewport.cpp
-  main_dbupdater.cpp
-)
-
-#qt5_wrap_cpp(konstruktor_db_updater_HEADERS_MOC ${konstruktor_db_updater_HEADERS})
-
-#add_executable(konstruktor_db_updater ${konstruktor_db_updater_SRCS} ${konstruktor_db_updater_HEADERS} ${konstruktor_db_updater_HEADERS_MOC})
-#set_target_properties(konstruktor_db_updater PROPERTIES COMPILE_FLAGS -DKONSTRUKTOR_DB_UPDATER)
-#target_link_libraries(konstruktor_db_updater libldr libldrawrenderer ${SQLITE_LIBRARIES} ${QT_QTCORE_LIBRARY} ${QT_QTGUI_LIBRARY} ${QT_QTOPENGL_LIBRARY})
-
-#qt5_use_modules(konstruktor_db_updater Widgets OpenGL)
+qt5_use_modules(${PROGNAME} Widgets OpenGL)
 
 # install
-install(TARGETS konstruktor DESTINATION bin)
+install(TARGETS ${PROGNAME} DESTINATION bin)
 
 if(UNIX AND NOT APPLE)
+  find_package(KDE4)
   install(FILES konstruktor.desktop DESTINATION share/applications)
   install(FILES ldraw-mime.xml DESTINATION share/mime/packages)
   update_xdg_mimetypes(share/mime/packages)
+  kde4_install_icons(${ICON_INSTALL_DIR})
 endif(UNIX AND NOT APPLE)
 
