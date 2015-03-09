@@ -189,6 +189,19 @@ bool part_library::link_element(element_ref *r)
     r->resolve(this);
     return true;
   }
+
+  // 5. find external model
+  if (r->parent()->parent()) {
+    model_multipart *main_model = r->parent()->parent();
+    model_multipart *ext = main_model->find_external_model(r->filename());
+    if (!ext)
+      ext = main_model->load_external_model(reader(), r->filename());
+    
+    if (ext) {
+      r->set_model(ext->main_model());
+      return true;
+    }
+  }
   
   if (r->parent())
     std::cerr << "File " << r->parent()->name() << ": Could not open file: " << r->filename() << std::endl;

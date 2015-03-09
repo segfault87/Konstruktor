@@ -4,6 +4,8 @@
  *                                                                                   *
  * Author: (c)2006-2008 Park "segfault" J. K. <mastermind_at_planetmono_dot_org>     */
 
+#include <sys/stat.h>
+
 #include <fstream>
 #include <iostream>
 #include <sstream>
@@ -36,15 +38,17 @@ reader::reader(const std::string &basepath)
 model_multipart* reader::load_from_file(const std::string &name) const
 {
   std::ifstream file;
-  
-  file.open((m_basepath + name).c_str(), std::ios::in);
-  if (!file.is_open())
+
+  std::string filename = m_basepath + name;
+
+  struct stat buffer;
+  if (stat(filename.c_str(), &buffer) != 0)
     throw exception(__func__, exception::user_error, std::string("Could not open file for reading: ") + name);
-  
+
+  file.open(filename.c_str(), std::ios::in);
   model_multipart *model = load_from_stream(file, name);
-  
   file.close();
-  
+
   return model;
 }
 

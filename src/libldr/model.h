@@ -194,11 +194,12 @@ class LIBLDR_EXPORT model_multipart
   //void operator=(const model_multipart &rhs);
   
  private:
+  friend class part_library;
+
   model_multipart* find_external_model(const std::string &name);
   model_multipart* load_external_model(const reader &r, const std::string &name);
   bool remove_external_model(const std::string &name);
   
- private:
   model m_main_model;
   std::map<std::string, model*> m_submodel_list;
   std::map<std::string, model_multipart*> m_external_model_list;

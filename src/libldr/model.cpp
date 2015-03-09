@@ -180,14 +180,14 @@ bool model_multipart::link_submodel_element(element_ref *r)
     return true;
   }
   
-  model_multipart *ext = find_external_model(r->filename());
+  /*model_multipart *ext = find_external_model(r->filename());
   if (!ext)
     ext = load_external_model(reader(), r->filename());
   
   if (ext) {
     r->set_model(ext->main_model());
     return true;
-  }
+  }*/
   
   return false;
 }
@@ -289,7 +289,7 @@ model_multipart* model_multipart::find_external_model(const std::string &name)
 model_multipart* model_multipart::load_external_model(const reader &r, const std::string &name)
 {
   model_multipart *m;
-  
+
   try {
     m = r.load_from_file(name);
   } catch (const exception &e) {
